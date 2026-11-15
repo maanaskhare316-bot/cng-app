@@ -1,0 +1,19 @@
+{
+  "name": "cng-navigator-backend",
+  "version": "1.0.0",
+  "description": "High performance REST API backend and telemetry simulation for CNG Navigator",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "keywords": [
+    "cng",
+    "maps",
+    "telemetry",
+    "stations",
+    "route-planner"
+  ],
+  "author": "",
+  "license": "ISC"
+}

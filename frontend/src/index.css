@@ -1,0 +1,130 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/* ── CSS Custom Properties ─────────────────────────── */
+:root {
+  --color-navy-900: #0f172a;
+  --color-navy-800: #1e293b;
+  --color-navy-700: #334155;
+  --color-green-500: #10b981;
+  --color-green-600: #059669;
+  --color-green-400: #34d399;
+  --color-amber-500: #f59e0b;
+  --color-red-500: #ef4444;
+  --sidebar-width: 240px;
+  --navbar-height: 56px;
+  --transition-sidebar: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* ── Base / Font ────────────────────────────────────── */
+html {
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, 'Helvetica Neue', Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  @apply bg-slate-100 text-slate-800;
+  margin: 0;
+  padding: 0;
+}
+
+/* ── Custom Scrollbar ───────────────────────────────── */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #94a3b8;
+}
+/* Firefox */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #cbd5e1 transparent;
+}
+
+/* ── Leaflet Overrides ──────────────────────────────── */
+.leaflet-popup-content-wrapper {
+  border-radius: 12px !important;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15) !important;
+  z-index: 1000;
+}
+.leaflet-popup-tip-container {
+  z-index: 1000;
+}
+.leaflet-container {
+  font-family: inherit;
+  border-radius: 12px;
+}
+.leaflet-control-zoom {
+  border-radius: 8px !important;
+  overflow: hidden;
+  border: none !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15) !important;
+}
+.leaflet-control-zoom a {
+  border-radius: 0 !important;
+}
+
+/* ── Sidebar Transition ─────────────────────────────── */
+.sidebar-enter {
+  transform: translateX(-100%);
+  opacity: 0;
+}
+.sidebar-enter-active {
+  transform: translateX(0);
+  opacity: 1;
+  transition: transform var(--transition-sidebar), opacity var(--transition-sidebar);
+}
+.sidebar-exit {
+  transform: translateX(0);
+  opacity: 1;
+}
+.sidebar-exit-active {
+  transform: translateX(-100%);
+  opacity: 0;
+  transition: transform var(--transition-sidebar), opacity var(--transition-sidebar);
+}
+
+/* ── Simulation Dot Pulse ───────────────────────────── */
+@keyframes sim-pulse {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.4;
+    transform: scale(1.4);
+  }
+}
+.sim-dot {
+  animation: sim-pulse 2s ease-in-out infinite;
+}
+
+/* ── Smooth hover transitions ───────────────────────── */
+@layer utilities {
+  .transition-sidebar {
+    transition: width var(--transition-sidebar), transform var(--transition-sidebar);
+  }
+  .nav-item {
+    @apply flex items-center gap-3 px-3 py-2.5 rounded-lg cursor-pointer
+           text-sm font-medium transition-all duration-200 select-none;
+  }
+  .nav-item-active {
+    @apply bg-emerald-500/10 text-emerald-400 border-l-2 border-emerald-400;
+    padding-left: calc(0.75rem - 2px);
+  }
+  .nav-item-inactive {
+    @apply text-slate-400 hover:bg-white/5 hover:text-slate-200 border-l-2 border-transparent;
+    padding-left: calc(0.75rem - 2px);
+  }
+}

@@ -1,0 +1,33 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build outputs
+dist/
+build/
+target/
+*.class
+
+# Binaries & large zips
+*.exe
+*.zip
+*.tar.gz
+
+# Maven / Java
+.m2/
+.mvn/
+*.jar
+*.war
+
+# Environment & credentials
+.env
+.env.local
+*.log
+
+# Database files
+*.db-shm
+*.db-wal
+
+# OS files
+.DS_Store
+Thumbs.db

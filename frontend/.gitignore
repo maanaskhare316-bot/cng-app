@@ -1,0 +1,30 @@
+
+# Node modules
+node_modules/
+**/node_modules/
+
+# Build files
+dist/
+**/dist/
+target/
+**/target/
+
+# Environment variables
+.env
+.env.*
+!.env.example
+
+# IDE
+.idea/
+.vscode/
+
+# Logs
+*.log
+
+# Local database
+data/*.db
+data/*.db-shm
+data/*.db-wal
+
+# Cloudflare
+cloudflared.exe
