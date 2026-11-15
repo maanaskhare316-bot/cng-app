@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Send, CheckCircle, Gauge, Users, Sparkles, MapPin } from 'lucide-react';
+import { X, Send, CheckCircle, Gauge, Users, Sparkles } from 'lucide-react';
 import type { StationSummaryDto } from '../../types';
 
 interface ReportStatusModalProps {
@@ -28,12 +28,12 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
     setTimeout(() => {
       setSubmitted(false);
       onClose();
-    }, 800);
+    }, 700);
   };
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 animate-in fade-in">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden">
+      <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-md w-full overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-emerald-600 to-teal-700 px-6 py-4 text-white flex items-center justify-between">
           <div className="flex items-center gap-2">
@@ -41,7 +41,7 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
               <Sparkles size={18} className="text-amber-300" />
             </div>
             <div>
-              <h3 className="font-bold text-sm">लाइव स्थिति रिपोर्ट करें (Report Status)</h3>
+              <h3 className="font-bold text-sm">Report Live Station Status</h3>
               <p className="text-xs text-emerald-100 truncate max-w-[240px]">{station.name}</p>
             </div>
           </div>
@@ -54,19 +54,19 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
         </div>
 
         {/* Form Body */}
-        <form onSubmit={handleSubmit} className="p-6 space-y-5">
+        <form onSubmit={handleSubmit} className="p-6 space-y-4">
           <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-3 text-xs text-emerald-800">
-            📍 <strong>{station.city}</strong>: आपके द्वारा दिया गया लाइव डेटा अन्य सभी चालकों को सही स्टेशन चुनने में मदद करेगा!
+            📍 <strong>{station.city}</strong>: Your live report will help fellow drivers pick the best station!
           </div>
 
           {/* Vehicles Slider */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center justify-between mb-1">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                <Users size={14} className="text-blue-600" /> वाहनों की संख्या (Vehicles in Queue)
+                <Users size={14} className="text-blue-600" /> Vehicles Waiting in Line
               </label>
-              <span className="text-base font-extrabold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-lg border border-blue-200">
-                {vehicles} गाड़ियाँ
+              <span className="text-sm font-extrabold text-blue-700 bg-blue-50 px-2.5 py-0.5 rounded-lg border border-blue-200">
+                {vehicles} Cars
               </span>
             </div>
             <input
@@ -77,20 +77,20 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
               onChange={(e) => setVehicles(Number(e.target.value))}
               className="w-full accent-blue-600 cursor-pointer"
             />
-            <div className="flex justify-between text-[11px] text-slate-400 mt-1">
-              <span>0 (खाली / No wait)</span>
-              <span>10 (मध्यम)</span>
-              <span>20+ (भीड़)</span>
+            <div className="flex justify-between text-[10px] text-slate-400 mt-0.5">
+              <span>0 (Empty)</span>
+              <span>10 (Moderate)</span>
+              <span>20+ (Busy)</span>
             </div>
           </div>
 
           {/* Pressure Slider */}
           <div>
-            <div className="flex items-center justify-between mb-1.5">
+            <div className="flex items-center justify-between mb-1">
               <label className="text-xs font-bold text-slate-700 uppercase tracking-wider flex items-center gap-1.5">
-                <Gauge size={14} className="text-emerald-600" /> गैस प्रेशर (Pressure Bar)
+                <Gauge size={14} className="text-emerald-600" /> Gas Pressure (Bar)
               </label>
-              <span className="text-base font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-lg border border-emerald-200">
+              <span className="text-sm font-extrabold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-lg border border-emerald-200">
                 {pressure} Bar
               </span>
             </div>
@@ -103,34 +103,33 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
               onChange={(e) => setPressure(Number(e.target.value))}
               className="w-full accent-emerald-600 cursor-pointer"
             />
-            <div className="flex justify-between text-[11px] text-slate-400 mt-1">
-              <span>140 Bar (कम)</span>
-              <span>185 Bar (मध्यम)</span>
-              <span>215+ Bar (उच्च / Super)</span>
+            <div className="flex justify-between text-[10px] text-slate-400 mt-0.5">
+              <span>140 Bar (Low)</span>
+              <span>185 Bar (Average)</span>
+              <span>215+ Bar (Super High)</span>
             </div>
           </div>
 
           {submitted && (
-            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-100 p-2.5 rounded-xl border border-emerald-300 animate-in fade-in">
-              <CheckCircle size={16} /> धन्यवाद! आपका लाइव अपडेट तुरंत ऐप में अपडेट हो गया है।
+            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-700 bg-emerald-100 p-2.5 rounded-xl border border-emerald-300">
+              <CheckCircle size={16} /> Thank you! Station telemetry has been updated in real-time.
             </div>
           )}
 
-          {/* Action buttons */}
           <div className="flex items-center justify-end gap-2.5 pt-2">
             <button
               type="button"
               onClick={onClose}
               className="px-4 py-2 text-xs font-semibold text-slate-600 hover:text-slate-800 transition rounded-xl"
             >
-              रद्द करें (Cancel)
+              Cancel
             </button>
             <button
               type="submit"
               disabled={submitted}
               className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition flex items-center gap-1.5 disabled:opacity-50"
             >
-              <Send size={14} /> सबमिट करें (Update Live)
+              <Send size={14} /> Submit Live Update
             </button>
           </div>
         </form>

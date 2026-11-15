@@ -1,9 +1,8 @@
 import React, { useState, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Search, Filter, ArrowUpDown, Navigation, BarChart2, Star, Zap, Users, Sparkles } from 'lucide-react';
+import { Search, Navigation, Star, Sparkles } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { ReportStatusModal } from '../components/stations/ReportStatusModal';
-import { formatPressure, formatPrice } from '../utils/formatters';
 import type { StationSummaryDto } from '../types';
 
 type SortKey = 'recommendation' | 'queue' | 'pressure' | 'price' | 'name';
@@ -21,7 +20,6 @@ export default function StationsList() {
   const filtered = useMemo(() => {
     let result = [...stations];
 
-    // Search query
     if (search.trim()) {
       const q = search.toLowerCase();
       result = result.filter(
@@ -33,7 +31,6 @@ export default function StationsList() {
       );
     }
 
-    // Filter key
     if (filter === 'highPressure') {
       result = result.filter((s) => (s.currentPressureBar ?? 0) >= 195);
     } else if (filter === 'lowQueue') {
@@ -44,7 +41,6 @@ export default function StationsList() {
       result = result.filter((s) => s.verifiedOpen === true);
     }
 
-    // Sort key
     result.sort((a, b) => {
       if (sort === 'recommendation') {
         return (b.score ?? 0) - (a.score ?? 0);
@@ -65,66 +61,64 @@ export default function StationsList() {
   }, [stations, search, filter, sort]);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-6 pb-12">
+    <div className="max-w-7xl mx-auto space-y-5 sm:space-y-6 pb-16 px-1 sm:px-0">
       {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-2xl font-black text-slate-900 leading-tight">
-            सभी CNG स्टेशन (All CNG Stations)
+          <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">
+            All CNG Stations
           </h1>
           <p className="text-xs text-slate-500 mt-0.5">
-            लाइव कतार (Queue) और प्रेशर (Pressure) डेटा के साथ भारत के प्रमुख स्टेशन
+            Verified Indian highway stations with live queue and compressor pressure telemetry
           </p>
         </div>
 
         <button
           onClick={() => navigate('/plan')}
-          className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5"
+          className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5"
         >
-          <Navigation size={14} />
-          <span>रास्ते का स्टेशन खोजें (Plan Trip)</span>
+          <Navigation size={13} />
+          <span>Plan Trip</span>
         </button>
       </div>
 
       {/* Search & Filters Bar */}
-      <div className="bg-white rounded-3xl p-4 shadow-sm border border-slate-200 space-y-4">
-        <div className="flex flex-col sm:flex-row gap-3">
-          {/* Search Box */}
+      <div className="bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-sm border border-slate-200 space-y-3">
+        <div className="flex flex-col sm:flex-row gap-2.5">
           <div className="relative flex-1">
-            <Search size={18} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              placeholder="स्टेशन नाम, शहर (उदा. Delhi, Agra, Mathura, Mumbai, Pune, Bhopal) खोजें..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+              placeholder="Search by station name, city (e.g. Delhi, Agra, Mathura, Mumbai, Pune, Bhopal)..."
+              className="w-full pl-9 pr-4 py-2 sm:py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
             />
           </div>
 
-          {/* Sort dropdown */}
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
             <span className="text-xs font-bold text-slate-500 uppercase flex-shrink-0">Sort:</span>
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortKey)}
-              className="px-3 py-2.5 rounded-2xl border border-slate-200 text-xs font-bold bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-bold bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
-              <option value="recommendation">⭐ AI स्मार्ट स्कोर (कम गाड़ी + ज्यादा प्रेशर)</option>
-              <option value="queue">🚗 कम गाड़ी पहले (Shortest Queue)</option>
-              <option value="pressure">⚡ ज्यादा प्रेशर पहले (Highest Bar)</option>
-              <option value="price">💰 कम कीमत पहले (Lowest Price)</option>
-              <option value="name">नाम (A-Z)</option>
+              <option value="recommendation">⭐ AI Smart Score</option>
+              <option value="queue">🚗 Short Queue First</option>
+              <option value="pressure">⚡ High Pressure First</option>
+              <option value="price">💰 Lowest Price</option>
+              <option value="name">Name (A-Z)</option>
             </select>
           </div>
         </div>
 
         {/* Filter Pills */}
-        <div className="flex flex-wrap gap-2 text-xs">
+        <div className="flex flex-wrap gap-1.5 text-xs">
           {[
-            { id: 'all', label: 'सभी स्टेशन (All)' },
-            { id: 'highPressure', label: '⚡ ज्यादा प्रेशर (200+ Bar)' },
-            { id: 'lowQueue', label: '🚗 कम गाड़ी (≤3 Cars)' },
-            { id: 'recommended', label: '⭐ सर्वोत्तम अनुशंसित' },
+            { id: 'all', label: 'All Stations' },
+            { id: 'highPressure', label: '⚡ High Pressure (200+ Bar)' },
+            { id: 'lowQueue', label: '🚗 Short Queue (≤3 Cars)' },
+            { id: 'recommended', label: '⭐ Recommended' },
             { id: 'openNow', label: '● 24x7 Open' },
           ].map((pill) => {
             const active = filter === pill.id;
@@ -133,7 +127,7 @@ export default function StationsList() {
                 key={pill.id}
                 type="button"
                 onClick={() => setFilter(pill.id as FilterKey)}
-                className={`px-3 py-1.5 rounded-xl font-bold transition border ${
+                className={`px-3 py-1.5 rounded-xl font-bold transition border text-[11px] sm:text-xs ${
                   active
                     ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
                     : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
@@ -147,7 +141,7 @@ export default function StationsList() {
       </div>
 
       {/* Grid of Stations */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
         {filtered.map((st) => {
           const isBest = st.recommendationCategory === 'BEST_OVERALL';
           const isSelected = selectedStations.includes(Number(st.id));
@@ -157,67 +151,67 @@ export default function StationsList() {
           return (
             <div
               key={st.id}
-              className={`bg-white rounded-3xl p-5 border transition flex flex-col justify-between shadow-sm hover:shadow-md relative ${
+              className={`bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border transition flex flex-col justify-between shadow-sm hover:shadow-md relative ${
                 isBest ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200'
               }`}
             >
               {isBest && (
-                <span className="absolute -top-2.5 right-4 bg-amber-400 text-slate-950 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1">
-                  <Star size={10} className="fill-slate-950" /> बेस्ट विकल्प (Top Pick)
+                <span className="absolute -top-2.5 right-4 bg-amber-400 text-slate-950 text-[9.5px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1">
+                  <Star size={10} className="fill-slate-950" /> Top Pick
                 </span>
               )}
 
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="min-w-0">
-                    <h3 className="font-extrabold text-sm text-slate-900 leading-tight truncate">
+                    <h3 className="font-extrabold text-xs sm:text-sm text-slate-900 leading-tight truncate">
                       {st.name}
                     </h3>
-                    <p className="text-xs font-semibold text-emerald-700 mt-0.5">{st.operator}</p>
-                    <p className="text-xs text-slate-400 mt-0.5">
+                    <p className="text-xs font-semibold text-emerald-700 mt-0.5 truncate">{st.operator}</p>
+                    <p className="text-[11px] text-slate-400 mt-0.5 truncate">
                       📍 {st.city}, {st.state}
                     </p>
                   </div>
                   <span
-                    className={`text-[10px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
+                    className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
                       st.verifiedOpen ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
                     }`}
                   >
-                    {st.verifiedOpen ? 'Open 24x7' : 'Closed'}
+                    {st.verifiedOpen ? '24x7 Open' : 'Closed'}
                   </span>
                 </div>
 
                 {/* Telemetry Metrics Bar */}
-                <div className="grid grid-cols-3 gap-2 bg-slate-50 rounded-2xl p-3 border border-slate-200/80 my-3 text-center">
+                <div className="grid grid-cols-3 gap-2 bg-slate-50 rounded-xl p-2.5 border border-slate-200/80 my-3 text-center">
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400">कतार (Queue)</span>
-                    <p className="text-sm font-black text-slate-800 mt-0.5">{st.vehiclesWaiting ?? 0} गाड़ियाँ</p>
-                    <span className="text-[10px] text-slate-500">~{st.estimatedWaitMinutes ?? 2} min</span>
+                    <span className="text-[9px] uppercase font-bold text-slate-400">Queue</span>
+                    <p className="text-xs sm:text-sm font-black text-slate-800 mt-0.5">{st.vehiclesWaiting ?? 0} Cars</p>
+                    <span className="text-[9.5px] text-slate-500">~{st.estimatedWaitMinutes ?? 2} min</span>
                   </div>
 
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400">प्रेशर (Pressure)</span>
+                    <span className="text-[9px] uppercase font-bold text-slate-400">Pressure</span>
                     <p
-                      className={`text-sm font-black mt-0.5 ${
+                      className={`text-xs sm:text-sm font-black mt-0.5 ${
                         isHighPressure ? 'text-emerald-600' : 'text-amber-600'
                       }`}
                     >
                       {pressure ? `${pressure} Bar` : 'N/A'}
                     </p>
-                    <span className="text-[10px] text-slate-500">{isHighPressure ? 'सुपर फास्ट' : 'मध्यम'}</span>
+                    <span className="text-[9.5px] text-slate-500">{isHighPressure ? 'Fast Fill' : 'Moderate'}</span>
                   </div>
 
                   <div>
-                    <span className="text-[10px] uppercase font-bold text-slate-400">मूल्य (Price)</span>
-                    <p className="text-sm font-black text-slate-800 mt-0.5">
+                    <span className="text-[9px] uppercase font-bold text-slate-400">Price</span>
+                    <p className="text-xs sm:text-sm font-black text-slate-800 mt-0.5">
                       ₹{st.verifiedPricePerKg ?? 82.5}
                     </p>
-                    <span className="text-[10px] text-slate-500">प्रति किलो</span>
+                    <span className="text-[9.5px] text-slate-500">per kg</span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-slate-500 px-1 mb-4">
-                  <span>⛽ {st.activeDispensers ?? 4} नोज़ल चालू</span>
+                <div className="flex items-center justify-between text-[11px] text-slate-500 px-1 mb-3">
+                  <span>⛽ {st.activeDispensers ?? 4} Nozzles Active</span>
                   <span>🕐 {st.operatingHours ?? '24x7'}</span>
                 </div>
               </div>
@@ -229,7 +223,7 @@ export default function StationsList() {
                   onClick={() => navigate(`/stations/${st.id}`)}
                   className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition text-center"
                 >
-                  विवरण (Details)
+                  Details
                 </button>
                 <button
                   type="button"
@@ -240,7 +234,7 @@ export default function StationsList() {
                       : 'border-slate-200 text-slate-600 hover:bg-slate-50'
                   }`}
                 >
-                  {isSelected ? '✓ तुलना' : '+ Compare'}
+                  {isSelected ? '✓ Added' : '+ Compare'}
                 </button>
                 <button
                   type="button"

@@ -38,7 +38,7 @@ export interface StationSummaryDto {
   estimatedDetourMinutes: number | null;
   distanceFromStartKm: number | null;
 
-  // Queue telemetry (कम गाड़ी / वाहनों की संख्या)
+  // Queue telemetry (minimal vehicles / queue count)
   vehiclesWaiting: number | null;
   estimatedWaitMinutes: number | null;
   queueDataSource: string | null;
@@ -46,7 +46,7 @@ export interface StationSummaryDto {
   queueFreshness: QueueFreshness | null;
   isQueueLive: boolean;
 
-  // Pressure telemetry (ज्यादा प्रेशर / गैस प्रेशर)
+  // Pressure telemetry (high pressure / SCADA bar reading)
   currentPressureBar: number | null;
   minSafeLimitBar: number | null;
   maxSafeLimitBar: number | null;

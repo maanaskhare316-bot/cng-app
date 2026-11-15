@@ -2,13 +2,12 @@ import React, { useState, useEffect } from 'react';
 import type { StationSummaryDto } from '../../types';
 import GoogleStationMap from './GoogleStationMap';
 import { ApiKeyModal } from '../ui/ApiKeyModal';
-import { getStoredGoogleApiKey, isGoogleMapsLoaded } from '../../services/googleMapsLoader';
+import { getStoredGoogleApiKey } from '../../services/googleMapsLoader';
 import { MapContainer, TileLayer, CircleMarker, Popup, Polyline, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
-import { Key, MapPin, Navigation, Sparkles, Layers } from 'lucide-react';
+import { Key } from 'lucide-react';
 
-// Fix Leaflet icons
 delete (L.Icon.Default.prototype as any)._getIconUrl;
 L.Icon.Default.mergeOptions({
   iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
@@ -34,9 +33,9 @@ interface StationMapProps {
 
 function pressureColor(bar: number | null): string {
   if (bar === null) return '#94a3b8';
-  if (bar >= 195) return '#10b981';
-  if (bar >= 175) return '#f59e0b';
-  return '#ef4444';
+  if (bar >= 195) return '#059669';
+  if (bar >= 175) return '#d97706';
+  return '#dc2626';
 }
 
 function LeafletAutoFit({ stations, startPoint, destPoint }: { stations: StationSummaryDto[]; startPoint?: LatLng; destPoint?: LatLng }) {
@@ -53,7 +52,7 @@ function LeafletAutoFit({ stations, startPoint, destPoint }: { stations: Station
       return;
     }
     const bounds = L.latLngBounds(points.map((p) => L.latLng(p[0], p[1])));
-    map.fitBounds(bounds, { padding: [40, 40], maxZoom: 14 });
+    map.fitBounds(bounds, { padding: [30, 30], maxZoom: 14 });
   }, [map, stations, startPoint, destPoint]);
   return null;
 }
@@ -93,46 +92,41 @@ export const StationMap: React.FC<StationMapProps> = ({
 
   return (
     <div className="relative w-full rounded-2xl overflow-hidden shadow-sm">
-      {/* Map Header Control Pill */}
-      <div className="absolute top-3 right-3 z-[1000] flex items-center gap-1.5 bg-white/95 backdrop-blur-md px-2.5 py-1.5 rounded-xl shadow-lg border border-slate-200 text-xs">
-        <span className="text-[10px] uppercase font-bold text-slate-400 mr-1 hidden sm:inline">Engine:</span>
+      {/* Sleek Map Switcher on Top-Right */}
+      <div className="absolute top-2 right-2 z-[1000] flex items-center gap-1 bg-white/95 backdrop-blur-md p-1 rounded-xl shadow-md border border-slate-200 text-xs">
         <button
           type="button"
           onClick={() => handleEngineChange('google')}
-          className={`px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1 ${
+          className={`px-2 py-1 rounded-lg font-bold text-[11px] transition flex items-center gap-1 ${
             engine === 'google'
               ? 'bg-emerald-600 text-white shadow-sm'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
-          <span>🗺️ Google Maps</span>
+          <span>Google</span>
         </button>
         <button
           type="button"
           onClick={() => handleEngineChange('leaflet')}
-          className={`px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1 ${
+          className={`px-2 py-1 rounded-lg font-bold text-[11px] transition flex items-center gap-1 ${
             engine === 'leaflet'
               ? 'bg-emerald-600 text-white shadow-sm'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
+              : 'text-slate-600 hover:bg-slate-100'
           }`}
         >
-          <span>🌐 OpenStreetMap</span>
+          <span>OSM</span>
         </button>
-
-        <div className="w-[1px] h-4 bg-slate-200 mx-1" />
 
         <button
           type="button"
           onClick={() => setIsKeyModalOpen(true)}
           title="Google Maps API Key Setup"
-          className="p-1 rounded-lg text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 transition flex items-center gap-1"
+          className="p-1 rounded-lg text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 transition"
         >
-          <Key size={14} className={hasApiKey ? 'text-emerald-600' : 'text-amber-500'} />
-          <span className="text-[10px] font-semibold hidden md:inline">{hasApiKey ? 'API Key' : 'Add Key'}</span>
+          <Key size={13} className={hasApiKey ? 'text-emerald-600' : 'text-amber-500'} />
         </button>
       </div>
 
-      {/* Primary Map View */}
       {engine === 'google' ? (
         <GoogleStationMap
           stations={stations}
@@ -142,12 +136,8 @@ export const StationMap: React.FC<StationMapProps> = ({
           selectedStationId={selectedStationId}
           onStationClick={onStationClick}
           height={height}
-          onAuthError={() => {
-            // If auth fails, show notification and suggest switching to leaflet if desired
-          }}
         />
       ) : (
-        /* Leaflet Fallback Engine */
         <div style={{ height }} className="w-full relative">
           <MapContainer
             center={startPoint ? [startPoint.lat, startPoint.lng] : [28.6139, 77.209]}
@@ -156,42 +146,38 @@ export const StationMap: React.FC<StationMapProps> = ({
             zoomControl={true}
           >
             <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             <LeafletAutoFit stations={stations} startPoint={startPoint} destPoint={destPoint} />
 
-            {/* Polyline Route */}
             {routeGeometry && routeGeometry.length > 0 && (
               <Polyline
                 positions={routeGeometry}
-                pathOptions={{ color: '#059669', weight: 5, opacity: 0.8 }}
+                pathOptions={{ color: '#059669', weight: 5, opacity: 0.85 }}
               />
             )}
 
-            {/* Start Marker */}
             {startPoint && (
               <CircleMarker
                 center={[startPoint.lat, startPoint.lng]}
-                radius={8}
+                radius={7}
                 pathOptions={{ color: '#ffffff', fillColor: '#10b981', fillOpacity: 1, weight: 2 }}
               >
                 <Popup><strong>Start Location</strong></Popup>
               </CircleMarker>
             )}
 
-            {/* Dest Marker */}
             {destPoint && (
               <CircleMarker
                 center={[destPoint.lat, destPoint.lng]}
-                radius={8}
+                radius={7}
                 pathOptions={{ color: '#ffffff', fillColor: '#ef4444', fillOpacity: 1, weight: 2 }}
               >
                 <Popup><strong>Destination</strong></Popup>
               </CircleMarker>
             )}
 
-            {/* Station Markers */}
             {stations.map((s) => {
               const isBest = s.recommendationCategory === 'BEST_OVERALL';
               const isSelected = selectedStationId === s.id;
@@ -213,7 +199,7 @@ export const StationMap: React.FC<StationMapProps> = ({
                   }}
                 >
                   <Popup>
-                    <div className="p-1 max-w-[220px]">
+                    <div className="p-1 max-w-[210px] text-xs font-sans">
                       {isBest && (
                         <div className="bg-emerald-100 text-emerald-800 text-[10px] font-bold px-2 py-0.5 rounded-full inline-block mb-1">
                           ⭐ Best Recommendation
@@ -223,12 +209,12 @@ export const StationMap: React.FC<StationMapProps> = ({
                       <p className="text-xs text-slate-500 mb-2">{s.address}, {s.city}</p>
                       <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2 rounded-lg border border-slate-200">
                         <div>
-                          <div className="text-[10px] text-slate-400 font-bold uppercase">प्रेशर (Pressure)</div>
+                          <div className="text-[10px] text-slate-400 font-bold uppercase">Pressure</div>
                           <div className="font-extrabold text-sm" style={{ color }}>{s.currentPressureBar ? `${Math.round(s.currentPressureBar)} Bar` : 'N/A'}</div>
                         </div>
                         <div>
-                          <div className="text-[10px] text-slate-400 font-bold uppercase">कतार (Queue)</div>
-                          <div className="font-extrabold text-sm text-slate-800">{s.vehiclesWaiting ?? 0} Gaadi</div>
+                          <div className="text-[10px] text-slate-400 font-bold uppercase">Queue</div>
+                          <div className="font-extrabold text-sm text-slate-800">{s.vehiclesWaiting ?? 0} Cars</div>
                         </div>
                       </div>
                       <a
@@ -248,7 +234,6 @@ export const StationMap: React.FC<StationMapProps> = ({
         </div>
       )}
 
-      {/* Google Maps API Key Modal */}
       <ApiKeyModal
         isOpen={isKeyModalOpen}
         onClose={() => setIsKeyModalOpen(false)}

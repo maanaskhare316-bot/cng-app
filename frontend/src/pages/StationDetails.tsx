@@ -45,13 +45,13 @@ export default function StationDetails() {
     return (
       <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 p-8 bg-white rounded-3xl border border-slate-200 text-center">
         <span className="text-5xl">⛽</span>
-        <h2 className="text-xl font-bold text-slate-800">स्टेशन नहीं मिला (Station Not Found)</h2>
-        <p className="text-slate-500 text-xs">यह स्टेशन आईडी उपलब्ध नहीं है।</p>
+        <h2 className="text-xl font-bold text-slate-800">Station Not Found</h2>
+        <p className="text-slate-500 text-xs">This station ID is not available or has been moved.</p>
         <button
           onClick={() => navigate('/stations')}
           className="bg-emerald-600 text-white px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-emerald-700 transition"
         >
-          सभी स्टेशन देखें (Back to Stations)
+          Back to Stations
         </button>
       </div>
     );
@@ -86,7 +86,7 @@ export default function StationDetails() {
           onClick={() => navigate(-1)}
           className="flex items-center gap-1.5 text-xs font-bold text-slate-600 hover:text-slate-900 bg-white px-3.5 py-2 rounded-xl border border-slate-200 transition shadow-sm"
         >
-          <ArrowLeft size={14} /> वापस जाएं (Back)
+          <ArrowLeft size={14} /> Back
         </button>
 
         <button
@@ -95,7 +95,7 @@ export default function StationDetails() {
           className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5"
         >
           <Sparkles size={14} className="text-amber-300" />
-          <span>पंप लाइव स्थिति अपडेट करें (Report Live)</span>
+          <span>Report Live Telemetry</span>
         </button>
       </div>
 
@@ -108,7 +108,7 @@ export default function StationDetails() {
               <div>
                 {isBest && (
                   <span className="inline-flex items-center gap-1 bg-amber-400 text-slate-950 text-[11px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider mb-2">
-                    <Star size={12} className="fill-slate-950" /> सर्वोत्तम स्टेशन (Best Choice)
+                    <Star size={12} className="fill-slate-950" /> Best Overall Choice
                   </span>
                 )}
                 <h1 className="text-2xl font-black text-slate-900 leading-tight">{station.name}</h1>
@@ -125,32 +125,32 @@ export default function StationDetails() {
                     : 'bg-red-100 text-red-800 border-red-300'
                 }`}
               >
-                {station.verifiedOpen ? '● खुला है (Open 24x7)' : '● बंद है (Closed)'}
+                {station.verifiedOpen ? '● Open 24x7' : '● Closed'}
               </span>
             </div>
 
             {/* Quick Specs Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
               <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                <span className="text-[10px] text-slate-400 font-bold uppercase">CNG मूल्य</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase">CNG Price</span>
                 <p className="text-base font-extrabold text-slate-900 mt-0.5">
                   ₹{station.verifiedPricePerKg ?? 82.5}/kg
                 </p>
               </div>
               <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                <span className="text-[10px] text-slate-400 font-bold uppercase">सक्रिय नोज़ल</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase">Active Nozzles</span>
                 <p className="text-base font-extrabold text-slate-900 mt-0.5">
                   {station.activeDispensers ?? 4}/{station.totalDispensers ?? 4} Disp.
                 </p>
               </div>
               <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                <span className="text-[10px] text-slate-400 font-bold uppercase">समय</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase">Hours</span>
                 <p className="text-base font-extrabold text-slate-900 mt-0.5">
                   {station.operatingHours ?? '24x7 Open'}
                 </p>
               </div>
               <div className="bg-slate-50 p-3 rounded-2xl border border-slate-200 text-center">
-                <span className="text-[10px] text-slate-400 font-bold uppercase">पंप क्षमता</span>
+                <span className="text-[10px] text-slate-400 font-bold uppercase">Pumping Rate</span>
                 <p className="text-base font-extrabold text-slate-900 mt-0.5">
                   {station.dispenserCapacityPerHour ?? 140} kg/hr
                 </p>
@@ -161,7 +161,7 @@ export default function StationDetails() {
             {station.amenities && station.amenities.length > 0 && (
               <div className="pt-2 border-t border-slate-100">
                 <span className="text-xs font-bold text-slate-700 uppercase tracking-wider block mb-2">
-                  उपलब्ध सुविधाएं (Amenities)
+                  Available Amenities
                 </span>
                 <div className="flex flex-wrap gap-1.5">
                   {station.amenities.map((am, i) => (
@@ -183,7 +183,7 @@ export default function StationDetails() {
             <div className="bg-white rounded-3xl border border-slate-200 p-6 shadow-sm flex flex-col items-center justify-between">
               <div className="w-full flex items-center justify-between mb-2">
                 <h3 className="text-xs font-extrabold uppercase tracking-wider text-slate-700 flex items-center gap-1.5">
-                  <Zap size={14} className="text-emerald-600" /> लाइव गैस प्रेशर
+                  <Zap size={14} className="text-emerald-600" /> Live Gas Pressure
                 </h3>
                 <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
                   LIVE SCADA
@@ -194,11 +194,11 @@ export default function StationDetails() {
 
               <div className="w-full mt-4 pt-3 border-t border-slate-100 grid grid-cols-2 text-center text-xs">
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">न्यूनतम सुरक्षित</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Min Safe Limit</span>
                   <span className="font-bold text-slate-700">{station.minSafeLimitBar ?? 140} Bar</span>
                 </div>
                 <div>
-                  <span className="text-slate-400 block text-[10px] uppercase font-bold">अधिकतम सुरक्षित</span>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold">Max Safe Limit</span>
                   <span className="font-bold text-slate-700">{station.maxSafeLimitBar ?? 240} Bar</span>
                 </div>
               </div>
@@ -224,7 +224,7 @@ export default function StationDetails() {
               className="flex-1 py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-700 hover:to-teal-800 text-white font-black text-sm text-center shadow-lg shadow-emerald-600/25 transition flex items-center justify-center gap-2"
             >
               <Navigation size={18} />
-              <span>Google Maps नेविगेशन शुरू करें (Turn-by-Turn Directions)</span>
+              <span>Start Google Maps Navigation</span>
             </a>
 
             <button
@@ -235,7 +235,7 @@ export default function StationDetails() {
                   : 'bg-white text-slate-700 border-slate-200 hover:bg-slate-50'
               }`}
             >
-              {isSelected ? '✓ तुलना में जोड़ा गया (In Compare)' : '+ तुलना करें (Compare)'}
+              {isSelected ? '✓ In Compare' : '+ Compare'}
             </button>
           </div>
         </div>
@@ -245,14 +245,14 @@ export default function StationDetails() {
           {/* Mini Station Map Preview */}
           <div className="bg-white rounded-3xl border border-slate-200 p-4 shadow-sm space-y-3">
             <div className="flex items-center justify-between px-1">
-              <h3 className="font-bold text-sm text-slate-800">स्टेशन स्थान (Location on Google Maps)</h3>
+              <h3 className="font-bold text-sm text-slate-800">Station Location (Google Maps)</h3>
               <a
                 href={`https://www.google.com/maps/search/?api=1&query=${station.latitude},${station.longitude}`}
                 target="_blank"
                 rel="noreferrer"
                 className="text-xs text-emerald-600 font-bold hover:underline"
               >
-                बड़ा मैप खोलें ↗
+                Open Full Map ↗
               </a>
             </div>
 
@@ -267,7 +267,7 @@ export default function StationDetails() {
           <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-xs uppercase tracking-wider text-slate-700">
-                प्रेशर का इतिहास (Last 2 Hours Pressure Bar)
+                Pressure History (Last 2 Hours)
               </h3>
               <span className="text-[10px] text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-full">
                 Telemetry Log
@@ -288,7 +288,7 @@ export default function StationDetails() {
           <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-xs uppercase tracking-wider text-slate-700">
-                कतार का इतिहास (Queue Trend)
+                Queue History (Hourly Trend)
               </h3>
               <span className="text-[10px] text-blue-700 font-bold bg-blue-50 px-2 py-0.5 rounded-full">
                 Car Count

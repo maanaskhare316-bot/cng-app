@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Key, CheckCircle, ExternalLink, AlertTriangle, X, ShieldCheck, MapPin } from 'lucide-react';
+import { Key, CheckCircle, ExternalLink, X, ShieldCheck } from 'lucide-react';
 import { getStoredGoogleApiKey, storeGoogleApiKey, resetGoogleMapsLoader } from '../../services/googleMapsLoader';
 
 interface ApiKeyModalProps {
@@ -34,12 +34,12 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onKey
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-slate-950/60 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-      <div className="bg-white rounded-2xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden">
+      <div className="bg-white rounded-3xl shadow-2xl border border-slate-200 max-w-lg w-full overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-r from-emerald-600 to-teal-700 px-6 py-4 text-white flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <div className="p-2 bg-white/10 rounded-xl">
-              <Key size={20} className="text-white" />
+              <Key size={18} className="text-white" />
             </div>
             <div>
               <h3 className="font-bold text-base">Google Maps API Setup</h3>
@@ -50,14 +50,14 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onKey
             onClick={onClose}
             className="p-1 rounded-lg text-emerald-100 hover:text-white hover:bg-white/10 transition"
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
         {/* Content */}
         <div className="p-6 space-y-4">
           <p className="text-xs text-slate-600 leading-relaxed">
-            यह ऐप Google Maps JavaScript API (Directions & Traffic) को सपोर्ट करता है। अपना Google Maps API Key नीचे डालें। (बिना Key के भी आप लाइव प्रीव्यू और OpenStreetMap पर आसानी से टेस्ट कर सकते हैं!)
+            This app natively supports the official Google Maps JavaScript API (Directions & Traffic). Enter your Google Maps API Key below. (Without a key, the app continues working seamlessly in preview mode or on OpenStreetMap!)
           </p>
 
           <div>
@@ -70,7 +70,7 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onKey
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="AIzaSy..."
-                className="w-full px-3.5 py-2.5 text-sm font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
+                className="w-full px-3.5 py-2.5 text-xs sm:text-sm font-mono border border-slate-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-emerald-500 transition"
               />
               {apiKey && (
                 <button
@@ -84,16 +84,15 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onKey
             </div>
           </div>
 
-          {/* Quick guide */}
-          <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-xl p-3.5 text-xs text-emerald-900 space-y-2">
+          <div className="bg-emerald-50/70 border border-emerald-200/80 rounded-2xl p-3.5 text-xs text-emerald-900 space-y-2">
             <div className="flex items-center gap-1.5 font-bold text-emerald-800">
               <ShieldCheck size={16} />
-              <span>Google Maps API Key कैसे प्राप्त करें?</span>
+              <span>How to get a Google Maps API Key?</span>
             </div>
             <ol className="list-decimal list-inside space-y-1 text-slate-600 pl-1 text-[11px] leading-relaxed">
-              <li>Google Cloud Console पर जाएं और <strong>Maps JavaScript API</strong> सक्षम करें।</li>
-              <li><strong>Directions API</strong> और <strong>Places API</strong> भी इनेबल करें।</li>
-              <li>Credentials में जाकर Create API Key पर क्लिक करें और यहाँ पेस्ट करें।</li>
+              <li>Open Google Cloud Console and enable <strong>Maps JavaScript API</strong>.</li>
+              <li>Also enable <strong>Directions API</strong> and <strong>Places API</strong>.</li>
+              <li>Go to Credentials, create an API Key, and paste it here.</li>
             </ol>
             <a
               href="https://console.cloud.google.com/google/maps-apis/overview"
@@ -106,13 +105,12 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onKey
           </div>
 
           {saved && (
-            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 bg-emerald-50 p-2.5 rounded-lg border border-emerald-200">
-              <CheckCircle size={16} /> Key saved successfully! Reloading Google Maps...
+            <div className="flex items-center gap-2 text-xs font-semibold text-emerald-600 bg-emerald-50 p-2.5 rounded-xl border border-emerald-200">
+              <CheckCircle size={16} /> Key saved successfully! Reloading map...
             </div>
           )}
         </div>
 
-        {/* Footer */}
         <div className="bg-slate-50 px-6 py-3.5 border-t border-slate-200 flex items-center justify-between">
           <button
             type="button"
@@ -121,15 +119,13 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onKey
           >
             Cancel
           </button>
-          <div className="flex gap-2">
-            <button
-              type="button"
-              onClick={handleSave}
-              className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition flex items-center gap-1.5"
-            >
-              <CheckCircle size={14} /> Save & Apply Key
-            </button>
-          </div>
+          <button
+            type="button"
+            onClick={handleSave}
+            className="px-5 py-2 text-xs font-bold text-white bg-emerald-600 hover:bg-emerald-700 rounded-xl shadow-sm transition flex items-center gap-1.5"
+          >
+            <CheckCircle size={14} /> Save & Apply Key
+          </button>
         </div>
       </div>
     </div>

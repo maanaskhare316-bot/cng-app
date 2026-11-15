@@ -1,27 +1,22 @@
 import React, { useState } from 'react';
-import { useLocation, useNavigate, Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
   Star,
   MapPin,
   Zap,
   Clock,
-  Gauge,
   Navigation,
-  CheckCircle,
-  Share2,
-  TrendingUp,
-  Sparkles,
-  ExternalLink,
-  Users,
-  ShieldCheck,
   RotateCcw,
+  Users,
+  Sparkles,
+  Map as MapIcon,
+  List,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { StationMap } from '../components/map/StationMap';
 import { ReportStatusModal } from '../components/stations/ReportStatusModal';
-import { formatDistance, formatDuration, formatPressure, formatPrice } from '../utils/formatters';
-import type { StationSummaryDto, RouteSearchResultDto } from '../types';
+import type { StationSummaryDto } from '../types';
 
 export default function RouteResults() {
   const navigate = useNavigate();
@@ -32,22 +27,23 @@ export default function RouteResults() {
   });
 
   const [reportModalStation, setReportModalStation] = useState<StationSummaryDto | null>(null);
+  const [mobileView, setMobileView] = useState<'map' | 'list'>('map');
 
   if (!activeRouteResult || !activeRouteResult.stations || activeRouteResult.stations.length === 0) {
     return (
-      <div className="max-w-xl mx-auto my-16 text-center bg-white p-8 rounded-3xl border border-slate-200 shadow-sm">
+      <div className="max-w-xl mx-auto my-12 text-center bg-white p-6 sm:p-8 rounded-3xl border border-slate-200 shadow-sm">
         <div className="w-16 h-16 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-4 text-3xl">
           🛣️
         </div>
-        <h2 className="text-xl font-bold text-slate-800 mb-2">कोई यात्रा परिणाम नहीं मिला</h2>
-        <p className="text-slate-500 text-xs mb-6 leading-relaxed">
-          कृपया पहले यात्रा योजनाकार (Trip Planner) में जाकर शुरुआत और गंतव्य चुनकर खोजें।
+        <h2 className="text-xl font-bold text-slate-800 mb-2">No Route Planned Yet</h2>
+        <p className="text-slate-500 text-xs sm:text-sm mb-6 leading-relaxed">
+          Please select your origin and destination in Trip Planner to find the best CNG stations.
         </p>
         <button
           onClick={() => navigate('/plan')}
           className="bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs px-6 py-3 rounded-xl transition"
         >
-          यात्रा प्लान करें (Go to Trip Planner)
+          Plan Your Trip
         </button>
       </div>
     );
@@ -60,7 +56,6 @@ export default function RouteResults() {
 
   const handleReportSubmit = (stationId: number, vehicles: number, pressure: number) => {
     updateStationTelemetry(stationId, vehicles, pressure);
-    // Update active route result station locally
     const target = stations.find((s) => s.id === stationId);
     if (target) {
       target.vehiclesWaiting = vehicles;
@@ -69,134 +64,145 @@ export default function RouteResults() {
   };
 
   return (
-    <div className="space-y-6 max-w-7xl mx-auto pb-12">
-      {/* Top Navigation & Summary */}
-      <div className="flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
+    <div className="space-y-4 sm:space-y-6 max-w-7xl mx-auto pb-16 px-1 sm:px-0">
+      {/* Top Header */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-2.5">
           <button
             onClick={() => navigate('/plan')}
-            className="p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition"
+            className="p-2 sm:p-2.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-700 transition"
           >
-            <ArrowLeft size={18} />
+            <ArrowLeft size={16} />
           </button>
           <div>
-            <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">
-              यात्रा परिणाम: सर्वोत्तम CNG स्टेशन सुझाव
+            <h1 className="text-lg sm:text-2xl font-black text-slate-900 leading-tight">
+              Route Recommendations
             </h1>
-            <p className="text-xs text-slate-500">
-              कुल दूरी: <strong>{totalDistanceKm} km</strong> • अनुमानित समय: <strong>~{totalDurationMinutes} mins</strong> •{' '}
-              <strong>{stations.length}</strong> CNG पंप मार्ग में मिले
+            <p className="text-[11px] sm:text-xs text-slate-500">
+              Distance: <strong>{totalDistanceKm} km</strong> • Est. Drive: <strong>~{totalDurationMinutes} mins</strong> • <strong>{stations.length}</strong> Stations Found
             </p>
           </div>
         </div>
 
         <button
           onClick={() => navigate('/plan')}
-          className="px-4 py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition flex items-center gap-1.5"
+          className="px-3.5 py-1.5 sm:px-4 sm:py-2 text-xs font-bold text-slate-700 bg-white border border-slate-200 rounded-xl hover:bg-slate-50 transition flex items-center gap-1.5 shadow-sm"
         >
-          <RotateCcw size={14} /> रूट बदलें (Change Route)
+          <RotateCcw size={13} /> <span>Change Route</span>
         </button>
       </div>
 
-      {/* 🏆 BEST OVERALL RECOMMENDATION HERO CARD */}
+      {/* 🏆 BEST RECOMMENDATION HERO CARD */}
       {bestOverall && (
-        <div className="bg-gradient-to-r from-emerald-600 via-teal-700 to-slate-900 rounded-3xl p-6 sm:p-8 text-white shadow-xl relative overflow-hidden border border-emerald-500/30">
-          <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-6">
-            <div className="space-y-3 max-w-2xl">
-              <div className="inline-flex items-center gap-2 bg-amber-400 text-slate-950 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider shadow-sm">
-                <Star size={14} className="fill-slate-950" />
-                सर्वोत्तम सुझाव (AI Recommended Choice)
+        <div className="bg-gradient-to-r from-emerald-700 via-teal-800 to-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-7 text-white shadow-lg relative overflow-hidden border border-emerald-500/30">
+          <div className="relative z-10 flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
+            <div className="space-y-2.5 max-w-2xl">
+              <div className="inline-flex items-center gap-1.5 bg-amber-400 text-slate-950 px-2.5 py-0.5 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-black uppercase tracking-wider shadow-sm">
+                <Star size={13} className="fill-slate-950" />
+                Top AI Recommendation (Short Queue + High Bar)
               </div>
 
               <div>
-                <h2 className="text-2xl sm:text-3xl font-black tracking-tight">{bestOverall.name}</h2>
+                <h2 className="text-xl sm:text-3xl font-black tracking-tight leading-tight">{bestOverall.name}</h2>
                 <p className="text-emerald-100 text-xs sm:text-sm mt-0.5">
-                  {bestOverall.operator} • {bestOverall.address}, {bestOverall.city}
+                  {bestOverall.operator} • {bestOverall.city}, {bestOverall.state}
                 </p>
               </div>
 
-              <div className="p-3 bg-white/10 backdrop-blur-md rounded-2xl border border-white/20 text-xs sm:text-sm leading-relaxed text-emerald-50">
+              <p className="p-2.5 bg-white/10 backdrop-blur-md rounded-xl border border-white/20 text-xs sm:text-sm leading-relaxed text-emerald-50">
                 {bestOverall.recommendationReason}
-              </div>
+              </p>
 
-              {/* 3 Metric Badges: Less Queue + High Pressure + Low Detour */}
-              <div className="grid grid-cols-3 gap-3 pt-1">
-                <div className="bg-black/25 rounded-2xl p-3 border border-white/10">
-                  <div className="text-[10px] text-emerald-200 uppercase font-bold flex items-center gap-1">
-                    <Users size={12} /> कतार (Queue)
+              {/* 3 Metrics: Queue + Pressure + Detour */}
+              <div className="grid grid-cols-3 gap-2 sm:gap-3 pt-1">
+                <div className="bg-black/30 rounded-xl p-2.5 border border-white/10 text-center sm:text-left">
+                  <div className="text-[10px] text-emerald-200 uppercase font-bold flex items-center justify-center sm:justify-start gap-1">
+                    <Users size={11} /> Queue
                   </div>
-                  <div className="text-lg sm:text-xl font-black text-amber-300">
-                    {bestOverall.vehiclesWaiting ?? 0} गाड़ियाँ
+                  <div className="text-base sm:text-xl font-black text-amber-300">
+                    {bestOverall.vehiclesWaiting ?? 0} Cars
                   </div>
-                  <div className="text-[10px] text-emerald-100">
-                    ~{bestOverall.estimatedWaitMinutes ?? 2} मिनट वेटिंग
+                  <div className="text-[10px] text-emerald-100 truncate">
+                    ~{bestOverall.estimatedWaitMinutes ?? 2} min wait
                   </div>
                 </div>
 
-                <div className="bg-black/25 rounded-2xl p-3 border border-white/10">
-                  <div className="text-[10px] text-emerald-200 uppercase font-bold flex items-center gap-1">
-                    <Zap size={12} /> प्रेशर (Pressure)
+                <div className="bg-black/30 rounded-xl p-2.5 border border-white/10 text-center sm:text-left">
+                  <div className="text-[10px] text-emerald-200 uppercase font-bold flex items-center justify-center sm:justify-start gap-1">
+                    <Zap size={11} /> Pressure
                   </div>
-                  <div className="text-lg sm:text-xl font-black text-emerald-300">
-                    {bestOverall.currentPressureBar ? `${Math.round(bestOverall.currentPressureBar)} Bar` : '218 Bar'}
+                  <div className="text-base sm:text-xl font-black text-emerald-300">
+                    {bestOverall.currentPressureBar ? `${Math.round(bestOverall.currentPressureBar)} Bar` : '216 Bar'}
                   </div>
-                  <div className="text-[10px] text-emerald-100">सुपर फास्ट गैस भराई</div>
+                  <div className="text-[10px] text-emerald-100">Super Fast Fill</div>
                 </div>
 
-                <div className="bg-black/25 rounded-2xl p-3 border border-white/10">
-                  <div className="text-[10px] text-emerald-200 uppercase font-bold flex items-center gap-1">
-                    <Navigation size={12} /> डिटूर (Detour)
+                <div className="bg-black/30 rounded-xl p-2.5 border border-white/10 text-center sm:text-left">
+                  <div className="text-[10px] text-emerald-200 uppercase font-bold flex items-center justify-center sm:justify-start gap-1">
+                    <Navigation size={11} /> Detour
                   </div>
-                  <div className="text-lg sm:text-xl font-black text-white">
+                  <div className="text-base sm:text-xl font-black text-white">
                     +{bestOverall.extraDetourKm ?? 0.4} km
                   </div>
-                  <div className="text-[10px] text-emerald-100">
-                    ~{bestOverall.estimatedDetourMinutes ?? 1} मिनट अतिरिक्त
+                  <div className="text-[10px] text-emerald-100 truncate">
+                    ~{bestOverall.estimatedDetourMinutes ?? 1} min detour
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Action buttons on hero card */}
-            <div className="flex flex-col sm:flex-row lg:flex-col gap-3 w-full lg:w-64 flex-shrink-0">
+            {/* Action Buttons */}
+            <div className="flex flex-col sm:flex-row lg:flex-col gap-2.5 w-full lg:w-60 flex-shrink-0">
               <a
                 href={`https://www.google.com/maps/dir/?api=1&destination=${bestOverall.latitude},${bestOverall.longitude}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full py-3.5 px-4 rounded-2xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider text-center shadow-lg transition flex items-center justify-center gap-2"
+                className="w-full py-3 px-4 rounded-xl bg-amber-400 hover:bg-amber-300 text-slate-950 font-black text-xs uppercase tracking-wider text-center shadow-md transition flex items-center justify-center gap-1.5"
               >
-                <Navigation size={16} /> Google Maps नेविगेशन शुरू करें
+                <Navigation size={15} /> Start Navigation in Maps ↗
               </a>
 
               <Link
                 to={`/stations/${bestOverall.id}`}
-                className="w-full py-3 px-4 rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs text-center border border-white/20 transition flex items-center justify-center gap-1.5"
+                className="w-full py-2.5 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs text-center border border-white/20 transition flex items-center justify-center gap-1.5"
               >
-                <span>लाइव टेलीमेट्री व इतिहास</span> ↗
+                <span>View Live Telemetry</span> ↗
               </Link>
-
-              <button
-                type="button"
-                onClick={() => setReportModalStation(bestOverall)}
-                className="w-full py-2.5 px-4 rounded-2xl bg-black/30 hover:bg-black/50 text-emerald-200 font-semibold text-xs text-center border border-emerald-400/30 transition flex items-center justify-center gap-1.5"
-              >
-                <span>पंप स्थिति रिपोर्ट करें (Report Live)</span>
-              </button>
             </div>
           </div>
         </div>
       )}
 
-      {/* Main Grid: Interactive Map + Station Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left: Interactive Map */}
-        <div className="lg:col-span-7 bg-white rounded-3xl p-4 shadow-sm border border-slate-200 space-y-3">
-          <div className="flex items-center justify-between px-2">
+      {/* Mobile Tab Switcher: Map vs List */}
+      <div className="flex lg:hidden bg-white p-1 rounded-2xl border border-slate-200 shadow-sm text-xs font-bold">
+        <button
+          type="button"
+          onClick={() => setMobileView('map')}
+          className={`flex-1 py-2 rounded-xl flex items-center justify-center gap-1.5 transition ${
+            mobileView === 'map' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600'
+          }`}
+        >
+          <MapIcon size={14} /> <span>Interactive Map</span>
+        </button>
+        <button
+          type="button"
+          onClick={() => setMobileView('list')}
+          className={`flex-1 py-2 rounded-xl flex items-center justify-center gap-1.5 transition ${
+            mobileView === 'list' ? 'bg-emerald-600 text-white shadow-sm' : 'text-slate-600'
+          }`}
+        >
+          <List size={14} /> <span>Stations List ({stations.length})</span>
+        </button>
+      </div>
+
+      {/* Main Responsive Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
+        {/* Map Column */}
+        <div className={`lg:col-span-7 bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-sm border border-slate-200 space-y-2.5 ${mobileView === 'list' ? 'hidden lg:block' : 'block'}`}>
+          <div className="flex items-center justify-between px-1">
             <div>
-              <h3 className="font-bold text-sm text-slate-900">मार्ग दृश्य (Route & Stations on Google Map)</h3>
-              <p className="text-xs text-slate-400">
-                रूट के सभी स्टेशन दिखाए गए हैं। किसी भी स्टेशन पर क्लिक करके जानकारी देखें।
-              </p>
+              <h3 className="font-bold text-xs sm:text-sm text-slate-900">Live Highway Map View</h3>
+              <p className="text-[11px] text-slate-400">Route and stations with real-time pressure & queue badges</p>
             </div>
           </div>
 
@@ -207,22 +213,22 @@ export default function RouteResults() {
             destPoint={destCoord}
             selectedStationId={selectedStation?.id}
             onStationClick={(st) => setSelectedStation(st)}
-            height="560px"
+            height="460px"
           />
         </div>
 
-        {/* Right: Station Ranked Cards */}
-        <div className="lg:col-span-5 space-y-4">
+        {/* Stations List Column */}
+        <div className={`lg:col-span-5 space-y-3.5 ${mobileView === 'map' ? 'hidden lg:block' : 'block'}`}>
           <div className="flex items-center justify-between px-1">
-            <h3 className="font-extrabold text-sm text-slate-800">
-              मार्ग के सभी CNG स्टेशन ({stations.length})
+            <h3 className="font-extrabold text-xs sm:text-sm text-slate-800">
+              Stations Along Route ({stations.length})
             </h3>
-            <span className="text-xs text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
-              कम गाड़ी + ज्यादा प्रेशर के क्रम में
+            <span className="text-[10px] sm:text-xs text-emerald-700 font-bold bg-emerald-50 px-2 py-0.5 rounded-lg border border-emerald-200">
+              Sorted by Convenience
             </span>
           </div>
 
-          <div className="space-y-3 max-h-[600px] overflow-y-auto pr-1">
+          <div className="space-y-3 max-h-[580px] overflow-y-auto pr-0.5">
             {stations.map((st, index) => {
               const isBest = st.recommendationCategory === 'BEST_OVERALL';
               const isSelected = selectedStation?.id === st.id;
@@ -233,86 +239,86 @@ export default function RouteResults() {
                 <div
                   key={st.id}
                   onClick={() => setSelectedStation(st)}
-                  className={`rounded-2xl p-4 border transition cursor-pointer relative ${
+                  className={`rounded-2xl p-3.5 sm:p-4 border transition cursor-pointer relative ${
                     isBest
-                      ? 'border-emerald-500 bg-emerald-50/50 ring-2 ring-emerald-500/20'
+                      ? 'border-emerald-500 bg-emerald-50/60 ring-2 ring-emerald-500/20'
                       : isSelected
                       ? 'border-slate-800 bg-slate-50'
                       : 'border-slate-200 bg-white hover:border-slate-300'
                   }`}
                 >
                   {isBest && (
-                    <span className="absolute -top-2.5 right-4 bg-amber-400 text-slate-950 text-[10px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1">
-                      <Star size={10} className="fill-slate-950" /> सर्वोत्तम (Best)
+                    <span className="absolute -top-2.5 right-3 bg-amber-400 text-slate-950 text-[9.5px] font-black px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm flex items-center gap-1">
+                      <Star size={10} className="fill-slate-950" /> Best Choice
                     </span>
                   )}
 
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs font-black text-slate-400">#{index + 1}</span>
-                        <h4 className="font-bold text-sm text-slate-900 truncate">{st.name}</h4>
+                      <div className="flex items-center gap-1.5">
+                        <span className="text-[11px] font-black text-slate-400">#{index + 1}</span>
+                        <h4 className="font-bold text-xs sm:text-sm text-slate-900 truncate">{st.name}</h4>
                       </div>
-                      <p className="text-xs text-slate-500 mt-0.5">
+                      <p className="text-[11px] text-slate-500 mt-0.5 truncate">
                         {st.operator || 'CNG'} • {st.city}
                       </p>
                     </div>
                   </div>
 
-                  {/* Metrics bar */}
+                  {/* 3 Metric Mini Cards */}
                   <div className="grid grid-cols-3 gap-2 bg-slate-50 rounded-xl p-2.5 border border-slate-200/80 mb-3 text-center">
                     <div>
-                      <div className="text-[10px] uppercase font-bold text-slate-400">कतार (Queue)</div>
-                      <div className="text-sm font-extrabold text-slate-800">
-                        {st.vehiclesWaiting ?? 0} गाड़ियाँ
+                      <div className="text-[9px] uppercase font-bold text-slate-400">Queue</div>
+                      <div className="text-xs sm:text-sm font-extrabold text-slate-800">
+                        {st.vehiclesWaiting ?? 0} Cars
                       </div>
-                      <div className="text-[10px] text-slate-500">
+                      <div className="text-[9px] text-slate-500">
                         ~{st.estimatedWaitMinutes ?? 2} min
                       </div>
                     </div>
 
                     <div>
-                      <div className="text-[10px] uppercase font-bold text-slate-400">प्रेशर (Pressure)</div>
+                      <div className="text-[9px] uppercase font-bold text-slate-400">Pressure</div>
                       <div
-                        className={`text-sm font-extrabold ${
+                        className={`text-xs sm:text-sm font-extrabold ${
                           isHighPressure ? 'text-emerald-600' : 'text-amber-600'
                         }`}
                       >
                         {pressure ? `${pressure} Bar` : 'N/A'}
                       </div>
-                      <div className="text-[10px] text-slate-500">
-                        {isHighPressure ? 'तेज़ भराई' : 'मध्यम'}
+                      <div className="text-[9px] text-slate-500">
+                        {isHighPressure ? 'Fast Fill' : 'Moderate'}
                       </div>
                     </div>
 
                     <div>
-                      <div className="text-[10px] uppercase font-bold text-slate-400">डिटूर (Detour)</div>
-                      <div className="text-sm font-extrabold text-slate-800">
+                      <div className="text-[9px] uppercase font-bold text-slate-400">Detour</div>
+                      <div className="text-xs sm:text-sm font-extrabold text-slate-800">
                         +{st.extraDetourKm != null ? `${st.extraDetourKm} km` : '0.4 km'}
                       </div>
-                      <div className="text-[10px] text-slate-500">
+                      <div className="text-[9px] text-slate-500">
                         ~{st.estimatedDetourMinutes ?? 1} min
                       </div>
                     </div>
                   </div>
 
-                  {/* Card Actions */}
+                  {/* Action Buttons */}
                   <div className="flex items-center gap-2">
                     <a
                       href={`https://www.google.com/maps/dir/?api=1&destination=${st.latitude},${st.longitude}`}
                       target="_blank"
                       rel="noreferrer"
                       onClick={(e) => e.stopPropagation()}
-                      className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs text-center transition flex items-center justify-center gap-1"
+                      className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs text-center transition flex items-center justify-center gap-1 shadow-sm"
                     >
-                      <Navigation size={13} /> दिशा-निर्देश (Directions)
+                      <Navigation size={12} /> Directions ↗
                     </a>
                     <Link
                       to={`/stations/${st.id}`}
                       onClick={(e) => e.stopPropagation()}
                       className="py-2 px-3 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-700 font-bold text-xs transition"
                     >
-                      विवरण (Details)
+                      Details
                     </Link>
                     <button
                       type="button"
@@ -320,8 +326,8 @@ export default function RouteResults() {
                         e.stopPropagation();
                         setReportModalStation(st);
                       }}
-                      title="Update Live Telemetry"
-                      className="p-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition text-xs font-semibold"
+                      title="Update Live Status"
+                      className="p-2 rounded-xl border border-slate-200 hover:bg-slate-100 text-slate-600 transition text-xs"
                     >
                       📝
                     </button>
@@ -333,7 +339,6 @@ export default function RouteResults() {
         </div>
       </div>
 
-      {/* Crowdsourced Report Modal */}
       <ReportStatusModal
         isOpen={!!reportModalStation}
         station={reportModalStation}

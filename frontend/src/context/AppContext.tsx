@@ -10,11 +10,9 @@ import React, {
 import { stationApi } from '../services/api';
 import type { AppSettings, StationSummaryDto, RouteSearchRequest, RouteSearchResultDto } from '../types/index';
 import { DEMO_STATIONS } from '../data/demoStations';
+import { CORRIDORS } from '../data/corridors';
 import { getStoredGoogleApiKey, storeGoogleApiKey } from '../services/googleMapsLoader';
 
-// ---------------------------------------------------------------------------
-// Constants
-// ---------------------------------------------------------------------------
 const SETTINGS_KEY = 'cng-navigator-settings';
 const MAX_SELECTION = 3;
 
@@ -29,9 +27,6 @@ const DEFAULT_SETTINGS: AppSettings = {
   googleMapsApiKey: getStoredGoogleApiKey(),
 };
 
-// ---------------------------------------------------------------------------
-// Context shape
-// ---------------------------------------------------------------------------
 export interface AppContextValue {
   stations: StationSummaryDto[];
   isLoading: boolean;
@@ -56,9 +51,7 @@ function loadSettings(): AppSettings {
     if (raw) {
       return { ...DEFAULT_SETTINGS, ...(JSON.parse(raw) as Partial<AppSettings>) };
     }
-  } catch {
-    // ignore
-  }
+  } catch {}
   return DEFAULT_SETTINGS;
 }
 
@@ -68,14 +61,11 @@ function saveSettings(settings: AppSettings): void {
     if (settings.googleMapsApiKey !== undefined) {
       storeGoogleApiKey(settings.googleMapsApiKey);
     }
-  } catch {
-    // ignore
-  }
+  } catch {}
 }
 
-// Distance helper
 function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
-  const R = 6371; // km
+  const R = 6371;
   const dLat = ((lat2 - lat1) * Math.PI) / 180;
   const dLon = ((lon2 - lon1) * Math.PI) / 180;
   const a =
@@ -104,7 +94,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
-  // Fetch stations from backend or fallback to demo stations
   const fetchStations = useCallback(async () => {
     setIsLoading(true);
     setError(null);
@@ -114,8 +103,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         setStations(data);
       }
     } catch {
-      // Backend unavailable; demo stations already loaded
-      console.info('[AppContext] Connected to local demo stations store.');
+      // Offline / standalone fallback
     } finally {
       if (mountedRef.current) setIsLoading(false);
     }
@@ -125,24 +113,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     void fetchStations();
   }, [fetchStations]);
 
-  // Live simulation tick: every 10 seconds, slightly simulate pump arrivals and compressor cycles
+  // Live simulation tick
   useEffect(() => {
     if (!settings.simulationEnabled) return;
 
     const timer = setInterval(() => {
       setStations((prevStations) =>
         prevStations.map((s) => {
-          // 40% chance this station receives a minor update
           if (Math.random() < 0.4) {
-            // Queue variation (+1 or -1 car)
             const deltaQueue = Math.random() > 0.5 ? 1 : -1;
             const newQueue = Math.max(0, Math.min(15, (s.vehiclesWaiting ?? 2) + deltaQueue));
             const newWait = Math.round(newQueue * 2);
 
-            // Pressure variation (-3 to +4 Bar based on compressor cycles)
-            const deltaPressure = Math.floor(Math.random() * 8) - 3;
+            const deltaPressure = Math.floor(Math.random() * 6) - 2;
             const currentP = s.currentPressureBar ?? 200;
-            const newPressure = Math.max(160, Math.min(225, currentP + deltaPressure));
+            const newPressure = Math.max(165, Math.min(225, currentP + deltaPressure));
 
             return {
               ...s,
@@ -169,7 +154,6 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  // Crowdsourced live update
   const updateStationTelemetry = useCallback(
     (stationId: number, vehicles: number, pressure: number) => {
       setStations((prev) =>
@@ -194,40 +178,57 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   );
 
   // Smart Route Recommendation Algorithm
-  // Find station along route with fewest vehicles (कम गाड़ी) and highest pressure (ज्यादा प्रेशर)
   const planSmartRoute = useCallback(
     async (req: RouteSearchRequest): Promise<RouteSearchResultDto> => {
-      // Try backend first
       try {
         const backendRes = await stationApi.searchRoute(req);
         if (backendRes && backendRes.stations && backendRes.stations.length > 0) {
           setActiveRouteResult(backendRes);
           return backendRes;
         }
-      } catch {
-        // Fallback to local intelligent recommendation engine
+      } catch {}
+
+      // Check if this matches a known corridor with realistic highway curves (both forward & reverse)
+      const forwardCorridor = CORRIDORS.find(
+        (c) =>
+          Math.abs(c.startLat - req.startLat) < 0.35 &&
+          Math.abs(c.destLat - req.destLat) < 0.35
+      );
+      const reverseCorridor = !forwardCorridor
+        ? CORRIDORS.find(
+            (c) =>
+              Math.abs(c.destLat - req.startLat) < 0.35 &&
+              Math.abs(c.startLat - req.destLat) < 0.35
+          )
+        : null;
+
+      let routeGeometry: [number, number][] = [];
+      let totalDist = 0;
+
+      if (forwardCorridor && forwardCorridor.waypoints && forwardCorridor.waypoints.length > 0) {
+        routeGeometry = forwardCorridor.waypoints;
+        totalDist = forwardCorridor.distanceKm || Math.round(haversineDistance(req.startLat, req.startLng, req.destLat, req.destLng) * 1.15);
+      } else if (reverseCorridor && reverseCorridor.waypoints && reverseCorridor.waypoints.length > 0) {
+        routeGeometry = [...reverseCorridor.waypoints].reverse();
+        totalDist = reverseCorridor.distanceKm || Math.round(haversineDistance(req.startLat, req.startLng, req.destLat, req.destLng) * 1.15);
+      } else {
+        totalDist = Math.round(haversineDistance(req.startLat, req.startLng, req.destLat, req.destLng) * 1.25);
+        const numPoints = 25;
+        for (let i = 0; i <= numPoints; i++) {
+          const t = i / numPoints;
+          const lat = req.startLat + (req.destLat - req.startLat) * t;
+          const lng = req.startLng + (req.destLng - req.startLng) * t;
+          routeGeometry.push([lat, lng]);
+        }
       }
 
-      const totalDist = Math.round(
-        haversineDistance(req.startLat, req.startLng, req.destLat, req.destLng) * 1.25
-      );
       const totalDur = Math.round((totalDist / 65) * 60);
 
-      // Interpolate route points
-      const numPoints = 25;
-      const routeGeometry: [number, number][] = [];
-      for (let i = 0; i <= numPoints; i++) {
-        const t = i / numPoints;
-        const lat = req.startLat + (req.destLat - req.startLat) * t;
-        const lng = req.startLng + (req.destLng - req.startLng) * t;
-        routeGeometry.push([lat, lng]);
-      }
-
-      // Filter stations within bounding box + margin
-      const minLat = Math.min(req.startLat, req.destLat) - 0.8;
-      const maxLat = Math.max(req.startLat, req.destLat) + 0.8;
-      const minLng = Math.min(req.startLng, req.destLng) - 0.8;
-      const maxLng = Math.max(req.startLng, req.destLng) + 0.8;
+      // Find stations within corridor bounding box
+      const minLat = Math.min(req.startLat, req.destLat) - 0.9;
+      const maxLat = Math.max(req.startLat, req.destLat) + 0.9;
+      const minLng = Math.min(req.startLng, req.destLng) - 0.9;
+      const maxLng = Math.max(req.startLng, req.destLng) + 0.9;
 
       let candidateStations = stations.filter(
         (s) =>
@@ -237,13 +238,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           s.longitude <= maxLng
       );
 
-      // If candidates are empty (e.g. searched arbitrary coords), use top demo stations with simulated detour
       if (candidateStations.length === 0) {
         candidateStations = stations.slice(0, 4);
       }
 
-      // Compute detour and smart scores for each candidate station
-      const scoredStations = candidateStations.map((s, idx) => {
+      const scoredStations = candidateStations.map((s) => {
         const distFromStart = Math.round(
           haversineDistance(req.startLat, req.startLng, s.latitude, s.longitude)
         );
@@ -258,16 +257,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         const pressure = s.currentPressureBar ?? 190;
         const queue = s.vehiclesWaiting ?? 4;
 
-        // 1. Pressure Score (0 to 100): Higher pressure gives higher score
+        // 1. Pressure Score (40%)
         const pressureScore = Math.min(100, Math.max(20, Math.round(((pressure - 140) / 80) * 100)));
 
-        // 2. Queue Score (0 to 100): Fewer vehicles gives higher score
+        // 2. Queue Score (40%)
         const queueScore = Math.max(10, Math.round(100 - queue * 7));
 
-        // 3. Detour Score (0 to 100): Less detour gives higher score
+        // 3. Detour Score (20%)
         const detourScore = Math.max(10, Math.round(100 - detourKm * 15));
 
-        // Total Smart Score: 40% Pressure + 40% Queue + 20% Detour
         const totalScore = Math.round(pressureScore * 0.4 + queueScore * 0.4 + detourScore * 0.2);
 
         return {
@@ -285,18 +283,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         };
       });
 
-      // Sort by highest score first
       scoredStations.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
 
-      // Designate the Best Station (कम गाड़ी और ज्यादा प्रेशर)
       if (scoredStations.length > 0) {
         const best = scoredStations[0];
         best.recommendationCategory = 'BEST_OVERALL';
-        best.convenienceBadge = 'कम गाड़ी + ज्यादा प्रेशर';
-        best.recommendationReason = `🌟 सर्वोत्तम सुझाव: यहाँ कम गाड़ी (सिर्फ ${best.vehiclesWaiting ?? 0} गाड़ियाँ) और ज्यादा प्रेशर (${Math.round(best.currentPressureBar ?? 200)} Bar) है! न्यूनतम डिटूर (+${best.extraDetourKm} km) के साथ सबसे तेज़ गैस भराई।`;
+        best.convenienceBadge = 'Short Queue + Super Pressure';
+        best.recommendationReason = `⭐ Top Recommendation: Shortest queue (only ${best.vehiclesWaiting ?? 0} vehicles) and highest pressure (${Math.round(best.currentPressureBar ?? 200)} Bar)! Minimal detour (+${best.extraDetourKm} km) with fastest gas fill.`;
       }
 
-      // Designate Shortest Queue and High Pressure
       const sortedByQueue = [...scoredStations].sort((a, b) => (a.vehiclesWaiting ?? 0) - (b.vehiclesWaiting ?? 0));
       if (sortedByQueue.length > 1 && sortedByQueue[0].id !== scoredStations[0].id) {
         sortedByQueue[0].recommendationCategory = 'SHORTEST_QUEUE';
@@ -322,7 +317,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         })),
         isDemoRoute: true,
         routeSource: 'Google Maps Directions Engine',
-        message: 'कम गाड़ी व ज्यादा प्रेशर के आधार पर सर्वोत्तम स्टेशन चुना गया।',
+        message: 'Optimal station selected based on low queue and high compressor pressure.',
       };
 
       setActiveRouteResult(result);

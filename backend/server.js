@@ -98,9 +98,9 @@ let STATIONS = [
     isQueueLive: true,
     isPressureLive: true,
     recommendationCategory: 'BEST_OVERALL',
-    recommendationReason: '🌟 सर्वोत्तम सुझाव: कम गाड़ी (सिर्फ 2 गाड़ियाँ) और सर्वाधिक 218 Bar प्रेशर (फुल टैंक तेज़ गैस भराई)!',
+    recommendationReason: '🌟 Top Recommendation: Short queue (only 2 vehicles) and maximum 218 Bar pressure for full-tank fast filling!',
     score: 98,
-    convenienceBadge: 'कम गाड़ी + सुपर प्रेशर',
+    convenienceBadge: 'Short Queue + Super Pressure',
   },
   {
     id: 9004,
@@ -209,9 +209,9 @@ let STATIONS = [
     maxSafeLimitBar: 245,
     sensorStatus: 'LIVE',
     recommendationCategory: 'BEST_OVERALL',
-    recommendationReason: '🌟 सर्वोत्तम सुझाव: सिर्फ 1 गाड़ी कतार में और 222 Bar सुपर प्रेशर! एक्सप्रेसवे पर सीधे स्थित!',
+    recommendationReason: '🌟 Top Recommendation: Only 1 vehicle in queue and 222 Bar maximum pressure! Located directly on expressway.',
     score: 99,
-    convenienceBadge: 'कम गाड़ी + सर्वाधिक प्रेशर',
+    convenienceBadge: 'Shortest Queue + Highest Pressure',
   },
   {
     id: 9008,
@@ -237,9 +237,79 @@ let STATIONS = [
     maxSafeLimitBar: 240,
     sensorStatus: 'LIVE',
     recommendationCategory: 'BEST_OVERALL',
-    recommendationReason: '🌟 सर्वोत्तम सुझाव: कम गाड़ी (सिर्फ 2 गाड़ियाँ) और 216 Bar हाई प्रेशर! तेज भराई और न्यूनतम डिटूर।',
+    recommendationReason: '🌟 Top Recommendation: Short queue (only 2 vehicles) and 216 Bar high pressure! Fast filling and minimal detour.',
     score: 97,
-    convenienceBadge: 'कम गाड़ी + सुपर प्रेशर',
+    convenienceBadge: 'Short Queue + Super Pressure',
+  },
+];
+
+const HIGHWAY_CORRIDORS = [
+  {
+    startLat: 23.2599,
+    startLng: 77.4126,
+    destLat: 22.7196,
+    destLng: 75.8577,
+    waypoints: [
+      [23.2599, 77.4126],
+      [23.235, 77.34],
+      [23.1985, 77.0855],
+      [23.085, 76.72],
+      [22.98, 76.35],
+      [22.9654, 76.0592],
+      [22.84, 75.92],
+      [22.7196, 75.8577],
+    ],
+  },
+  {
+    startLat: 28.6315,
+    startLng: 77.2167,
+    destLat: 27.1751,
+    destLng: 78.0421,
+    waypoints: [
+      [28.6315, 77.2167],
+      [28.5355, 77.2882],
+      [28.4682, 77.5115],
+      [28.3245, 77.5342],
+      [28.142, 77.562],
+      [27.852, 77.623],
+      [27.521, 77.671],
+      [27.31, 77.85],
+      [27.1751, 78.0421],
+    ],
+  },
+  {
+    startLat: 19.0176,
+    startLng: 72.8562,
+    destLat: 18.5308,
+    destLng: 73.8474,
+    waypoints: [
+      [19.0176, 72.8562],
+      [19.0522, 72.8994],
+      [19.025, 73.045],
+      [18.98, 73.12],
+      [18.8255, 73.2842],
+      [18.75, 73.41],
+      [18.7188, 73.6622],
+      [18.59, 73.76],
+      [18.5308, 73.8474],
+    ],
+  },
+  {
+    startLat: 28.5921,
+    startLng: 77.1611,
+    destLat: 26.9239,
+    destLng: 75.8267,
+    waypoints: [
+      [28.5921, 77.1611],
+      [28.4595, 77.0266],
+      [28.35, 76.92],
+      [28.2045, 76.7865],
+      [28.01, 76.55],
+      [27.75, 76.25],
+      [27.3892, 75.9582],
+      [27.12, 75.88],
+      [26.9239, 75.8267],
+    ],
   },
 ];
 
@@ -342,14 +412,34 @@ const server = http.createServer((req, res) => {
         const totalDur = Math.round((totalDist / 65) * 60);
 
         // Generate geometry points
-        const numPoints = 25;
-        const routeGeometry = [];
-        for (let i = 0; i <= numPoints; i++) {
-          const t = i / numPoints;
-          routeGeometry.push([
-            startLat + (destLat - startLat) * t,
-            startLng + (destLng - startLng) * t,
-          ]);
+        // Find matching highway corridor for realistic road waypoints (forward or reverse)
+        const forwardCorridor = HIGHWAY_CORRIDORS.find(
+          (c) =>
+            Math.abs(c.startLat - startLat) < 0.35 &&
+            Math.abs(c.destLat - destLat) < 0.35
+        );
+        const reverseCorridor = !forwardCorridor
+          ? HIGHWAY_CORRIDORS.find(
+              (c) =>
+                Math.abs(c.destLat - startLat) < 0.35 &&
+                Math.abs(c.startLat - destLat) < 0.35
+            )
+          : null;
+
+        let routeGeometry = [];
+        if (forwardCorridor) {
+          routeGeometry = forwardCorridor.waypoints;
+        } else if (reverseCorridor) {
+          routeGeometry = [...reverseCorridor.waypoints].reverse();
+        } else {
+          const numPoints = 25;
+          for (let i = 0; i <= numPoints; i++) {
+            const t = i / numPoints;
+            routeGeometry.push([
+              startLat + (destLat - startLat) * t,
+              startLng + (destLng - startLng) * t,
+            ]);
+          }
         }
 
         // Score stations for this route
@@ -388,11 +478,11 @@ const server = http.createServer((req, res) => {
         if (filtered.length === 0) filtered = scored.slice(0, 4);
         filtered.sort((a, b) => b.score - a.score);
 
-        // Crown Best Overall (कम गाड़ी और ज्यादा प्रेशर)
+        // Crown Best Overall (minimal queue and highest pressure)
         if (filtered.length > 0) {
           filtered[0].recommendationCategory = 'BEST_OVERALL';
-          filtered[0].convenienceBadge = 'कम गाड़ी + ज्यादा प्रेशर';
-          filtered[0].recommendationReason = `🌟 सर्वोत्तम सुझाव: यहाँ कम गाड़ी (सिर्फ ${filtered[0].vehiclesWaiting} गाड़ियाँ) और ज्यादा प्रेशर (${Math.round(filtered[0].currentPressureBar)} Bar) है! न्यूनतम डिटूर (+${filtered[0].extraDetourKm} km) के साथ सबसे तेज़ गैस भराई।`;
+          filtered[0].convenienceBadge = 'Short Queue + Super Pressure';
+          filtered[0].recommendationReason = `🌟 Top Recommendation: Short queue (${filtered[0].vehiclesWaiting} vehicles) and high pressure (${Math.round(filtered[0].currentPressureBar)} Bar)! Minimal detour (+${filtered[0].extraDetourKm} km) with fastest gas fill.`;
         }
 
         const responseData = {
@@ -405,7 +495,7 @@ const server = http.createServer((req, res) => {
           highestPressure: [...filtered].sort((a, b) => b.currentPressureBar - a.currentPressureBar)[0] || null,
           isDemoRoute: true,
           routeSource: 'Google Maps Directions Engine',
-          message: 'कम गाड़ी व ज्यादा प्रेशर के आधार पर सर्वोत्तम स्टेशन चुना गया।',
+          message: 'Optimal CNG station recommended based on minimal queue and maximum gas pressure.',
         };
 
         return sendJson(res, 200, responseData);

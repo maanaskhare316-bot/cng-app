@@ -1,6 +1,10 @@
 import type { Corridor } from '../types';
 
-export const CORRIDORS: Corridor[] = [
+export interface HighwayCorridor extends Corridor {
+  waypoints?: [number, number][];
+}
+
+export const CORRIDORS: HighwayCorridor[] = [
   {
     id: 'delhi-agra',
     label: 'Delhi ⇄ Agra (Yamuna Expressway)',
@@ -12,20 +16,18 @@ export const CORRIDORS: Corridor[] = [
     destLat: 27.1751,
     destLng: 78.0421,
     distanceKm: 210,
-    description: 'Yamuna Expressway 6-lane highway with high-speed CNG stations',
-  },
-  {
-    id: 'mumbai-pune',
-    label: 'Mumbai ⇄ Pune (Expressway)',
-    emoji: '⛰️',
-    startAddress: 'Dadar TT Circle, Mumbai',
-    startLat: 19.0176,
-    startLng: 72.8562,
-    destAddress: 'Shivajinagar, Pune, Maharashtra',
-    destLat: 18.5308,
-    destLng: 73.8474,
-    distanceKm: 155,
-    description: 'Yashwantrao Chavan Expressway with Mega Food Mall CNG Oasis',
+    description: 'Yamuna Expressway 6-lane highway with high-pressure CNG stations',
+    waypoints: [
+      [28.6315, 77.2167],
+      [28.5355, 77.2882],
+      [28.4682, 77.5115],
+      [28.3245, 77.5342],
+      [28.142, 77.562],
+      [27.852, 77.623],
+      [27.521, 77.671],
+      [27.31, 77.85],
+      [27.1751, 78.0421],
+    ],
   },
   {
     id: 'bhopal-indore',
@@ -39,10 +41,44 @@ export const CORRIDORS: Corridor[] = [
     destLng: 75.8577,
     distanceKm: 195,
     description: 'Bhopal-Indore 4-lane Highway via Sehore Bypass & Dewas',
+    waypoints: [
+      [23.2599, 77.4126],
+      [23.235, 77.34],
+      [23.1985, 77.0855],
+      [23.085, 76.72],
+      [22.98, 76.35],
+      [22.9654, 76.0592],
+      [22.84, 75.92],
+      [22.7196, 75.8577],
+    ],
+  },
+  {
+    id: 'mumbai-pune',
+    label: 'Mumbai ⇄ Pune (Expressway)',
+    emoji: '⛰️',
+    startAddress: 'Dadar TT Circle, Mumbai',
+    startLat: 19.0176,
+    startLng: 72.8562,
+    destAddress: 'Shivajinagar, Pune, Maharashtra',
+    destLat: 18.5308,
+    destLng: 73.8474,
+    distanceKm: 155,
+    description: 'Yashwantrao Chavan Expressway with Mega Food Mall CNG Oasis',
+    waypoints: [
+      [19.0176, 72.8562],
+      [19.0522, 72.8994],
+      [19.025, 73.045],
+      [18.98, 73.12],
+      [18.8255, 73.2842],
+      [18.75, 73.41],
+      [18.7188, 73.6622],
+      [18.59, 73.76],
+      [18.5308, 73.8474],
+    ],
   },
   {
     id: 'delhi-jaipur',
-    label: 'Delhi ⇄ Jaipur (NH-48 Golden Triangle)',
+    label: 'Delhi ⇄ Jaipur (NH-48)',
     emoji: '🏰',
     startAddress: 'Dhaula Kuan, New Delhi',
     startLat: 28.5921,
@@ -52,6 +88,17 @@ export const CORRIDORS: Corridor[] = [
     destLng: 75.8267,
     distanceKm: 270,
     description: 'NH-48 Expressway via Dharuhera, Kotputli & Shahpura',
+    waypoints: [
+      [28.5921, 77.1611],
+      [28.4595, 77.0266],
+      [28.35, 76.92],
+      [28.2045, 76.7865],
+      [28.01, 76.55],
+      [27.75, 76.25],
+      [27.3892, 75.9582],
+      [27.12, 75.88],
+      [26.9239, 75.8267],
+    ],
   },
   {
     id: 'lucknow-kanpur',
@@ -65,7 +112,13 @@ export const CORRIDORS: Corridor[] = [
     destLng: 80.3507,
     distanceKm: 85,
     description: 'Fast commuter corridor between twin cities',
+    waypoints: [
+      [26.8322, 80.9205],
+      [26.75, 80.75],
+      [26.65, 80.55],
+      [26.4537, 80.3507],
+    ],
   },
 ];
 
-export const DEFAULT_CORRIDOR: Corridor = CORRIDORS[0];
+export const DEFAULT_CORRIDOR: HighwayCorridor = CORRIDORS[0];
