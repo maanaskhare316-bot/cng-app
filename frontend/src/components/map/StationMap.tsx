@@ -33,9 +33,9 @@ interface StationMapProps {
 
 function getPressureColor(bar: number | null | undefined): string {
   if (!bar) return '#64748b';
-  if (bar >= 195) return '#059669'; // Emerald
-  if (bar >= 175) return '#d97706'; // Amber
-  return '#dc2626';                 // Red
+  if (bar >= 195) return '#10b981'; // Emerald
+  if (bar >= 175) return '#f59e0b'; // Amber
+  return '#f43f5e';                 // Rose / Red
 }
 
 function LeafletAutoFit({
@@ -80,7 +80,6 @@ export const StationMap: React.FC<StationMapProps> = ({
       const saved = localStorage.getItem('cng_map_engine_preference');
       if (saved === 'leaflet' || saved === 'google') return saved;
     } catch {}
-    // If no Google API key is set, default to leaflet so map always renders smoothly, or google if key present
     const hasKey = !!getStoredGoogleApiKey();
     return hasKey ? 'google' : 'leaflet';
   });
@@ -102,11 +101,10 @@ export const StationMap: React.FC<StationMapProps> = ({
     }
   };
 
-  // Helper to create Leaflet DivIcon with pressure & queue telemetry
   const createStationDivIcon = (s: StationSummaryDto) => {
     const isBest = s.recommendationCategory === 'BEST_OVERALL';
     const pressureBar = s.currentPressureBar ? Math.round(s.currentPressureBar) : 200;
-    const color = isBest ? '#059669' : getPressureColor(s.currentPressureBar);
+    const color = isBest ? '#10b981' : getPressureColor(s.currentPressureBar);
     const waitMin = s.estimatedWaitMinutes ?? Math.max(1, Math.round((s.vehiclesWaiting ?? 0) * 2));
     const vehiclesCount = s.vehiclesWaiting ?? 0;
 
@@ -118,12 +116,12 @@ export const StationMap: React.FC<StationMapProps> = ({
         <svg width="76" height="52" viewBox="0 0 76 52">
           <defs>
             <filter id="leaf_sh_${s.id}" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000" flood-opacity="0.3"/>
+              <feDropShadow dx="0" dy="2" stdDeviation="2" flood-color="#000000" flood-opacity="0.5"/>
             </filter>
           </defs>
           <path d="M 6 0 H 70 A 6 6 0 0 1 76 6 V 36 A 6 6 0 0 1 70 42 H 44 L 38 50 L 32 42 H 6 A 6 6 0 0 1 0 36 V 6 A 6 6 0 0 1 6 0 Z" 
                 fill="${color}" stroke="#ffffff" stroke-width="1.8" filter="url(#leaf_sh_${s.id})"/>
-          <rect x="4" y="4" width="68" height="17" rx="4" fill="#ffffff" />
+          <rect x="4" y="4" width="68" height="17" rx="4" fill="#0b0f19" />
           <text x="38" y="16.5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="10" font-weight="900" text-anchor="middle" fill="${color}">${pressureText}</text>
           <text x="38" y="34.5" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, sans-serif" font-size="8.5" font-weight="800" text-anchor="middle" fill="#ffffff">${queueText}</text>
           ${isBest ? '<circle cx="70" cy="5" r="6.5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.2"/><text x="70" y="8" font-size="8" text-anchor="middle" fill="#000">★</text>' : ''}
@@ -141,16 +139,16 @@ export const StationMap: React.FC<StationMapProps> = ({
   };
 
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden shadow-sm">
+    <div className="relative w-full rounded-2xl overflow-hidden shadow-lg border border-slate-800 bg-[#0c1220]">
       {/* Sleek Dual-Engine Map Switcher on Top-Right */}
-      <div className="absolute top-2.5 right-2.5 z-[1000] flex items-center gap-1 bg-white/95 backdrop-blur-md p-1 rounded-xl shadow-md border border-slate-200 text-xs">
+      <div className="absolute top-2.5 right-2.5 z-[1000] flex items-center gap-1 bg-[#0f172a]/95 backdrop-blur-md p-1 rounded-xl shadow-lg border border-slate-700/80 text-xs">
         <button
           type="button"
           onClick={() => handleEngineChange('google')}
           className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition flex items-center gap-1 ${
             engine === 'google'
               ? 'bg-emerald-600 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800'
           }`}
           title="Google Maps JavaScript API (Directions & Traffic)"
         >
@@ -163,20 +161,20 @@ export const StationMap: React.FC<StationMapProps> = ({
           className={`px-2.5 py-1 rounded-lg font-bold text-[11px] transition flex items-center gap-1 ${
             engine === 'leaflet'
               ? 'bg-emerald-600 text-white shadow-sm'
-              : 'text-slate-600 hover:bg-slate-100'
+              : 'text-slate-400 hover:text-white hover:bg-slate-800'
           }`}
-          title="OpenStreetMap Engine"
+          title="OpenStreetMap Dark Engine"
         >
-          <span>OpenStreetMap</span>
+          <span>Dark OSM</span>
         </button>
 
         <button
           type="button"
           onClick={() => setIsKeyModalOpen(true)}
           title="Google Maps API Key Setup"
-          className="p-1 rounded-lg text-slate-500 hover:text-emerald-700 hover:bg-emerald-50 transition ml-0.5"
+          className="p-1 rounded-lg text-slate-400 hover:text-emerald-400 hover:bg-slate-800 transition ml-0.5"
         >
-          <Key size={14} className={hasApiKey ? 'text-emerald-600' : 'text-amber-500'} />
+          <Key size={14} className={hasApiKey ? 'text-emerald-400' : 'text-amber-400'} />
         </button>
       </div>
 
@@ -201,16 +199,17 @@ export const StationMap: React.FC<StationMapProps> = ({
             style={{ width: '100%', height: '100%' }}
             zoomControl={true}
           >
+            {/* CartoDB Dark Matter High-Tech Night Tiles */}
             <TileLayer
-              attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
-              url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+              attribution='&copy; <a href="https://carto.com/">CARTO</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>'
+              url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
             />
             <LeafletAutoFit stations={stations} startPoint={startPoint} destPoint={destPoint} />
 
             {routeGeometry && routeGeometry.length > 0 && (
               <Polyline
                 positions={routeGeometry}
-                pathOptions={{ color: '#059669', weight: 5, opacity: 0.85 }}
+                pathOptions={{ color: '#10b981', weight: 5, opacity: 0.9 }}
               />
             )}
 
@@ -220,7 +219,7 @@ export const StationMap: React.FC<StationMapProps> = ({
                 position={[startPoint.lat, startPoint.lng]}
                 icon={L.divIcon({
                   className: 'start-marker-pin',
-                  html: '<div style="background:#10b981; color:#fff; font-weight:bold; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid #fff; box-shadow:0 2px 4px rgba(0,0,0,0.3); font-size:11px;">S</div>',
+                  html: '<div style="background:#10b981; color:#fff; font-weight:bold; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.5); font-size:11px;">S</div>',
                   iconSize: [24, 24],
                   iconAnchor: [12, 12],
                 })}
@@ -237,7 +236,7 @@ export const StationMap: React.FC<StationMapProps> = ({
                 position={[destPoint.lat, destPoint.lng]}
                 icon={L.divIcon({
                   className: 'dest-marker-pin',
-                  html: '<div style="background:#ef4444; color:#fff; font-weight:bold; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid #fff; box-shadow:0 2px 4px rgba(0,0,0,0.3); font-size:11px;">D</div>',
+                  html: '<div style="background:#f43f5e; color:#fff; font-weight:bold; width:24px; height:24px; border-radius:50%; display:flex; align-items:center; justify-content:center; border:2px solid #fff; box-shadow:0 2px 6px rgba(0,0,0,0.5); font-size:11px;">D</div>',
                   iconSize: [24, 24],
                   iconAnchor: [12, 12],
                 })}
@@ -253,7 +252,7 @@ export const StationMap: React.FC<StationMapProps> = ({
               const isBest = s.recommendationCategory === 'BEST_OVERALL';
               const pressureBar = s.currentPressureBar ? Math.round(s.currentPressureBar) : 200;
               const waitMin = s.estimatedWaitMinutes ?? Math.max(1, Math.round((s.vehiclesWaiting ?? 0) * 2));
-              const color = isBest ? '#059669' : getPressureColor(s.currentPressureBar);
+              const color = isBest ? '#10b981' : getPressureColor(s.currentPressureBar);
 
               return (
                 <Marker
@@ -265,33 +264,33 @@ export const StationMap: React.FC<StationMapProps> = ({
                   }}
                 >
                   <Popup>
-                    <div className="p-1 max-w-[260px] text-xs font-sans">
+                    <div className="p-1 max-w-[260px] text-xs font-sans text-slate-100">
                       {isBest && (
-                        <div className="bg-emerald-100 text-emerald-800 text-[10.5px] font-bold px-2 py-0.5 rounded-full inline-block mb-1 border border-emerald-300">
+                        <div className="bg-emerald-950 text-emerald-300 text-[10.5px] font-bold px-2 py-0.5 rounded-full inline-block mb-1 border border-emerald-500/40">
                           ⭐ Best Highway Choice
                         </div>
                       )}
-                      <h4 className="font-bold text-sm text-slate-900 leading-tight mb-0.5">{s.name}</h4>
-                      <p className="text-[11px] text-slate-500 mb-2">
+                      <h4 className="font-bold text-sm text-white leading-tight mb-0.5">{s.name}</h4>
+                      <p className="text-[11px] text-slate-400 mb-2">
                         {s.operator || 'CNG'} • {s.city}
                       </p>
 
-                      <div className="grid grid-cols-2 gap-2 text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-200 mb-2.5">
+                      <div className="grid grid-cols-2 gap-2 text-xs bg-[#162032] p-2.5 rounded-xl border border-slate-800 mb-2.5">
                         <div>
                           <div className="text-[9.5px] text-slate-400 font-bold uppercase">Gas Pressure</div>
                           <div className="font-black text-base" style={{ color }}>
                             {pressureBar} Bar
                           </div>
-                          <div className="text-[9.5px] text-slate-500">
+                          <div className="text-[9.5px] text-slate-400">
                             {pressureBar >= 195 ? 'Fast Fill' : 'Moderate'}
                           </div>
                         </div>
                         <div>
                           <div className="text-[9.5px] text-slate-400 font-bold uppercase">Vehicles Queue</div>
-                          <div className="font-black text-base text-slate-800">
+                          <div className="font-black text-base text-slate-100">
                             {s.vehiclesWaiting ?? 0} Cars
                           </div>
-                          <div className="text-[9.5px] text-slate-500">~{waitMin} min wait</div>
+                          <div className="text-[9.5px] text-slate-400">~{waitMin} min wait</div>
                         </div>
                       </div>
 
@@ -300,13 +299,13 @@ export const StationMap: React.FC<StationMapProps> = ({
                           href={`https://www.google.com/maps/dir/?api=1&destination=${s.latitude},${s.longitude}`}
                           target="_blank"
                           rel="noreferrer"
-                          className="flex-1 text-center bg-emerald-600 text-white text-[11px] py-1.5 px-2 rounded-lg font-bold hover:bg-emerald-700 transition"
+                          className="flex-1 text-center bg-emerald-600 text-white text-[11px] py-1.5 px-2 rounded-lg font-bold hover:bg-emerald-500 transition"
                         >
-                          Navigate Google Maps ↗
+                          Navigate Maps ↗
                         </a>
                         <a
                           href={`/stations/${s.id}`}
-                          className="flex-1 text-center bg-slate-900 text-white text-[11px] py-1.5 px-2 rounded-lg font-bold hover:bg-slate-800 transition"
+                          className="flex-1 text-center bg-slate-800 text-slate-200 border border-slate-700 text-[11px] py-1.5 px-2 rounded-lg font-bold hover:bg-slate-700 transition"
                         >
                           Telemetry
                         </a>
@@ -319,18 +318,18 @@ export const StationMap: React.FC<StationMapProps> = ({
           </MapContainer>
 
           {/* Map Telemetry Legend on Bottom */}
-          <div className="absolute bottom-2.5 left-2.5 right-2.5 sm:right-auto z-[1000] bg-white/95 backdrop-blur-sm border border-slate-200 rounded-xl px-3 py-1.5 shadow-md text-[10px] sm:text-[11px] text-slate-700 flex items-center justify-between sm:justify-start gap-2.5 sm:gap-4 flex-wrap">
-            <span className="flex items-center gap-1 font-bold text-emerald-700">
-              <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block"></span> 200+ Bar (High)
+          <div className="absolute bottom-2.5 left-2.5 right-2.5 sm:right-auto z-[1000] bg-[#0f172a]/90 backdrop-blur-md border border-slate-800 rounded-xl px-3 py-1.5 shadow-lg text-[10px] sm:text-[11px] text-slate-300 flex items-center justify-between sm:justify-start gap-2.5 sm:gap-4 flex-wrap">
+            <span className="flex items-center gap-1 font-bold text-emerald-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 inline-block"></span> 200+ Bar (High)
             </span>
-            <span className="flex items-center gap-1 font-bold text-amber-700">
+            <span className="flex items-center gap-1 font-bold text-amber-400">
               <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block"></span> 175-195 Bar
             </span>
-            <span className="flex items-center gap-1 font-bold text-red-600">
-              <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block"></span> &lt;175 Bar
+            <span className="flex items-center gap-1 font-bold text-rose-400">
+              <span className="w-2.5 h-2.5 rounded-full bg-rose-500 inline-block"></span> &lt;175 Bar
             </span>
-            <span className="flex items-center gap-1 font-bold text-slate-900">
-              <Star size={12} className="text-amber-500 fill-amber-500" /> Best Choice
+            <span className="flex items-center gap-1 font-bold text-white">
+              <Star size={12} className="text-amber-400 fill-amber-400" /> Best Choice
             </span>
           </div>
         </div>

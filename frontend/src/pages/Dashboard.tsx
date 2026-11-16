@@ -26,19 +26,16 @@ interface StatCardProps {
   value: string | number;
   label: string;
   sublabel: string;
-  tintClass: string;
   iconBg: string;
 }
 
-function StatCard({ icon, value, label, sublabel, tintClass, iconBg }: StatCardProps) {
+function StatCard({ icon, value, label, sublabel, iconBg }: StatCardProps) {
   return (
-    <div
-      className={`rounded-2xl p-4 sm:p-5 shadow-sm border border-slate-200/80 ${tintClass} flex items-center gap-3 sm:gap-4`}
-    >
-      <div className={`${iconBg} rounded-2xl p-2.5 sm:p-3 flex-shrink-0 shadow-sm`}>{icon}</div>
+    <div className="rounded-2xl p-4 sm:p-5 shadow-lg border border-slate-800/80 bg-[#111827] flex items-center gap-3 sm:gap-4 hover:border-slate-700 transition">
+      <div className={`${iconBg} rounded-2xl p-2.5 sm:p-3 flex-shrink-0 shadow-md`}>{icon}</div>
       <div className="min-w-0">
-        <p className="text-xl sm:text-2xl font-black text-slate-900 leading-tight truncate">{value}</p>
-        <p className="text-xs font-bold text-slate-700 mt-0.5 truncate">{label}</p>
+        <p className="text-xl sm:text-2xl font-black text-white leading-tight truncate">{value}</p>
+        <p className="text-xs font-bold text-slate-300 mt-0.5 truncate">{label}</p>
         <p className="text-[10px] text-slate-400 truncate">{sublabel}</p>
       </div>
     </div>
@@ -113,7 +110,6 @@ export default function Dashboard() {
     return stations;
   }, [stations, filterMode]);
 
-  // Find nearest CNG pump using GPS Geolocation
   const handleFindNearest = () => {
     if (!navigator.geolocation) {
       alert('Geolocation is not supported by your browser.');
@@ -144,7 +140,6 @@ export default function Dashboard() {
       },
       (err) => {
         setIsLocating(false);
-        // Fallback demo: show top station as closest
         const d = 3.4;
         setNearestStation({
           station: topStation || stations[0],
@@ -156,15 +151,15 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-5 sm:space-y-6 max-w-7xl mx-auto pb-16 px-1 sm:px-0">
+    <div className="space-y-5 sm:space-y-6 max-w-7xl mx-auto pb-16 px-1 sm:px-0 text-slate-100">
       {/* Hero Welcome Banner */}
-      <div className="bg-gradient-to-r from-slate-900 via-emerald-950 to-slate-900 rounded-2xl sm:rounded-3xl p-5 sm:p-9 text-white shadow-xl relative overflow-hidden border border-emerald-800/30">
+      <div className="bg-gradient-to-r from-[#0d1627] via-[#091a1d] to-[#0d1627] rounded-2xl sm:rounded-3xl p-5 sm:p-9 text-white shadow-xl relative overflow-hidden border border-emerald-900/40">
         <div className="relative z-10 max-w-3xl">
-          <div className="inline-flex items-center gap-2 bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-3 py-0.5 sm:px-3.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-2.5">
+          <div className="inline-flex items-center gap-2 bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 px-3 py-0.5 sm:px-3.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-2.5">
             <Zap size={13} className="text-amber-400" />
-            Live CNG Telemetry & Google Maps Smart Recommender
+            Live CNG Telemetry & Google Maps Highway Recommender
           </div>
-          <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight mb-2">
+          <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight mb-2 text-white">
             CNG Navigator
           </h1>
           <p className="text-slate-300 text-xs sm:text-base leading-relaxed mb-5">
@@ -174,7 +169,7 @@ export default function Dashboard() {
           <div className="flex flex-wrap gap-2.5 sm:gap-3">
             <button
               onClick={() => navigate('/plan')}
-              className="px-5 py-3 rounded-xl sm:rounded-2xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-black text-xs sm:text-sm tracking-wide shadow-md transition flex items-center gap-2"
+              className="px-5 py-3 rounded-xl sm:rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs sm:text-sm tracking-wide shadow-lg shadow-emerald-900/30 transition flex items-center gap-2"
             >
               <Fuel size={17} />
               <span>Find Best Station on Route</span>
@@ -185,15 +180,15 @@ export default function Dashboard() {
               type="button"
               onClick={handleFindNearest}
               disabled={isLocating}
-              className="px-4 py-3 rounded-xl sm:rounded-2xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs sm:text-sm border border-white/20 transition flex items-center gap-2"
+              className="px-4 py-3 rounded-xl sm:rounded-2xl bg-[#162032] hover:bg-[#1d2b44] text-slate-200 font-bold text-xs sm:text-sm border border-slate-700 transition flex items-center gap-2 shadow-sm"
             >
-              <Locate size={16} className={isLocating ? 'animate-spin text-amber-300' : 'text-emerald-400'} />
+              <Locate size={16} className={isLocating ? 'animate-spin text-cyan-400' : 'text-cyan-400'} />
               <span>{isLocating ? 'Locating...' : 'Nearest CNG Station'}</span>
             </button>
 
             <button
               onClick={() => navigate('/stations')}
-              className="px-4 py-3 rounded-xl sm:rounded-2xl bg-white/5 hover:bg-white/10 text-slate-300 hover:text-white font-bold text-xs sm:text-sm transition flex items-center gap-1.5"
+              className="px-4 py-3 rounded-xl sm:rounded-2xl bg-[#162032]/60 hover:bg-[#162032] text-slate-300 hover:text-white font-bold text-xs sm:text-sm border border-slate-800 transition flex items-center gap-1.5"
             >
               <span>All Stations ({stations.length})</span>
             </button>
@@ -203,24 +198,24 @@ export default function Dashboard() {
 
       {/* Nearest Station Alert (When Geolocation triggered) */}
       {nearestStation && (
-        <div className="bg-emerald-50 border-2 border-emerald-400 rounded-2xl p-4 shadow-md flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-300">
+        <div className="bg-emerald-950/40 border border-emerald-500/50 rounded-2xl p-4 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-300">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-emerald-600 text-white rounded-2xl shadow-sm">
+            <div className="p-3 bg-emerald-600 text-white rounded-2xl shadow-md">
               <Locate size={20} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-black text-emerald-800 uppercase tracking-wider">
+                <span className="text-xs font-black text-emerald-400 uppercase tracking-wider">
                   📍 Closest CNG Station ({nearestStation.distanceKm} km away)
                 </span>
-                <span className="text-[10px] bg-emerald-200 text-emerald-900 font-bold px-2 py-0.5 rounded-full">
+                <span className="text-[10px] bg-emerald-900/60 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-700/60">
                   Verified Open
                 </span>
               </div>
-              <h4 className="text-base font-extrabold text-slate-900">{nearestStation.station.name}</h4>
-              <p className="text-xs text-slate-600">
-                <strong>Pressure:</strong> {nearestStation.station.currentPressureBar} Bar •{' '}
-                <strong>Queue:</strong> {nearestStation.station.vehiclesWaiting} Vehicles (~
+              <h4 className="text-base font-extrabold text-white">{nearestStation.station.name}</h4>
+              <p className="text-xs text-slate-300">
+                <strong className="text-emerald-400">Pressure:</strong> {nearestStation.station.currentPressureBar} Bar •{' '}
+                <strong className="text-amber-400">Queue:</strong> {nearestStation.station.vehiclesWaiting} Vehicles (~
                 {nearestStation.station.estimatedWaitMinutes} min wait)
               </p>
             </div>
@@ -229,7 +224,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
               onClick={() => navigate(`/stations/${nearestStation.station.id}`)}
-              className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition"
+              className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs transition"
             >
               View Telemetry
             </button>
@@ -237,7 +232,7 @@ export default function Dashboard() {
               href={`https://www.google.com/maps/dir/?api=1&destination=${nearestStation.station.latitude},${nearestStation.station.longitude}`}
               target="_blank"
               rel="noreferrer"
-              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
+              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-md"
             >
               <Navigation size={14} />
               <span>Google Maps ↗</span>
@@ -249,46 +244,42 @@ export default function Dashboard() {
       {/* 4 Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
-          icon={<Fuel size={20} className="text-blue-600" />}
+          icon={<Fuel size={20} className="text-blue-400" />}
           value={stats.total}
           label="Total Stations"
           sublabel="Active Highway Pumps"
-          tintClass="bg-white"
-          iconBg="bg-blue-50"
+          iconBg="bg-blue-950/60 border border-blue-500/20"
         />
         <StatCard
-          icon={<CheckCircle size={20} className="text-emerald-600" />}
+          icon={<CheckCircle size={20} className="text-emerald-400" />}
           value={stats.available}
           label="Open Stations"
           sublabel="24x7 Available"
-          tintClass="bg-white"
-          iconBg="bg-emerald-50"
+          iconBg="bg-emerald-950/60 border border-emerald-500/20"
         />
         <StatCard
-          icon={<Clock size={20} className="text-amber-600" />}
+          icon={<Clock size={20} className="text-amber-400" />}
           value={`~${stats.avgWait}m`}
           label="Avg Wait Time"
           sublabel="Fast Turnaround"
-          tintClass="bg-white"
-          iconBg="bg-amber-50"
+          iconBg="bg-amber-950/60 border border-amber-500/20"
         />
         <StatCard
-          icon={<Gauge size={20} className="text-purple-600" />}
+          icon={<Gauge size={20} className="text-purple-400" />}
           value={`${stats.bestPressure} Bar`}
           label="Max Gas Pressure"
           sublabel="Fast 100% Fill"
-          tintClass="bg-white"
-          iconBg="bg-purple-50"
+          iconBg="bg-purple-950/60 border border-purple-500/20"
         />
       </div>
 
       {/* Map & Right Insights Column */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Left Map: 8 cols */}
-        <div className="lg:col-span-8 bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 shadow-sm border border-slate-200 space-y-3">
+        <div className="lg:col-span-8 bg-[#111827] rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-lg border border-slate-800 space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">
             <div>
-              <h3 className="font-extrabold text-xs sm:text-sm text-slate-800">
+              <h3 className="font-extrabold text-xs sm:text-sm text-white">
                 Live Stations Map (Google Maps API)
               </h3>
               <p className="text-[11px] text-slate-400">
@@ -297,14 +288,14 @@ export default function Dashboard() {
             </div>
 
             {/* Quick Filter Buttons */}
-            <div className="flex items-center gap-1 overflow-x-auto pb-1 sm:pb-0">
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
               <button
                 type="button"
                 onClick={() => setFilterMode('all')}
-                className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition ${
+                className={`px-3 py-1 rounded-xl text-[11px] font-bold transition border ${
                   filterMode === 'all'
-                    ? 'bg-slate-900 text-white'
-                    : 'bg-slate-100 text-slate-600 hover:bg-slate-200'
+                    ? 'bg-emerald-600 text-white border-emerald-500'
+                    : 'bg-[#162032] text-slate-300 border-slate-800 hover:bg-[#1d2a42]'
                 }`}
               >
                 All ({stations.length})
@@ -312,10 +303,10 @@ export default function Dashboard() {
               <button
                 type="button"
                 onClick={() => setFilterMode('highPressure')}
-                className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition flex items-center gap-1 ${
+                className={`px-3 py-1 rounded-xl text-[11px] font-bold transition flex items-center gap-1 border ${
                   filterMode === 'highPressure'
-                    ? 'bg-emerald-600 text-white'
-                    : 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100'
+                    ? 'bg-emerald-600 text-white border-emerald-500'
+                    : 'bg-emerald-950/40 text-emerald-300 border-emerald-800/60 hover:bg-emerald-900/40'
                 }`}
               >
                 <span>⚡ 200+ Bar</span>
@@ -323,10 +314,10 @@ export default function Dashboard() {
               <button
                 type="button"
                 onClick={() => setFilterMode('lowQueue')}
-                className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition flex items-center gap-1 ${
+                className={`px-3 py-1 rounded-xl text-[11px] font-bold transition flex items-center gap-1 border ${
                   filterMode === 'lowQueue'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-blue-50 text-blue-800 hover:bg-blue-100'
+                    ? 'bg-blue-600 text-white border-blue-500'
+                    : 'bg-blue-950/40 text-blue-300 border-blue-800/60 hover:bg-blue-900/40'
                 }`}
               >
                 <span>🚗 ≤3 Cars</span>
@@ -334,10 +325,10 @@ export default function Dashboard() {
               <button
                 type="button"
                 onClick={() => setFilterMode('fastTurnaround')}
-                className={`px-2.5 py-1 rounded-xl text-[11px] font-bold transition flex items-center gap-1 ${
+                className={`px-3 py-1 rounded-xl text-[11px] font-bold transition flex items-center gap-1 border ${
                   filterMode === 'fastTurnaround'
-                    ? 'bg-amber-600 text-white'
-                    : 'bg-amber-50 text-amber-800 hover:bg-amber-100'
+                    ? 'bg-amber-600 text-white border-amber-500'
+                    : 'bg-amber-950/40 text-amber-300 border-amber-800/60 hover:bg-amber-900/40'
                 }`}
               >
                 <span>⏱️ &lt;8 min</span>
@@ -357,32 +348,32 @@ export default function Dashboard() {
         <div className="lg:col-span-4 space-y-4">
           {/* Top Recommendation Pick Card */}
           {topStation && (
-            <div className="bg-gradient-to-br from-emerald-500/10 via-teal-500/5 to-transparent rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-emerald-300 shadow-sm relative">
-              <div className="flex items-center gap-1.5 text-xs font-black text-emerald-800 uppercase tracking-wider mb-2">
-                <Star size={13} className="text-amber-500 fill-amber-500" />
+            <div className="bg-gradient-to-br from-[#0a2323] via-[#0d1c2c] to-[#0c1626] rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-emerald-500/40 shadow-lg relative">
+              <div className="flex items-center gap-1.5 text-xs font-black text-amber-400 uppercase tracking-wider mb-2">
+                <Star size={13} className="text-amber-400 fill-amber-400" />
                 <span>Top Pick (Low Queue + High Bar)</span>
               </div>
-              <h4 className="font-bold text-sm sm:text-base text-slate-900 leading-tight">
+              <h4 className="font-bold text-sm sm:text-base text-white leading-tight">
                 {topStation.name}
               </h4>
-              <p className="text-xs text-slate-500 mt-0.5">
+              <p className="text-xs text-slate-400 mt-0.5">
                 {topStation.address}, {topStation.city}
               </p>
 
-              <div className="grid grid-cols-2 gap-2 my-3 p-2.5 sm:p-3 bg-white rounded-xl sm:rounded-2xl border border-emerald-100 shadow-sm">
+              <div className="grid grid-cols-2 gap-2 my-3 p-3 bg-[#0b121e] rounded-xl sm:rounded-2xl border border-slate-800">
                 <div>
                   <span className="text-[9.5px] uppercase font-bold text-slate-400">Gas Pressure</span>
-                  <div className="text-base sm:text-lg font-black text-emerald-600">
+                  <div className="text-base sm:text-lg font-black text-emerald-400">
                     {topStation.currentPressureBar ? `${Math.round(topStation.currentPressureBar)} Bar` : '216 Bar'}
                   </div>
-                  <span className="text-[10px] text-emerald-700 font-semibold">100% Full Tank Fill</span>
+                  <span className="text-[10px] text-emerald-300 font-semibold">100% Full Tank Fill</span>
                 </div>
                 <div>
                   <span className="text-[9.5px] uppercase font-bold text-slate-400">Queue Line</span>
-                  <div className="text-base sm:text-lg font-black text-slate-800">
+                  <div className="text-base sm:text-lg font-black text-slate-100">
                     {topStation.vehiclesWaiting ?? 2} Vehicles
                   </div>
-                  <span className="text-[10px] text-slate-500 font-semibold">
+                  <span className="text-[10px] text-slate-400 font-semibold">
                     ~{topStation.estimatedWaitMinutes ?? 4} min wait
                   </span>
                 </div>
@@ -392,7 +383,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   onClick={() => navigate(`/stations/${topStation.id}`)}
-                  className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition text-center"
+                  className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition text-center shadow-md"
                 >
                   View Details
                 </button>
@@ -400,7 +391,7 @@ export default function Dashboard() {
                   href={`https://www.google.com/maps/dir/?api=1&destination=${topStation.latitude},${topStation.longitude}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="py-2 px-3 rounded-xl bg-slate-900 hover:bg-slate-800 text-white font-bold text-xs transition text-center"
+                  className="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs transition text-center"
                 >
                   Navigate ↗
                 </a>
@@ -409,15 +400,15 @@ export default function Dashboard() {
           )}
 
           {/* Queue Distribution */}
-          <div className="bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-slate-200 shadow-sm space-y-3">
-            <h4 className="font-bold text-xs sm:text-sm text-slate-800">Live Station Telemetry Summary</h4>
-            <div className="space-y-2 text-xs">
+          <div className="bg-[#111827] rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-slate-800 shadow-md space-y-3">
+            <h4 className="font-bold text-xs sm:text-sm text-white">Live Station Telemetry Summary</h4>
+            <div className="space-y-2.5 text-xs">
               <div>
                 <div className="flex justify-between mb-1">
-                  <span className="font-semibold text-emerald-700">Short Queue (0-3 Cars):</span>
-                  <span className="font-bold text-slate-800">{queueDist.low} stations</span>
+                  <span className="font-semibold text-emerald-400">Short Queue (0-3 Cars):</span>
+                  <span className="font-bold text-slate-200">{queueDist.low} stations</span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
                   <div
                     className="h-full bg-emerald-500 rounded-full"
                     style={{ width: `${(queueDist.low / (queueDist.total || 1)) * 100}%` }}
@@ -427,10 +418,10 @@ export default function Dashboard() {
 
               <div>
                 <div className="flex justify-between mb-1">
-                  <span className="font-semibold text-amber-700">Moderate Queue (4-8 Cars):</span>
-                  <span className="font-bold text-slate-800">{queueDist.moderate} stations</span>
+                  <span className="font-semibold text-amber-400">Moderate Queue (4-8 Cars):</span>
+                  <span className="font-bold text-slate-200">{queueDist.moderate} stations</span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
                   <div
                     className="h-full bg-amber-500 rounded-full"
                     style={{ width: `${(queueDist.moderate / (queueDist.total || 1)) * 100}%` }}
@@ -440,12 +431,12 @@ export default function Dashboard() {
 
               <div>
                 <div className="flex justify-between mb-1">
-                  <span className="font-semibold text-red-700">Busy Queue (&gt;8 Cars):</span>
-                  <span className="font-bold text-slate-800">{queueDist.high} stations</span>
+                  <span className="font-semibold text-rose-400">Busy Queue (&gt;8 Cars):</span>
+                  <span className="font-bold text-slate-200">{queueDist.high} stations</span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-100 overflow-hidden">
+                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
                   <div
-                    className="h-full bg-red-500 rounded-full"
+                    className="h-full bg-rose-500 rounded-full"
                     style={{ width: `${(queueDist.high / (queueDist.total || 1)) * 100}%` }}
                   />
                 </div>

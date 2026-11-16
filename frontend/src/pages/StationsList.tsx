@@ -61,21 +61,21 @@ export default function StationsList() {
   }, [stations, search, filter, sort]);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-5 sm:space-y-6 pb-16 px-1 sm:px-0">
+    <div className="max-w-7xl mx-auto space-y-5 sm:space-y-6 pb-16 px-1 sm:px-0 text-slate-100">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-slate-900 leading-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-white leading-tight">
             All CNG Stations
           </h1>
-          <p className="text-xs text-slate-500 mt-0.5">
+          <p className="text-xs text-slate-400 mt-0.5">
             Verified Indian highway stations with live queue and compressor pressure telemetry
           </p>
         </div>
 
         <button
           onClick={() => navigate('/plan')}
-          className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5"
+          className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5"
         >
           <Navigation size={13} />
           <span>Plan Trip</span>
@@ -83,7 +83,7 @@ export default function StationsList() {
       </div>
 
       {/* Search & Filters Bar */}
-      <div className="bg-white rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-sm border border-slate-200 space-y-3">
+      <div className="bg-[#111827] rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-lg border border-slate-800 space-y-3">
         <div className="flex flex-col sm:flex-row gap-2.5">
           <div className="relative flex-1">
             <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
@@ -92,16 +92,16 @@ export default function StationsList() {
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by station name, city (e.g. Delhi, Agra, Mathura, Mumbai, Pune, Bhopal)..."
-              className="w-full pl-9 pr-4 py-2 sm:py-2.5 rounded-xl border border-slate-200 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl border border-slate-700 bg-[#162032] text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
             />
           </div>
 
           <div className="flex items-center gap-1.5">
-            <span className="text-xs font-bold text-slate-500 uppercase flex-shrink-0">Sort:</span>
+            <span className="text-xs font-bold text-slate-400 uppercase flex-shrink-0">Sort:</span>
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value as SortKey)}
-              className="px-2.5 py-2 rounded-xl border border-slate-200 text-xs font-bold bg-white text-slate-700 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="px-3 py-2.5 rounded-xl border border-slate-700 text-xs font-bold bg-[#162032] text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500"
             >
               <option value="recommendation">⭐ AI Smart Score</option>
               <option value="queue">🚗 Short Queue First</option>
@@ -129,8 +129,8 @@ export default function StationsList() {
                 onClick={() => setFilter(pill.id as FilterKey)}
                 className={`px-3 py-1.5 rounded-xl font-bold transition border text-[11px] sm:text-xs ${
                   active
-                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:bg-slate-100'
+                    ? 'bg-emerald-600 text-white border-emerald-500 shadow-md'
+                    : 'bg-[#162032] text-slate-300 border-slate-800 hover:bg-[#1d2b44] hover:text-white'
                 }`}
               >
                 {pill.label}
@@ -151,8 +151,8 @@ export default function StationsList() {
           return (
             <div
               key={st.id}
-              className={`bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 border transition flex flex-col justify-between shadow-sm hover:shadow-md relative ${
-                isBest ? 'border-emerald-500 ring-2 ring-emerald-500/20' : 'border-slate-200'
+              className={`bg-[#111827] rounded-2xl sm:rounded-3xl p-4 sm:p-5 border transition flex flex-col justify-between shadow-lg hover:border-slate-700 relative ${
+                isBest ? 'border-emerald-500/80 ring-2 ring-emerald-500/20' : 'border-slate-800'
               }`}
             >
               {isBest && (
@@ -164,17 +164,19 @@ export default function StationsList() {
               <div>
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div className="min-w-0">
-                    <h3 className="font-extrabold text-xs sm:text-sm text-slate-900 leading-tight truncate">
+                    <h3 className="font-extrabold text-xs sm:text-sm text-white leading-tight truncate">
                       {st.name}
                     </h3>
-                    <p className="text-xs font-semibold text-emerald-700 mt-0.5 truncate">{st.operator}</p>
+                    <p className="text-xs font-semibold text-emerald-400 mt-0.5 truncate">{st.operator}</p>
                     <p className="text-[11px] text-slate-400 mt-0.5 truncate">
                       📍 {st.city}, {st.state}
                     </p>
                   </div>
                   <span
-                    className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 ${
-                      st.verifiedOpen ? 'bg-emerald-100 text-emerald-800' : 'bg-red-100 text-red-800'
+                    className={`text-[9.5px] font-bold px-2 py-0.5 rounded-full flex-shrink-0 border ${
+                      st.verifiedOpen
+                        ? 'bg-emerald-950/60 text-emerald-300 border-emerald-500/40'
+                        : 'bg-rose-950/60 text-rose-300 border-rose-500/40'
                     }`}
                   >
                     {st.verifiedOpen ? '24x7 Open' : 'Closed'}
@@ -182,46 +184,46 @@ export default function StationsList() {
                 </div>
 
                 {/* Telemetry Metrics Bar */}
-                <div className="grid grid-cols-3 gap-2 bg-slate-50 rounded-xl p-2.5 border border-slate-200/80 my-3 text-center">
+                <div className="grid grid-cols-3 gap-2 bg-[#0c1220] rounded-xl p-2.5 border border-slate-800 my-3 text-center">
                   <div>
                     <span className="text-[9px] uppercase font-bold text-slate-400">Queue</span>
-                    <p className="text-xs sm:text-sm font-black text-slate-800 mt-0.5">{st.vehiclesWaiting ?? 0} Cars</p>
-                    <span className="text-[9.5px] text-slate-500">~{st.estimatedWaitMinutes ?? 2} min</span>
+                    <p className="text-xs sm:text-sm font-black text-white mt-0.5">{st.vehiclesWaiting ?? 0} Cars</p>
+                    <span className="text-[9.5px] text-slate-400">~{st.estimatedWaitMinutes ?? 2} min</span>
                   </div>
 
                   <div>
                     <span className="text-[9px] uppercase font-bold text-slate-400">Pressure</span>
                     <p
                       className={`text-xs sm:text-sm font-black mt-0.5 ${
-                        isHighPressure ? 'text-emerald-600' : 'text-amber-600'
+                        isHighPressure ? 'text-emerald-400' : 'text-amber-400'
                       }`}
                     >
                       {pressure ? `${pressure} Bar` : 'N/A'}
                     </p>
-                    <span className="text-[9.5px] text-slate-500">{isHighPressure ? 'Fast Fill' : 'Moderate'}</span>
+                    <span className="text-[9.5px] text-slate-400">{isHighPressure ? 'Fast Fill' : 'Moderate'}</span>
                   </div>
 
                   <div>
                     <span className="text-[9px] uppercase font-bold text-slate-400">Price</span>
-                    <p className="text-xs sm:text-sm font-black text-slate-800 mt-0.5">
+                    <p className="text-xs sm:text-sm font-black text-white mt-0.5">
                       ₹{st.verifiedPricePerKg ?? 82.5}
                     </p>
-                    <span className="text-[9.5px] text-slate-500">per kg</span>
+                    <span className="text-[9.5px] text-slate-400">per kg</span>
                   </div>
                 </div>
 
-                <div className="flex items-center justify-between text-[11px] text-slate-500 px-1 mb-3">
+                <div className="flex items-center justify-between text-[11px] text-slate-400 px-1 mb-3">
                   <span>⛽ {st.activeDispensers ?? 4} Nozzles Active</span>
                   <span>🕐 {st.operatingHours ?? '24x7'}</span>
                 </div>
               </div>
 
               {/* Action buttons */}
-              <div className="flex items-center gap-2 pt-2 border-t border-slate-100">
+              <div className="flex items-center gap-2 pt-2 border-t border-slate-800">
                 <button
                   type="button"
                   onClick={() => navigate(`/stations/${st.id}`)}
-                  className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs transition text-center"
+                  className="flex-1 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition text-center shadow-md"
                 >
                   Details
                 </button>
@@ -230,8 +232,8 @@ export default function StationsList() {
                   onClick={() => toggleStationSelection(Number(st.id))}
                   className={`px-3 py-2 rounded-xl text-xs font-bold border transition ${
                     isSelected
-                      ? 'bg-emerald-50 text-emerald-800 border-emerald-400'
-                      : 'border-slate-200 text-slate-600 hover:bg-slate-50'
+                      ? 'bg-emerald-950/60 text-emerald-300 border-emerald-500/50'
+                      : 'border-slate-800 text-slate-300 hover:bg-[#162032] hover:text-white'
                   }`}
                 >
                   {isSelected ? '✓ Added' : '+ Compare'}
@@ -240,15 +242,16 @@ export default function StationsList() {
                   type="button"
                   onClick={() => setReportModalStation(st)}
                   title="Report Live Status"
-                  className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition"
+                  className="p-2 rounded-xl border border-slate-800 text-slate-400 hover:text-amber-400 hover:bg-[#162032] transition"
                 >
-                  <Sparkles size={14} className="text-amber-500" />
+                  <Sparkles size={14} className="text-amber-400" />
                 </button>
                 <a
                   href={`https://www.google.com/maps/dir/?api=1&destination=${st.latitude},${st.longitude}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="p-2 rounded-xl border border-slate-200 text-slate-600 hover:bg-slate-50 transition"
+                  className="p-2 rounded-xl border border-slate-800 text-slate-400 hover:text-emerald-400 hover:bg-[#162032] transition"
+                  title="Navigate with Google Maps"
                 >
                   <Navigation size={14} />
                 </a>

@@ -22,9 +22,8 @@ export const PressureGauge: React.FC<PressureGaugeProps> = ({
 
   const isHigh = v >= 195;
   const isMedium = v >= 175 && v < 195;
-  const isLow = v > 0 && v < 175;
 
-  const color = isHigh ? '#059669' : isMedium ? '#d97706' : v > 0 ? '#dc2626' : '#94a3b8';
+  const color = isHigh ? '#10b981' : isMedium ? '#f59e0b' : v > 0 ? '#f43f5e' : '#64748b';
   const psi = Math.round(v * 14.5038);
 
   const statusTitle = isHigh
@@ -62,16 +61,16 @@ export const PressureGauge: React.FC<PressureGaugeProps> = ({
     <div className="flex flex-col items-center">
       <div className="relative">
         <svg viewBox={`0 0 ${width} ${height}`} width={width} height={height} className="overflow-visible">
-          {/* Track Arc */}
+          {/* Dark Track Arc */}
           <path
             d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
             fill="none"
-            stroke="#e2e8f0"
+            stroke="#1e293b"
             strokeWidth={stroke}
             strokeLinecap="round"
           />
 
-          {/* Value Arc */}
+          {/* Value Arc with vibrant neon color */}
           {v > 0 && (
             <path
               d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r * Math.cos(needleAngle)} ${cy - r * Math.sin(needleAngle)}`}
@@ -89,46 +88,37 @@ export const PressureGauge: React.FC<PressureGaugeProps> = ({
               y1={cy}
               x2={needleX}
               y2={needleY}
-              stroke="#0f172a"
+              stroke="#f8fafc"
               strokeWidth="2.5"
               strokeLinecap="round"
             />
           )}
-          <circle cx={cx} cy={cy} r="4.5" fill="#0f172a" />
+          <circle cx={cx} cy={cy} r="4.5" fill="#f8fafc" />
         </svg>
 
         <div className="text-center -mt-3">
-          <div className="flex items-baseline justify-center gap-1">
-            <span className="text-2xl font-black tracking-tight" style={{ color }}>
-              {v > 0 ? Math.round(v) : '—'}
-            </span>
-            <span className="text-xs font-bold text-slate-500 uppercase">Bar</span>
-          </div>
-          {v > 0 && (
-            <span className="text-[11px] font-mono text-slate-400">
-              {psi.toLocaleString()} PSI
-            </span>
-          )}
+          <span className="text-2xl font-black text-white leading-none block" style={{ color }}>
+            {v > 0 ? `${Math.round(v)} Bar` : '—'}
+          </span>
+          <span className="text-[11px] font-semibold text-slate-400 mt-0.5 block">
+            {v > 0 ? `${psi} PSI` : 'No reading'}
+          </span>
         </div>
       </div>
 
       {showDetails && (
-        <div className="mt-2 text-center max-w-[240px]">
-          <div
-            className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold ${
-              isHigh
-                ? 'bg-emerald-100 text-emerald-800 border border-emerald-300'
-                : isMedium
-                ? 'bg-amber-100 text-amber-800 border border-amber-300'
-                : v > 0
-                ? 'bg-red-100 text-red-800 border border-red-300'
-                : 'bg-slate-100 text-slate-600'
-            }`}
-          >
-            {isHigh ? <Zap size={12} /> : isMedium ? <CheckCircle2 size={12} /> : <AlertTriangle size={12} />}
-            <span>{statusTitle}</span>
+        <div className="text-center mt-3">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#162032] border border-slate-800">
+            {isHigh ? (
+              <CheckCircle2 size={13} className="text-emerald-400" />
+            ) : isMedium ? (
+              <Zap size={13} className="text-amber-400" />
+            ) : (
+              <AlertTriangle size={13} className="text-rose-400" />
+            )}
+            <span style={{ color }}>{statusTitle}</span>
           </div>
-          <p className="text-[10.5px] text-slate-500 mt-1 leading-tight">{statusDesc}</p>
+          <p className="text-[11px] text-slate-400 mt-1 max-w-[220px] leading-tight">{statusDesc}</p>
         </div>
       )}
     </div>

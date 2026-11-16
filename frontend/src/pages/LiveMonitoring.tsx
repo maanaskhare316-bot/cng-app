@@ -4,16 +4,16 @@ import { useAppContext } from '../context/AppContext';
 import type { StationSummaryDto } from '../types';
 
 function pressureColor(bar: number | null | undefined) {
-  if (!bar) return '#94a3b8';
+  if (!bar) return '#64748b';
   if (bar >= 195) return '#10b981';
   if (bar >= 175) return '#f59e0b';
-  return '#ef4444';
+  return '#f43f5e';
 }
 
 function queueStatus(v: number) {
-  if (v <= 3) return { text: 'Low', cls: 'bg-emerald-100 text-emerald-700' };
-  if (v <= 8) return { text: 'Moderate', cls: 'bg-amber-100 text-amber-700' };
-  return { text: 'High', cls: 'bg-red-100 text-red-700' };
+  if (v <= 3) return { text: 'Low Queue', cls: 'bg-emerald-950/60 text-emerald-300 border-emerald-500/40' };
+  if (v <= 8) return { text: 'Moderate', cls: 'bg-amber-950/60 text-amber-300 border-amber-500/40' };
+  return { text: 'Busy', cls: 'bg-rose-950/60 text-rose-300 border-rose-500/40' };
 }
 
 function MiniPressureBar({ value, max = 220 }: { value: number | null; max?: number }) {
@@ -21,11 +21,11 @@ function MiniPressureBar({ value, max = 220 }: { value: number | null; max?: num
   const color = pressureColor(value);
   return (
     <div>
-      <div className="flex justify-between text-xs text-slate-500 mb-1">
-        <span>Pressure</span>
-        <span style={{ color }} className="font-semibold">{value ? `${Math.round(value)} Bar` : '—'}</span>
+      <div className="flex justify-between text-xs text-slate-400 mb-1">
+        <span>Gas Pressure</span>
+        <span style={{ color }} className="font-bold">{value ? `${Math.round(value)} Bar` : '—'}</span>
       </div>
-      <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+      <div className="h-2 bg-slate-800 rounded-full overflow-hidden">
         <div style={{ width: `${pct}%`, backgroundColor: color }} className="h-full rounded-full transition-all duration-700" />
       </div>
     </div>
@@ -36,27 +36,27 @@ function StationMonitorCard({ station }: { station: StationSummaryDto }) {
   const q = queueStatus(station.vehiclesWaiting ?? 0);
   const cars = Math.min(station.vehiclesWaiting ?? 0, 6);
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+    <div className="bg-[#111827] rounded-2xl border border-slate-800 p-5 shadow-lg text-slate-100">
       <div className="flex items-start justify-between gap-2 mb-3">
         <div>
-          <h3 className="font-bold text-slate-900 text-sm leading-tight">{station.name}</h3>
-          <p className="text-xs text-slate-500">{station.city}</p>
+          <h3 className="font-bold text-white text-sm leading-tight">{station.name}</h3>
+          <p className="text-xs text-slate-400">{station.city}</p>
         </div>
-        <span className={`text-xs font-semibold rounded-full px-2 py-0.5 flex-shrink-0 ${q.cls}`}>{q.text}</span>
+        <span className={`text-[10.5px] font-bold rounded-full px-2.5 py-0.5 border flex-shrink-0 ${q.cls}`}>{q.text}</span>
       </div>
       {/* Vehicle queue row */}
-      <div className="flex items-center gap-0.5 mb-3">
+      <div className="flex items-center gap-1 mb-3 bg-[#0c1220] p-2 rounded-xl border border-slate-800">
         {Array.from({ length: cars }).map((_, i) => <span key={i} className="text-lg">🚗</span>)}
-        {(station.vehiclesWaiting ?? 0) > 6 && <span className="text-xs text-slate-500 ml-1">+{(station.vehiclesWaiting ?? 0) - 6}</span>}
-        {(station.vehiclesWaiting ?? 0) === 0 && <span className="text-xs text-slate-400 italic">No queue</span>}
+        {(station.vehiclesWaiting ?? 0) > 6 && <span className="text-xs text-slate-400 ml-1 font-bold">+{(station.vehiclesWaiting ?? 0) - 6} more</span>}
+        {(station.vehiclesWaiting ?? 0) === 0 && <span className="text-xs text-emerald-400 font-semibold italic">No queue</span>}
         <span className="ml-auto text-lg">⛽</span>
       </div>
       <MiniPressureBar value={station.currentPressureBar ?? null} />
-      <div className="flex justify-between mt-3 text-xs text-slate-500">
+      <div className="flex justify-between mt-3 text-xs text-slate-400">
         <span>⏱️ ~{station.estimatedWaitMinutes ?? 0} min wait</span>
-        <span>🔧 {station.activeDispensers ?? 0} dispensers</span>
+        <span>🔧 {station.activeDispensers ?? 0} active nozzles</span>
       </div>
-      <p className="text-xs text-slate-300 mt-2 italic">Updated just now • SIMULATED</p>
+      <p className="text-[10px] text-slate-400 mt-2 italic">Telemetry simulation active</p>
     </div>
   );
 }
@@ -102,68 +102,53 @@ export default function LiveMonitoring() {
   })();
 
   const summaryCards = [
-    { icon: '🚗', label: 'Total Vehicles Waiting', value: totalVehicles, color: 'text-blue-600' },
-    { icon: '⏱️', label: 'Avg Wait Time', value: `${avgWait} min`, color: 'text-amber-600' },
-    { icon: '⛽', label: 'Active Dispensers', value: totalDispensers, color: 'text-emerald-600' },
-    { icon: '🔵', label: 'Avg Pressure', value: `${avgPressure} Bar`, color: 'text-purple-600' },
+    { icon: '🚗', label: 'Total Vehicles Waiting', value: totalVehicles, color: 'text-blue-400' },
+    { icon: '⏱️', label: 'Avg Wait Time', value: `${avgWait} min`, color: 'text-amber-400' },
+    { icon: '⛽', label: 'Active Dispensers', value: totalDispensers, color: 'text-emerald-400' },
+    { icon: '⚡', label: 'Avg Pressure', value: `${avgPressure} Bar`, color: 'text-purple-400' },
   ];
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="space-y-6 max-w-7xl mx-auto pb-16 text-slate-100">
       {/* Demo banner */}
-      <div className="flex items-center gap-3 bg-amber-50 border border-amber-200 rounded-xl px-4 py-3">
-        <Activity size={16} className="text-amber-600" />
+      <div className="flex items-center gap-3 bg-[#111827] border border-amber-500/30 rounded-2xl px-4 py-3 shadow-md">
+        <Activity size={18} className="text-amber-400" />
         <div>
-          <span className="font-bold text-amber-800 text-sm">⚠️ SIMULATED DEMO DATA</span>
-          <span className="text-amber-700 text-xs ml-2">— All values are locally generated. Not real station conditions.</span>
+          <span className="font-extrabold text-amber-300 text-sm">LIVE SIMULATION TICKER</span>
+          <span className="text-slate-400 text-xs ml-2">— Telemetry cycles simulate real car arrivals and compressor pressures.</span>
         </div>
         <div className="ml-auto flex gap-2">
-          <button onClick={() => setIsPaused(p => !p)}
-            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border transition ${isPaused ? 'bg-emerald-600 text-white border-emerald-600' : 'bg-white border-amber-300 text-amber-700 hover:bg-amber-50'}`}>
-            {isPaused ? <><Play size={12} /> Resume</> : <><Pause size={12} /> Pause</>}
+          <button
+            onClick={() => setIsPaused(!isPaused)}
+            className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-xl border border-slate-700 bg-[#162032] hover:bg-[#1e2a42] text-slate-200 transition font-bold"
+          >
+            {isPaused ? <Play size={12} className="text-emerald-400" /> : <Pause size={12} className="text-amber-400" />}
+            {isPaused ? 'Resume' : 'Pause'}
           </button>
-          <button onClick={reset}
-            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold border border-slate-300 bg-white text-slate-600 hover:bg-slate-50 transition">
+          <button
+            onClick={reset}
+            className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-xl border border-slate-700 bg-[#162032] hover:bg-[#1e2a42] text-slate-200 transition font-bold"
+          >
             <RefreshCw size={12} /> Reset
           </button>
         </div>
       </div>
 
-      {/* Page header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-2xl font-bold text-slate-900">Live Queue Monitoring</h1>
-          <p className="text-sm text-slate-500 mt-0.5">Simulation updates every 8 seconds • Tick #{tick}</p>
-        </div>
-        <div className={`flex items-center gap-1.5 text-xs font-semibold ${isPaused ? 'text-slate-500' : 'text-emerald-600'}`}>
-          <span className={`w-2 h-2 rounded-full ${isPaused ? 'bg-slate-400' : 'bg-emerald-500 animate-pulse'}`} />
-          {isPaused ? 'Paused' : 'Live Simulation'}
-        </div>
-      </div>
-
-      {/* Overview cards */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        {summaryCards.map(c => (
-          <div key={c.label} className="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
-            <p className="text-2xl mb-1">{c.icon}</p>
-            <p className={`text-2xl font-black ${c.color}`}>{c.value}</p>
-            <p className="text-xs text-slate-500 mt-1">{c.label}</p>
+      {/* Summary metrics row */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {summaryCards.map((c) => (
+          <div key={c.label} className="bg-[#111827] rounded-2xl border border-slate-800 p-4 shadow-md">
+            <span className="text-2xl mb-1 block">{c.icon}</span>
+            <div className={`text-2xl font-black ${c.color}`}>{c.value}</div>
+            <div className="text-xs text-slate-400 font-bold uppercase tracking-wider mt-0.5">{c.label}</div>
           </div>
         ))}
       </div>
 
-      {/* Station grid */}
-      <div>
-        <h2 className="text-sm font-bold text-slate-700 mb-3">Station-by-Station Status ({stations.length} stations)</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-          {stations.map(s => <StationMonitorCard key={s.id} station={s} />)}
-        </div>
+      {/* Station monitor cards */}
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {stations.map(s => <StationMonitorCard key={s.id} station={s} />)}
       </div>
-
-      <p className="text-xs text-slate-400 italic text-center pb-4">
-        ⚠️ All queue and pressure data is SIMULATED DEMO DATA generated locally by the client. 
-        These numbers do not represent actual CNG station conditions.
-      </p>
     </div>
   );
 }

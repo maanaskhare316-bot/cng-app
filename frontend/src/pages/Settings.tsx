@@ -9,7 +9,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
     <button
       type="button"
       onClick={() => onChange(!checked)}
-      className={`relative w-11 h-6 rounded-full transition-colors ${checked ? 'bg-emerald-600' : 'bg-slate-300'}`}
+      className={`relative w-11 h-6 rounded-full transition-colors ${checked ? 'bg-emerald-600' : 'bg-slate-700'}`}
     >
       <span
         className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
@@ -22,9 +22,9 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
-      <div className="bg-slate-50/80 border-b border-slate-200 px-6 py-3.5">
-        <h2 className="font-extrabold text-slate-800 text-xs uppercase tracking-wider">{title}</h2>
+    <div className="bg-[#111827] rounded-3xl border border-slate-800 shadow-lg overflow-hidden text-slate-100">
+      <div className="bg-[#0c1220] border-b border-slate-800 px-6 py-3.5">
+        <h2 className="font-extrabold text-white text-xs uppercase tracking-wider">{title}</h2>
       </div>
       <div className="p-6 space-y-5">{children}</div>
     </div>
@@ -43,8 +43,8 @@ function SettingRow({
   return (
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <div>
-        <p className="text-sm font-bold text-slate-800">{label}</p>
-        {description && <p className="text-xs text-slate-500 mt-0.5">{description}</p>}
+        <p className="text-sm font-bold text-white">{label}</p>
+        {description && <p className="text-xs text-slate-400 mt-0.5">{description}</p>}
       </div>
       <div className="flex-shrink-0">{children}</div>
     </div>
@@ -85,148 +85,107 @@ export default function Settings() {
   };
 
   return (
-    <div className="max-w-3xl mx-auto space-y-6 pb-12">
+    <div className="max-w-3xl mx-auto space-y-6 pb-16 text-slate-100">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-slate-900">Settings</h1>
-          <p className="text-xs text-slate-500 mt-0.5">Configure Google Maps API and telemetry preferences</p>
+          <h1 className="text-2xl font-black text-white">Settings</h1>
+          <p className="text-xs text-slate-400 mt-0.5">Configure Google Maps API and telemetry preferences</p>
         </div>
         {saved && (
-          <div className="flex items-center gap-1.5 bg-emerald-50 border border-emerald-300 rounded-xl px-3 py-1.5 text-xs font-bold text-emerald-700 animate-in fade-in">
+          <div className="flex items-center gap-1.5 bg-emerald-950/60 border border-emerald-500/40 rounded-xl px-3 py-1.5 text-xs font-bold text-emerald-300 animate-in fade-in">
             <CheckCircle2 size={16} /> Settings saved successfully
           </div>
         )}
       </div>
 
-      {/* Google Maps API Settings */}
-      <Section title="Google Maps API Configuration">
-        <div>
-          <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
-            Google Maps JavaScript API Key
-          </label>
-          <div className="flex gap-2">
-            <input
-              type="text"
-              value={apiKey}
-              onChange={(e) => setApiKey(e.target.value)}
-              placeholder="e.g. AIzaSyB..."
-              className="flex-1 px-3.5 py-2.5 rounded-2xl border border-slate-200 text-xs sm:text-sm font-mono focus:outline-none focus:ring-2 focus:ring-emerald-500"
-            />
-            <button
-              type="button"
-              onClick={handleSaveApiKey}
-              className="px-4 py-2.5 rounded-2xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-sm transition"
-            >
-              Save Key
-            </button>
-            {apiKey && (
-              <button
-                type="button"
-                onClick={handleClearApiKey}
-                className="px-3 py-2.5 rounded-2xl border border-slate-200 text-slate-600 hover:bg-slate-100 font-bold text-xs transition"
-              >
-                Clear
-              </button>
-            )}
-          </div>
-          <p className="text-[11px] text-slate-400 mt-1.5">
-            When provided, the app activates official Google Maps JavaScript API with live traffic and turn-by-turn navigation. Without a key, OpenStreetMap is automatically used with full offline support.
+      {/* Google Maps Configuration */}
+      <Section title="🗺️ Google Maps JavaScript API">
+        <div className="space-y-4">
+          <p className="text-xs text-slate-300 leading-relaxed">
+            Enter your Google Cloud Maps API key to activate full Google Vector Maps, Live Road Traffic Layer, and Directions Services.
           </p>
-        </div>
 
-        <SettingRow
-          label="Default Map Engine"
-          description="Choose preferred interactive map provider"
-        >
-          <div className="flex gap-2">
-            {[
-              { id: 'google', label: '🗺️ Google Maps' },
-              { id: 'leaflet', label: '🌐 OpenStreetMap' },
-            ].map((eng) => (
+          <div>
+            <label className="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">
+              API Key (Places &amp; Directions Enabled)
+            </label>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={apiKey}
+                onChange={(e) => setApiKey(e.target.value)}
+                placeholder="AIzaSy..."
+                className="flex-1 px-3.5 py-2.5 text-xs sm:text-sm font-mono border border-slate-700 bg-[#162032] text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-500 transition"
+              />
               <button
-                key={eng.id}
                 type="button"
-                onClick={() => save({ mapProvider: eng.id })}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold transition border ${
-                  settings.mapProvider === eng.id
-                    ? 'bg-emerald-600 text-white border-emerald-600 shadow-sm'
-                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}
+                onClick={handleSaveApiKey}
+                className="px-5 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition shadow-md"
               >
-                {eng.label}
+                Save Key
               </button>
-            ))}
+              {apiKey && (
+                <button
+                  type="button"
+                  onClick={handleClearApiKey}
+                  className="px-3 py-2.5 rounded-xl border border-slate-700 bg-[#162032] text-slate-300 hover:text-white font-bold text-xs transition"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
           </div>
-        </SettingRow>
+
+          <div className="bg-[#131d2e] border border-slate-800 rounded-2xl p-4 text-xs text-slate-300 space-y-1.5">
+            <div className="flex items-center gap-1.5 font-bold text-emerald-400">
+              <ShieldCheck size={16} />
+              <span>Need a Google Maps Key?</span>
+            </div>
+            <p className="text-[11px] text-slate-400 leading-relaxed">
+              Enable <strong>Maps JavaScript API</strong>, <strong>Directions API</strong>, and <strong>Places API</strong> on Google Cloud Console and paste the generated key above. Without a key, the app continues working on the high-tech Dark OpenStreetMap engine.
+            </p>
+          </div>
+        </div>
       </Section>
 
-      {/* Live Simulation Settings */}
-      <Section title="Live Telemetry Simulation">
+      {/* Telemetry Preferences */}
+      <Section title="⚡ Telemetry & Simulation Preferences">
         <SettingRow
-          label="Enable Live Data Simulation"
-          description="Simulate real-time vehicle arrivals and compressor pressure fluctuations every 10 seconds"
+          label="Live SCADA Telemetry Simulator"
+          description="Simulates periodic vehicle queue fluctuations and compressor pressure cycles"
         >
           <Toggle
-            checked={settings.simulationEnabled}
+            checked={settings.simulationEnabled ?? true}
             onChange={(v) => save({ simulationEnabled: v })}
           />
         </SettingRow>
 
         <SettingRow
-          label={`Max Acceptable Detour: +${settings.maxDetourKm} km`}
-          description="Maximum highway detour distance for recommending CNG pumps"
+          label="Max Highway Detour Limit"
+          description="Default maximum kilometer detour when filtering highway stations"
         >
-          <input
-            type="range"
-            min={1}
-            max={15}
-            value={settings.maxDetourKm}
-            onChange={(e) => save({ maxDetourKm: Number(e.target.value) })}
-            className="w-36 accent-emerald-600"
-          />
-        </SettingRow>
-
-        <SettingRow
-          label="Default Vehicle Type"
-          description="Used to estimate queue wait times and filling duration"
-        >
-          <div className="flex gap-1.5">
-            {['car', 'auto', 'bus', 'truck'].map((v) => (
-              <button
-                key={v}
-                type="button"
-                onClick={() => save({ defaultVehicleType: v })}
-                className={`px-3 py-1.5 rounded-xl text-xs font-bold capitalize transition border ${
-                  settings.defaultVehicleType === v
-                    ? 'bg-emerald-600 text-white border-emerald-600'
-                    : 'border-slate-200 text-slate-600 hover:bg-slate-50'
-                }`}
-              >
-                {v}
-              </button>
-            ))}
-          </div>
+          <span className="font-extrabold text-emerald-400 bg-[#162032] px-3 py-1 rounded-xl border border-slate-800 text-xs">
+            {settings.maxDetourKm ?? 5} km
+          </span>
         </SettingRow>
       </Section>
 
-      {/* Reset */}
-      <div className="bg-red-50/60 border border-red-200 rounded-3xl p-5 flex items-center justify-between">
-        <div>
-          <h4 className="text-xs font-extrabold text-red-900 uppercase tracking-wider">
-            Reset Data & Cache
-          </h4>
-          <p className="text-xs text-red-700 mt-0.5">
-            Clear all saved preferences, API keys, custom reports, and station comparisons
-          </p>
-        </div>
-        <button
-          type="button"
-          onClick={resetAll}
-          className="px-4 py-2 bg-red-600 hover:bg-red-700 text-white font-bold text-xs rounded-xl shadow-sm transition"
+      {/* Danger Zone */}
+      <Section title="⚠️ App Reset">
+        <SettingRow
+          label="Reset Local Application Cache"
+          description="Clears all stored preferences, saved route history, and station selections"
         >
-          Reset All
-        </button>
-      </div>
+          <button
+            type="button"
+            onClick={resetAll}
+            className="px-4 py-2 rounded-xl bg-rose-950/60 hover:bg-rose-900/60 text-rose-300 border border-rose-500/40 text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+          >
+            <RotateCcw size={13} />
+            <span>Reset All Data</span>
+          </button>
+        </SettingRow>
+      </Section>
     </div>
   );
 }
