@@ -31,3 +31,10 @@ target/
 # OS files
 .DS_Store
 Thumbs.db
+
+# Local / unrelated data
+data/
+atharva-solar/
+run-solar.bat
+cloudflared.exe
+*.mv.db

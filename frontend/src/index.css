@@ -128,3 +128,13 @@ body {
     padding-left: calc(0.75rem - 2px);
   }
 }
+
+/* ── Leaflet Custom Pin Styling ──────────────────────── */
+.custom-cng-station-pin {
+  background: transparent !important;
+  border: none !important;
+}
+.start-marker-pin, .dest-marker-pin {
+  background: transparent !important;
+  border: none !important;
+}

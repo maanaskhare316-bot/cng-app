@@ -1,4 +1,4 @@
-// Google Maps JavaScript API dynamic loader
+// Google Maps JavaScript API dynamic loader with robust timeout & error handling
 
 const STORAGE_KEY = 'cng_google_maps_api_key';
 
@@ -6,7 +6,7 @@ let loadPromise: Promise<boolean> | null = null;
 let isLoaded = false;
 let authFailed = false;
 
-// Global callback for auth failures
+// Global callback for Google Maps authentication failures
 if (typeof window !== 'undefined') {
   (window as any).gm_authFailure = () => {
     console.warn('[GoogleMaps] Authentication failed or billing not active for this API key.');
@@ -70,24 +70,32 @@ export function loadGoogleMaps(customKey?: string): Promise<boolean> {
   if (loadPromise) return loadPromise;
 
   loadPromise = new Promise((resolve) => {
-    // If no key is provided, we can either resolve false or load in dev/preview mode
-    // (Google Maps JS API allows demo rendering with watermarks if no key or sample key)
     const script = document.createElement('script');
     script.id = 'google-maps-script';
     script.async = true;
     script.defer = true;
 
     const callbackName = `__gmapsCallback_${Date.now()}`;
+    let timeoutId: any = null;
+
     (window as any)[callbackName] = () => {
+      if (timeoutId) clearTimeout(timeoutId);
       isLoaded = true;
       delete (window as any)[callbackName];
       resolve(true);
     };
 
     script.onerror = () => {
+      if (timeoutId) clearTimeout(timeoutId);
       console.warn('[GoogleMaps] Failed to load Google Maps script tag.');
       resolve(false);
     };
+
+    // Timeout fallback after 8 seconds
+    timeoutId = setTimeout(() => {
+      console.warn('[GoogleMaps] Google Maps loading timed out.');
+      resolve(false);
+    }, 8000);
 
     const keyParam = key ? `&key=${encodeURIComponent(key)}` : '';
     script.src = `https://maps.googleapis.com/maps/api/js?v=weekly&libraries=places,geometry&callback=${callbackName}${keyParam}`;

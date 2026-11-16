@@ -545,7 +545,13 @@ const server = http.createServer((req, res) => {
       '.json': 'application/json',
       '.png': 'image/png',
       '.jpg': 'image/jpeg',
+      '.jpeg': 'image/jpeg',
+      '.webp': 'image/webp',
       '.svg': 'image/svg+xml',
+      '.ico': 'image/x-icon',
+      '.woff': 'font/woff',
+      '.woff2': 'font/woff2',
+      '.ttf': 'font/ttf',
     };
     const contentType = mimeTypes[ext] || 'application/octet-stream';
     res.writeHead(200, { 'Content-Type': contentType });

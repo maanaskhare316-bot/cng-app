@@ -1,7 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react';
 import type { StationSummaryDto } from '../../types';
-import { loadGoogleMaps, isGoogleMapsLoaded } from '../../services/googleMapsLoader';
-import { Loader2, AlertTriangle, Layers, Navigation, Star, Zap, Gauge, Users } from 'lucide-react';
+import { loadGoogleMaps, isGoogleMapsLoaded, hasGoogleMapsAuthFailed } from '../../services/googleMapsLoader';
+import {
+  Loader2,
+  AlertTriangle,
+  Layers,
+  Navigation,
+  Star,
+  Zap,
+  Gauge,
+  Users,
+  Locate,
+  Crosshair,
+  Key,
+  ExternalLink,
+} from 'lucide-react';
 
 export interface LatLng {
   lat: number;
@@ -17,13 +30,15 @@ interface GoogleStationMapProps {
   onStationClick?: (station: StationSummaryDto) => void;
   height?: string;
   onAuthError?: () => void;
+  onSwitchToOSM?: () => void;
+  onEnterKey?: () => void;
 }
 
-function getPressureColor(bar: number | null): string {
-  if (bar === null) return '#64748b';
-  if (bar >= 195) return '#059669';   // emerald
-  if (bar >= 175) return '#d97706';   // amber
-  return '#dc2626';                   // red
+function getPressureColor(bar: number | null | undefined): string {
+  if (!bar) return '#64748b';
+  if (bar >= 195) return '#059669'; // Emerald (High Pressure)
+  if (bar >= 175) return '#d97706'; // Amber (Moderate)
+  return '#dc2626';                 // Red (Low)
 }
 
 export const GoogleStationMap: React.FC<GoogleStationMapProps> = ({
@@ -35,11 +50,14 @@ export const GoogleStationMap: React.FC<GoogleStationMapProps> = ({
   onStationClick,
   height = '500px',
   onAuthError,
+  onSwitchToOSM,
+  onEnterKey,
 }) => {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const markersRef = useRef<any[]>([]);
   const startDestMarkersRef = useRef<any[]>([]);
+  const userLocationMarkerRef = useRef<any>(null);
   const directionsRendererRef = useRef<any>(null);
   const polylineRef = useRef<any>(null);
   const trafficLayerRef = useRef<any>(null);
@@ -49,16 +67,22 @@ export const GoogleStationMap: React.FC<GoogleStationMapProps> = ({
   const [loadError, setLoadError] = useState<string | null>(null);
   const [trafficEnabled, setTrafficEnabled] = useState(false);
   const [mapType, setMapType] = useState<'roadmap' | 'satellite'>('roadmap');
+  const [userLocation, setUserLocation] = useState<LatLng | null>(null);
+  const [locating, setLocating] = useState(false);
 
+  // Listen to Google Maps auth error events
   useEffect(() => {
     const handleAuthError = () => {
-      setLoadError('Google Maps API Key not active or billing not enabled. You can switch to OpenStreetMap using the toggle above.');
+      setLoadError(
+        'Google Maps API key not active or billing not enabled. You can enter an API key or switch to OpenStreetMap anytime.'
+      );
       if (onAuthError) onAuthError();
     };
     window.addEventListener('google-maps-auth-error', handleAuthError);
     return () => window.removeEventListener('google-maps-auth-error', handleAuthError);
   }, [onAuthError]);
 
+  // Load Google Maps API
   useEffect(() => {
     let isMounted = true;
     setIsLoading(true);
@@ -72,7 +96,9 @@ export const GoogleStationMap: React.FC<GoogleStationMapProps> = ({
           initMap();
         } else {
           setIsLoading(false);
-          setLoadError('Google Maps API ready in development mode. Switch to OpenStreetMap anytime.');
+          setLoadError(
+            'Google Maps API requires a valid API key. You can enter your API Key or switch to OpenStreetMap.'
+          );
         }
       })
       .catch((err) => {
@@ -105,7 +131,7 @@ export const GoogleStationMap: React.FC<GoogleStationMapProps> = ({
         fullscreenControl: true,
         streetViewControl: false,
         zoomControl: true,
-        gestureHandling: 'greedy', // mobile-friendly pan & pinch
+        gestureHandling: 'greedy',
         styles: [
           { featureType: 'poi', elementType: 'labels', stylers: [{ visibility: 'simplified' }] },
           { featureType: 'transit', elementType: 'labels', stylers: [{ visibility: 'simplified' }] },
@@ -135,6 +161,71 @@ export const GoogleStationMap: React.FC<GoogleStationMapProps> = ({
     }
   };
 
+  const locateUser = () => {
+    if (!navigator.geolocation || !mapRef.current || !(window as any).google?.maps) return;
+    const google = (window as any).google;
+    setLocating(true);
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        setLocating(false);
+        const userPos = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+        setUserLocation(userPos);
+
+        if (userLocationMarkerRef.current) {
+          userLocationMarkerRef.current.setMap(null);
+        }
+
+        userLocationMarkerRef.current = new google.maps.Marker({
+          position: userPos,
+          map: mapRef.current,
+          title: 'Your Location',
+          icon: {
+            path: google.maps.SymbolPath.CIRCLE,
+            scale: 9,
+            fillColor: '#2563eb',
+            fillOpacity: 1,
+            strokeColor: '#ffffff',
+            strokeWeight: 3,
+          },
+          zIndex: 1100,
+        });
+
+        mapRef.current.panTo(userPos);
+        mapRef.current.setZoom(13);
+      },
+      (err) => {
+        setLocating(false);
+        console.warn('Geolocation error:', err.message);
+      },
+      { timeout: 8000 }
+    );
+  };
+
+  const fitAllBounds = () => {
+    if (!mapRef.current || !(window as any).google?.maps) return;
+    const google = (window as any).google;
+    const bounds = new google.maps.LatLngBounds();
+    let hasPoints = false;
+
+    if (startPoint) {
+      bounds.extend({ lat: startPoint.lat, lng: startPoint.lng });
+      hasPoints = true;
+    }
+    if (destPoint) {
+      bounds.extend({ lat: destPoint.lat, lng: destPoint.lng });
+      hasPoints = true;
+    }
+    stations.forEach((s) => {
+      bounds.extend({ lat: s.latitude, lng: s.longitude });
+      hasPoints = true;
+    });
+
+    if (hasPoints) {
+      mapRef.current.fitBounds(bounds);
+    }
+  };
+
   // Render Markers
   useEffect(() => {
     if (!mapRef.current || !(window as any).google?.maps) return;
@@ -157,13 +248,14 @@ export const GoogleStationMap: React.FC<GoogleStationMapProps> = ({
         title: 'Start Location',
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
-          scale: 8,
+          scale: 9,
           fillColor: '#10b981',
           fillOpacity: 1,
           strokeColor: '#ffffff',
           strokeWeight: 2.5,
         },
-        label: { text: 'S', color: '#ffffff', fontSize: '10px', fontWeight: 'bold' },
+        label: { text: 'S', color: '#ffffff', fontSize: '11px', fontWeight: 'bold' },
+        zIndex: 500,
       });
       startDestMarkersRef.current.push(startMarker);
       bounds.extend({ lat: startPoint.lat, lng: startPoint.lng });
@@ -178,20 +270,21 @@ export const GoogleStationMap: React.FC<GoogleStationMapProps> = ({
         title: 'Destination',
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
-          scale: 8,
+          scale: 9,
           fillColor: '#ef4444',
           fillOpacity: 1,
           strokeColor: '#ffffff',
           strokeWeight: 2.5,
         },
-        label: { text: 'D', color: '#ffffff', fontSize: '10px', fontWeight: 'bold' },
+        label: { text: 'D', color: '#ffffff', fontSize: '11px', fontWeight: 'bold' },
+        zIndex: 500,
       });
       startDestMarkersRef.current.push(destMarker);
       bounds.extend({ lat: destPoint.lat, lng: destPoint.lng });
       hasPoints = true;
     }
 
-    // Station Markers
+    // Station Markers with Live Telemetry Badges
     stations.forEach((station) => {
       const pos = { lat: station.latitude, lng: station.longitude };
       bounds.extend(pos);
@@ -199,34 +292,40 @@ export const GoogleStationMap: React.FC<GoogleStationMapProps> = ({
 
       const isBest = station.recommendationCategory === 'BEST_OVERALL';
       const isSelected = selectedStationId === station.id;
-      const pressureVal = station.currentPressureBar ? `${Math.round(station.currentPressureBar)}B` : 'CNG';
+      const pressureBar = station.currentPressureBar ? Math.round(station.currentPressureBar) : 200;
       const color = isBest ? '#059669' : getPressureColor(station.currentPressureBar);
 
-      // Clean SVG pin
+      const waitMin = station.estimatedWaitMinutes ?? Math.max(1, Math.round((station.vehiclesWaiting ?? 0) * 2));
+      const vehiclesCount = station.vehiclesWaiting ?? 0;
+
+      const pressureText = `${pressureBar} Bar`;
+      const queueText = `${vehiclesCount} Cars • ~${waitMin}m`;
+
+      // Rich SVG pin showing both Pressure and Queue on Google Maps
       const pinSvg = `
-        <svg xmlns="http://www.w3.org/2000/svg" width="40" height="48" viewBox="0 0 40 48">
+        <svg xmlns="http://www.w3.org/2000/svg" width="76" height="52" viewBox="0 0 76 52">
           <defs>
             <filter id="sh" x="-20%" y="-20%" width="140%" height="140%">
-              <feDropShadow dx="0" dy="2" stdDeviation="2.5" flood-opacity="0.3"/>
+              <feDropShadow dx="0" dy="2.5" stdDeviation="2.5" flood-color="#000000" flood-opacity="0.32"/>
             </filter>
           </defs>
-          <path d="M20 0 C9 0 0 9 0 20 C0 32 20 48 20 48 C20 48 40 32 40 20 C40 9 31 0 20 0 Z" 
-                fill="${color}" stroke="#ffffff" stroke-width="2.5" filter="url(#sh)"/>
-          <circle cx="20" cy="18" r="13" fill="#ffffff" />
-          <text x="20" y="22" font-family="-apple-system, system-ui, sans-serif" font-size="9.5" font-weight="800" 
-                text-anchor="middle" fill="${color}">${pressureVal}</text>
-          ${isBest ? '<circle cx="32" cy="8" r="7" fill="#f59e0b" stroke="#ffffff" stroke-width="1.5"/><text x="32" y="11" font-size="9" text-anchor="middle" fill="#ffffff">★</text>' : ''}
+          <path d="M 6 0 H 70 A 6 6 0 0 1 76 6 V 36 A 6 6 0 0 1 70 42 H 44 L 38 50 L 32 42 H 6 A 6 6 0 0 1 0 36 V 6 A 6 6 0 0 1 6 0 Z" 
+                fill="${color}" stroke="#ffffff" stroke-width="1.8" filter="url(#sh)"/>
+          <rect x="4" y="4" width="68" height="17" rx="4" fill="#ffffff" />
+          <text x="38" y="16.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="10.5" font-weight="900" text-anchor="middle" fill="${color}">${pressureText}</text>
+          <text x="38" y="34.5" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-size="9" font-weight="800" text-anchor="middle" fill="#ffffff">${queueText}</text>
+          ${isBest ? '<circle cx="70" cy="5" r="6.5" fill="#f59e0b" stroke="#ffffff" stroke-width="1.2"/><text x="70" y="8" font-size="8.5" font-weight="bold" text-anchor="middle" fill="#000000">★</text>' : ''}
         </svg>
       `;
 
       const marker = new google.maps.Marker({
         position: pos,
         map: mapRef.current,
-        title: `${station.name} (${station.currentPressureBar ?? 0} Bar)`,
+        title: `${station.name} | ${pressureBar} Bar | ${vehiclesCount} Vehicles in Queue (~${waitMin}m wait)`,
         icon: {
           url: `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(pinSvg)}`,
-          scaledSize: new google.maps.Size(40, 48),
-          anchor: new google.maps.Point(20, 48),
+          scaledSize: new google.maps.Size(76, 52),
+          anchor: new google.maps.Point(38, 50),
         },
         zIndex: isBest ? 1000 : isSelected ? 900 : 100,
         animation: isSelected ? google.maps.Animation.BOUNCE : undefined,
@@ -235,45 +334,60 @@ export const GoogleStationMap: React.FC<GoogleStationMapProps> = ({
       marker.addListener('click', () => {
         if (onStationClick) onStationClick(station);
 
-        const waitMin = station.estimatedWaitMinutes ?? Math.round((station.vehiclesWaiting ?? 0) * 2);
-        const pressureBar = station.currentPressureBar ? Math.round(station.currentPressureBar) : null;
-        const pressureStatus = pressureBar && pressureBar >= 195 ? 'High Pressure (Fast Fill)' : pressureBar && pressureBar >= 175 ? 'Moderate Pressure' : 'Low Pressure';
-        const detourInfo = station.extraDetourKm != null ? `+${station.extraDetourKm.toFixed(1)} km detour (~${station.estimatedDetourMinutes ?? 1} min)` : 'On highway route';
+        const pressureStatus =
+          pressureBar >= 195
+            ? '⚡ High Pressure (Fast Full Tank)'
+            : pressureBar >= 175
+            ? '⚖️ Moderate Pressure'
+            : '⚠️ Low Pressure';
+
+        const psi = Math.round(pressureBar * 14.5038);
+        const detourInfo =
+          station.extraDetourKm != null
+            ? `+${station.extraDetourKm.toFixed(1)} km (~${station.estimatedDetourMinutes ?? 1} min)`
+            : 'Direct highway route';
 
         const contentString = `
-          <div style="font-family:-apple-system, system-ui, sans-serif; max-width:270px; padding:3px;">
-            ${isBest ? `
+          <div style="font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width:280px; padding:2px;">
+            ${
+              isBest
+                ? `
               <div style="background:#ecfdf5; color:#065f46; padding:3px 8px; border-radius:999px; font-size:10.5px; font-weight:800; display:inline-flex; align-items:center; gap:4px; margin-bottom:6px; border:1px solid #a7f3d0;">
-                ⭐ Best Recommendation (Short Queue & High Bar)
+                ⭐ Best Highway Choice (Short Queue & High Bar)
               </div>
-            ` : ''}
-            <h4 style="margin:0 0 2px 0; font-size:13px; font-weight:700; color:#0f172a; line-height:1.2;">${station.name}</h4>
+            `
+                : ''
+            }
+            <h4 style="margin:0 0 2px 0; font-size:13px; font-weight:800; color:#0f172a; line-height:1.2;">${station.name}</h4>
             <p style="margin:0 0 6px 0; font-size:11px; color:#64748b;">${station.operator || 'CNG'} • ${station.city}</p>
             
-            <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px; background:#f8fafc; padding:8px; border-radius:8px; border:1px solid #e2e8f0;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px; background:#f8fafc; padding:8px; border-radius:10px; border:1px solid #e2e8f0;">
               <div>
-                <span style="font-size:10px; color:#64748b; font-weight:700; text-transform:uppercase;">Pressure</span>
-                <div style="font-size:15px; font-weight:800; color:${color};">${pressureBar ? `${pressureBar} Bar` : 'N/A'}</div>
-                <div style="font-size:10px; color:#64748b;">${pressureStatus}</div>
+                <span style="font-size:9.5px; color:#64748b; font-weight:800; text-transform:uppercase;">Gas Pressure</span>
+                <div style="font-size:15px; font-weight:900; color:${color};">${pressureBar} Bar</div>
+                <div style="font-size:9.5px; color:#475569;">${psi} PSI</div>
+                <div style="font-size:9px; font-weight:700; color:${color}; margin-top:2px;">${pressureStatus}</div>
               </div>
               <div>
-                <span style="font-size:10px; color:#64748b; font-weight:700; text-transform:uppercase;">Queue</span>
-                <div style="font-size:15px; font-weight:800; color:#0f172a;">${station.vehiclesWaiting ?? 0} Vehicles</div>
-                <div style="font-size:10px; color:#64748b;">~${waitMin} min wait</div>
+                <span style="font-size:9.5px; color:#64748b; font-weight:800; text-transform:uppercase;">Live Queue</span>
+                <div style="font-size:15px; font-weight:900; color:#0f172a;">${vehiclesCount} Cars</div>
+                <div style="font-size:9.5px; color:#475569;">~${waitMin} min wait</div>
+                <div style="font-size:9px; color:#059669; font-weight:700; margin-top:2px;">${station.activeDispensers ?? 4}/${station.totalDispensers ?? 4} Nozzles</div>
               </div>
             </div>
 
-            <div style="font-size:11px; color:#475569; margin-bottom:8px;">
-              🛣️ <strong>Detour:</strong> ${detourInfo}
+            <div style="font-size:10.5px; color:#475569; margin-bottom:8px; display:flex; justify-content:space-between;">
+              <span>🛣️ <strong>Detour:</strong> ${detourInfo}</span>
+              <span>₹${station.verifiedPricePerKg ?? 82.5}/kg</span>
             </div>
 
             <div style="display:flex; gap:6px; margin-top:6px;">
               <a href="https://www.google.com/maps/dir/?api=1&destination=${station.latitude},${station.longitude}" target="_blank"
-                 style="flex:1; text-align:center; background:#059669; color:#ffffff; padding:7px 10px; border-radius:8px; font-size:11px; font-weight:700; text-decoration:none;">
-                 Directions ↗
+                 style="flex:1; text-align:center; background:#059669; color:#ffffff; padding:8px 10px; border-radius:8px; font-size:11px; font-weight:800; text-decoration:none; display:flex; align-items:center; justify-content:center; gap:4px;">
+                 Navigate Google Maps ↗
               </a>
               <a href="/stations/${station.id}" 
-                 style="flex:1; text-align:center; background:#0f172a; color:#ffffff; padding:7px 10px; border-radius:8px; font-size:11px; font-weight:700; text-decoration:none;">
+                 style="flex:1; text-align:center; background:#0f172a; color:#ffffff; padding:8px 10px; border-radius:8px; font-size:11px; font-weight:800; text-decoration:none; display:flex; align-items:center; justify-content:center;">
                  Live Telemetry
               </a>
             </div>
@@ -290,7 +404,9 @@ export const GoogleStationMap: React.FC<GoogleStationMapProps> = ({
     if (hasPoints && mapRef.current) {
       mapRef.current.fitBounds(bounds);
       const listener = google.maps.event.addListener(mapRef.current, 'idle', () => {
-        if (mapRef.current.getZoom() > 14) mapRef.current.setZoom(14);
+        if (mapRef.current && mapRef.current.getZoom() > 14) {
+          mapRef.current.setZoom(14);
+        }
         google.maps.event.removeListener(listener);
       });
     }
@@ -326,7 +442,10 @@ export const GoogleStationMap: React.FC<GoogleStationMapProps> = ({
         },
       });
 
-      const stopStation = stations.find((s) => s.id === selectedStationId) || stations.find((s) => s.recommendationCategory === 'BEST_OVERALL');
+      const stopStation =
+        stations.find((s) => s.id === selectedStationId) ||
+        stations.find((s) => s.recommendationCategory === 'BEST_OVERALL');
+
       const waypoints = stopStation
         ? [{ location: { lat: stopStation.latitude, lng: stopStation.longitude }, stopover: true }]
         : [];
@@ -340,7 +459,6 @@ export const GoogleStationMap: React.FC<GoogleStationMapProps> = ({
         },
         (result: any, status: any) => {
           if (status === google.maps.DirectionsStatus.OK && directionsRendererRef.current) {
-            // Remove the fallback geometry polyline once Google Directions arrives
             if (polylineRef.current) {
               polylineRef.current.setMap(null);
               polylineRef.current = null;
@@ -365,24 +483,69 @@ export const GoogleStationMap: React.FC<GoogleStationMapProps> = ({
   }, [startPoint, destPoint, routeGeometry, selectedStationId, stations]);
 
   return (
-    <div className="relative w-full rounded-2xl overflow-hidden shadow-sm border border-slate-200 bg-slate-100" style={{ height }}>
+    <div
+      className="relative w-full rounded-2xl overflow-hidden shadow-sm border border-slate-200 bg-slate-100"
+      style={{ height }}
+    >
       <div ref={mapContainerRef} className="w-full h-full" />
 
+      {/* Loading state */}
       {isLoading && (
-        <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
-          <Loader2 size={32} className="text-emerald-600 animate-spin mb-2" />
-          <p className="text-xs font-semibold text-slate-700">Loading Map...</p>
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
+          <Loader2 size={36} className="text-emerald-600 animate-spin mb-2" />
+          <p className="text-xs font-bold text-slate-800">Connecting Google Maps API...</p>
+          <p className="text-[11px] text-slate-500 mt-0.5">Fetching pump station telemetry</p>
         </div>
       )}
 
-      {/* Floating Map Controls - Responsive on Mobile */}
-      <div className="absolute top-2 left-2 z-10 flex items-center gap-1.5 flex-wrap">
+      {/* Load / Auth Error Fallback Overlay */}
+      {loadError && !isLoading && (
+        <div className="absolute inset-0 z-20 flex flex-col items-center justify-center bg-slate-900/90 text-white p-6 text-center backdrop-blur-sm">
+          <div className="p-3 bg-amber-500/20 text-amber-400 rounded-2xl mb-3 border border-amber-500/30">
+            <AlertTriangle size={32} />
+          </div>
+          <h3 className="text-base font-extrabold text-white mb-1">Google Maps Setup Required</h3>
+          <p className="text-xs text-slate-300 max-w-md mb-5 leading-relaxed">{loadError}</p>
+          <div className="flex flex-wrap items-center justify-center gap-2.5">
+            {onEnterKey && (
+              <button
+                type="button"
+                onClick={onEnterKey}
+                className="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5"
+              >
+                <Key size={14} /> Enter Google Maps API Key
+              </button>
+            )}
+            {onSwitchToOSM && (
+              <button
+                type="button"
+                onClick={onSwitchToOSM}
+                className="px-4 py-2 rounded-xl bg-white/10 hover:bg-white/20 text-white font-bold text-xs border border-white/20 transition flex items-center gap-1.5"
+              >
+                🗺️ Switch to OpenStreetMap
+              </button>
+            )}
+            <a
+              href="https://www.google.com/maps/search/cng+station+near+me"
+              target="_blank"
+              rel="noreferrer"
+              className="px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold text-xs border border-slate-700 transition flex items-center gap-1.5"
+            >
+              <ExternalLink size={13} /> Open in Google Maps
+            </a>
+          </div>
+        </div>
+      )}
+
+      {/* Floating Map Controls on Top-Left */}
+      <div className="absolute top-2.5 left-2.5 z-10 flex items-center gap-1.5 flex-wrap">
         <button
           type="button"
           onClick={toggleTraffic}
-          className={`px-2.5 py-1 rounded-xl text-[11px] font-bold shadow-md transition flex items-center gap-1 ${
+          className={`px-2.5 py-1.5 rounded-xl text-[11px] font-bold shadow-md transition flex items-center gap-1 ${
             trafficEnabled ? 'bg-amber-500 text-white' : 'bg-white/95 text-slate-700 hover:bg-white'
           }`}
+          title="Toggle Google Maps Live Traffic"
         >
           <span>🚦</span> {trafficEnabled ? 'Traffic ON' : 'Traffic'}
         </button>
@@ -391,33 +554,59 @@ export const GoogleStationMap: React.FC<GoogleStationMapProps> = ({
           <button
             type="button"
             onClick={() => changeMapType('roadmap')}
-            className={`px-2 py-0.5 rounded-lg transition ${mapType === 'roadmap' ? 'bg-emerald-600 text-white' : 'text-slate-600'}`}
+            className={`px-2.5 py-1 rounded-lg transition ${
+              mapType === 'roadmap' ? 'bg-emerald-600 text-white font-bold' : 'text-slate-600'
+            }`}
           >
             Map
           </button>
           <button
             type="button"
             onClick={() => changeMapType('satellite')}
-            className={`px-2 py-0.5 rounded-lg transition ${mapType === 'satellite' ? 'bg-emerald-600 text-white' : 'text-slate-600'}`}
+            className={`px-2.5 py-1 rounded-lg transition ${
+              mapType === 'satellite' ? 'bg-emerald-600 text-white font-bold' : 'text-slate-600'
+            }`}
           >
             Satellite
           </button>
         </div>
+
+        <button
+          type="button"
+          onClick={locateUser}
+          disabled={locating}
+          className="bg-white/95 hover:bg-white text-slate-700 p-1.5 rounded-xl shadow-md border border-slate-200 transition text-[11px] font-bold flex items-center gap-1"
+          title="Locate my position on map"
+        >
+          <Locate size={14} className={locating ? 'animate-spin text-blue-600' : 'text-blue-600'} />
+          <span className="hidden sm:inline">My Location</span>
+        </button>
+
+        <button
+          type="button"
+          onClick={fitAllBounds}
+          className="bg-white/95 hover:bg-white text-slate-700 p-1.5 rounded-xl shadow-md border border-slate-200 transition text-[11px] font-bold flex items-center gap-1"
+          title="Fit all stations in view"
+        >
+          <Crosshair size={14} className="text-emerald-700" />
+          <span className="hidden sm:inline">Fit All</span>
+        </button>
       </div>
 
-      {/* Compact Legend on Bottom */}
-      <div className="absolute bottom-2 left-2 right-2 sm:right-auto z-10 bg-white/95 backdrop-blur-sm border border-slate-200 rounded-xl px-2.5 py-1.5 shadow-md text-[10px] sm:text-[11px] text-slate-700 flex items-center justify-between sm:justify-start gap-2 sm:gap-3">
+      {/* Floating Telemetry Legend on Bottom */}
+      <div className="absolute bottom-2.5 left-2.5 right-2.5 sm:right-auto z-10 bg-white/95 backdrop-blur-sm border border-slate-200 rounded-xl px-3 py-1.5 shadow-md text-[10px] sm:text-[11px] text-slate-700 flex items-center justify-between sm:justify-start gap-2.5 sm:gap-4 flex-wrap">
         <span className="flex items-center gap-1 font-bold text-emerald-700">
-          <span className="w-2 h-2 rounded-full bg-emerald-600 inline-block"></span> 200+ Bar
+          <span className="w-2.5 h-2.5 rounded-full bg-emerald-600 inline-block shadow-sm"></span> 200+ Bar
+          (High)
         </span>
         <span className="flex items-center gap-1 font-bold text-amber-700">
-          <span className="w-2 h-2 rounded-full bg-amber-500 inline-block"></span> 175-195 Bar
+          <span className="w-2.5 h-2.5 rounded-full bg-amber-500 inline-block shadow-sm"></span> 175-195 Bar
         </span>
         <span className="flex items-center gap-1 font-bold text-red-600">
-          <span className="w-2 h-2 rounded-full bg-red-500 inline-block"></span> &lt;175 Bar
+          <span className="w-2.5 h-2.5 rounded-full bg-red-500 inline-block shadow-sm"></span> &lt;175 Bar
         </span>
-        <span className="flex items-center gap-1 font-bold text-slate-800">
-          <Star size={11} className="text-amber-500 fill-amber-500" /> Best Choice
+        <span className="flex items-center gap-1 font-bold text-slate-900">
+          <Star size={12} className="text-amber-500 fill-amber-500" /> Best Choice
         </span>
       </div>
     </div>
