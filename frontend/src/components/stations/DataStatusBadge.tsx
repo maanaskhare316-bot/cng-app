@@ -47,10 +47,10 @@ export const DataStatusBadge: React.FC<DataStatusBadgeProps> = ({
 
   let badgeConfig = {
     label: 'LIVE VERIFIED',
-    bg: 'bg-emerald-950/70',
-    border: 'border-emerald-500/40',
-    text: 'text-emerald-400',
-    dot: 'bg-emerald-400',
+    bg: 'bg-[#B8E65A]/15',
+    border: 'border-[#B8E65A]/40',
+    text: 'text-[#B8E65A]',
+    dot: 'bg-[#B8E65A]',
     pulse: true,
     icon: ShieldCheck,
   };
@@ -59,10 +59,10 @@ export const DataStatusBadge: React.FC<DataStatusBadgeProps> = ({
     case 'LIVE_VERIFIED':
       badgeConfig = {
         label: 'LIVE VERIFIED',
-        bg: 'bg-emerald-950/70',
-        border: 'border-emerald-500/40',
-        text: 'text-emerald-400',
-        dot: 'bg-emerald-400',
+        bg: 'bg-[#B8E65A]/15',
+        border: 'border-[#B8E65A]/40',
+        text: 'text-[#B8E65A]',
+        dot: 'bg-[#B8E65A]',
         pulse: true,
         icon: ShieldCheck,
       };
@@ -71,10 +71,10 @@ export const DataStatusBadge: React.FC<DataStatusBadgeProps> = ({
     case 'RECENTLY_UPDATED':
       badgeConfig = {
         label: 'RECENTLY UPDATED',
-        bg: 'bg-sky-950/70',
-        border: 'border-sky-500/40',
-        text: 'text-sky-400',
-        dot: 'bg-sky-400',
+        bg: 'bg-[#16C7B2]/15',
+        border: 'border-[#16C7B2]/40',
+        text: 'text-[#16C7B2]',
+        dot: 'bg-[#16C7B2]',
         pulse: false,
         icon: CheckCircle2,
       };
@@ -83,10 +83,10 @@ export const DataStatusBadge: React.FC<DataStatusBadgeProps> = ({
     case 'COMMUNITY_REPORTED':
       badgeConfig = {
         label: 'COMMUNITY REPORTED',
-        bg: 'bg-amber-950/70',
-        border: 'border-amber-500/40',
-        text: 'text-amber-400',
-        dot: 'bg-amber-400',
+        bg: 'bg-[#F4B740]/15',
+        border: 'border-[#F4B740]/40',
+        text: 'text-[#F4B740]',
+        dot: 'bg-[#F4B740]',
         pulse: false,
         icon: Users,
       };
@@ -95,10 +95,10 @@ export const DataStatusBadge: React.FC<DataStatusBadgeProps> = ({
     case 'STALE_DATA':
       badgeConfig = {
         label: 'STALE DATA',
-        bg: 'bg-slate-900/80',
+        bg: 'bg-[#17263A]',
         border: 'border-slate-700',
-        text: 'text-slate-400',
-        dot: 'bg-slate-500',
+        text: 'text-[#758397]',
+        dot: 'bg-[#758397]',
         pulse: false,
         icon: Clock,
       };
@@ -107,10 +107,10 @@ export const DataStatusBadge: React.FC<DataStatusBadgeProps> = ({
     case 'UNAVAILABLE':
       badgeConfig = {
         label: 'UNAVAILABLE',
-        bg: 'bg-red-950/70',
-        border: 'border-red-500/40',
-        text: 'text-red-400',
-        dot: 'bg-red-400',
+        bg: 'bg-[#EF6464]/15',
+        border: 'border-[#EF6464]/40',
+        text: 'text-[#EF6464]',
+        dot: 'bg-[#EF6464]',
         pulse: false,
         icon: XCircle,
       };
@@ -172,12 +172,12 @@ export const DataStatusBadge: React.FC<DataStatusBadgeProps> = ({
       {/* Confidence Score */}
       {confidenceScore !== undefined && confidenceScore > 0 && (
         <span
-          className={`text-[10px] font-bold px-1.5 py-0.5 rounded-md ${
+          className={`text-[9.5px] font-black px-1.5 py-0.5 rounded-md border uppercase tracking-wider ${
             confidenceScore >= 85
-              ? 'bg-emerald-950/60 text-emerald-400 border border-emerald-500/20'
+              ? 'bg-[#B8E65A]/10 text-[#B8E65A] border-[#B8E65A]/30'
               : confidenceScore >= 70
-              ? 'bg-sky-950/60 text-sky-400 border border-sky-500/20'
-              : 'bg-slate-800 text-slate-400 border border-slate-700'
+              ? 'bg-[#16C7B2]/10 text-[#16C7B2] border-[#16C7B2]/30'
+              : 'bg-[#17263A] text-[#758397] border-slate-700'
           }`}
         >
           {confidenceScore}% Reliability
