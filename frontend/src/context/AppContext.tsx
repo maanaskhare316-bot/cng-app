@@ -8,16 +8,26 @@ import React, {
   useState,
 } from 'react';
 import { stationApi } from '../services/api';
-import type { AppSettings, StationSummaryDto, RouteSearchRequest, RouteSearchResultDto } from '../types/index';
+import type {
+  AppSettings,
+  StationSummaryDto,
+  RouteSearchRequest,
+  RouteSearchResultDto,
+  CommunityReportPayload,
+  IncorrectInfoFlagPayload,
+} from '../types/index';
 import { DEMO_STATIONS } from '../data/demoStations';
 import { CORRIDORS } from '../data/corridors';
 import { getStoredGoogleApiKey, storeGoogleApiKey } from '../services/googleMapsLoader';
+import { computeArrivalPrediction } from '../utils/predictionEngine';
+import { rankStationsForRoute } from '../utils/rankingEngine';
 
 const SETTINGS_KEY = 'cng-navigator-settings';
+const COMMUNITY_REPORTS_KEY = 'cng-navigator-community-reports';
 const MAX_SELECTION = 3;
 
 const DEFAULT_SETTINGS: AppSettings = {
-  theme: 'light',
+  theme: 'dark',
   distanceUnit: 'km',
   defaultVehicleType: 'car',
   maxDetourKm: 5,
@@ -38,6 +48,8 @@ export interface AppContextValue {
   clearSelection: () => void;
   refreshStations: () => void;
   updateStationTelemetry: (stationId: number, vehicles: number, pressure: number) => void;
+  submitCommunityReport: (payload: CommunityReportPayload) => void;
+  submitIncorrectFlag: (payload: IncorrectInfoFlagPayload) => void;
   planSmartRoute: (req: RouteSearchRequest) => Promise<RouteSearchResultDto>;
   activeRouteResult: RouteSearchResultDto | null;
   setActiveRouteResult: (res: RouteSearchResultDto | null) => void;
@@ -79,7 +91,18 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
-  const [stations, setStations] = useState<StationSummaryDto[]>(DEMO_STATIONS);
+  const [stations, setStations] = useState<StationSummaryDto[]>(() => {
+    // Merge any stored community reports from localStorage
+    try {
+      const stored = localStorage.getItem(COMMUNITY_REPORTS_KEY);
+      if (stored) {
+        const overrides: Record<number, Partial<StationSummaryDto>> = JSON.parse(stored);
+        return DEMO_STATIONS.map((s) => (overrides[s.id] ? { ...s, ...overrides[s.id] } : s));
+      }
+    } catch {}
+    return DEMO_STATIONS;
+  });
+
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [settings, setSettings] = useState<AppSettings>(loadSettings);
@@ -100,10 +123,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     try {
       const data = await stationApi.getAll();
       if (mountedRef.current && Array.isArray(data) && data.length > 0) {
-        setStations(data);
+        // Overlay any local community reports
+        let currentOverrides: Record<number, Partial<StationSummaryDto>> = {};
+        try {
+          const stored = localStorage.getItem(COMMUNITY_REPORTS_KEY);
+          if (stored) currentOverrides = JSON.parse(stored);
+        } catch {}
+
+        setStations(
+          data.map((st: StationSummaryDto) =>
+            currentOverrides[st.id] ? { ...st, ...currentOverrides[st.id] } : st
+          )
+        );
       }
     } catch {
-      // Offline / standalone fallback
+      // Standalone mode / offline fallback
     } finally {
       if (mountedRef.current) setIsLoading(false);
     }
@@ -113,19 +147,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     void fetchStations();
   }, [fetchStations]);
 
-  // Live simulation tick
+  // Live simulation tick (Only fluctuates LIVE_VERIFIED stations by subtle sensor jitter)
   useEffect(() => {
     if (!settings.simulationEnabled) return;
 
     const timer = setInterval(() => {
       setStations((prevStations) =>
         prevStations.map((s) => {
-          if (Math.random() < 0.4) {
+          // Only simulate subtle fluctuations if station is operational and has live verification
+          if (s.verificationStatus === 'LIVE_VERIFIED' && s.operationalStatus === 'OPERATIONAL' && Math.random() < 0.35) {
             const deltaQueue = Math.random() > 0.5 ? 1 : -1;
             const newQueue = Math.max(0, Math.min(15, (s.vehiclesWaiting ?? 2) + deltaQueue));
-            const newWait = Math.round(newQueue * 2);
+            const activeNozzles = s.activeDispensers || 4;
+            const newWait = Math.round(newQueue * (4.5 / activeNozzles));
 
-            const deltaPressure = Math.floor(Math.random() * 6) - 2;
+            const deltaPressure = Math.floor(Math.random() * 5) - 2;
             const currentP = s.currentPressureBar ?? 200;
             const newPressure = Math.max(165, Math.min(225, currentP + deltaPressure));
 
@@ -136,12 +172,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
               currentPressureBar: newPressure,
               queueUpdatedAt: new Date().toISOString(),
               pressureUpdatedAt: new Date().toISOString(),
+              lastUpdatedTimestamp: new Date().toISOString(),
             };
           }
           return s;
         })
       );
-    }, 10000);
+    }, 12000);
 
     return () => clearInterval(timer);
   }, [settings.simulationEnabled]);
@@ -154,41 +191,99 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const updateStationTelemetry = useCallback(
-    (stationId: number, vehicles: number, pressure: number) => {
-      setStations((prev) =>
-        prev.map((s) => {
-          if (s.id === stationId) {
-            return {
-              ...s,
-              vehiclesWaiting: vehicles,
-              estimatedWaitMinutes: Math.round(vehicles * 2),
-              currentPressureBar: pressure,
-              queueUpdatedAt: new Date().toISOString(),
-              pressureUpdatedAt: new Date().toISOString(),
-              isQueueLive: true,
-              isPressureLive: true,
-            };
-          }
-          return s;
-        })
-      );
-    },
-    []
-  );
+  // Submit community telemetry report
+  const submitCommunityReport = useCallback((payload: CommunityReportPayload) => {
+    setStations((prev) => {
+      const next = prev.map((s) => {
+        if (s.id === payload.stationId) {
+          const updated: StationSummaryDto = {
+            ...s,
+            vehiclesWaiting: payload.vehiclesWaiting,
+            estimatedWaitMinutes: payload.estimatedWaitMinutes,
+            operationalStatus: payload.operationalStatus,
+            cngAvailability: payload.cngAvailability,
+            verifiedOpen: payload.operationalStatus === 'OPERATIONAL',
+            currentPressureBar:
+              payload.hasReliablePressureReading && payload.pressureBar
+                ? payload.pressureBar
+                : s.currentPressureBar,
+            verificationStatus: 'COMMUNITY_REPORTED',
+            dataSourceLabel: 'Driver Community Report',
+            dataConfidenceScore: 82,
+            lastUpdatedTimestamp: new Date().toISOString(),
+            queueUpdatedAt: new Date().toISOString(),
+            pressureUpdatedAt: payload.hasReliablePressureReading ? new Date().toISOString() : s.pressureUpdatedAt,
+            isQueueLive: true,
+            isPressureLive: payload.hasReliablePressureReading,
+          };
+          return updated;
+        }
+        return s;
+      });
 
-  // Smart Route Recommendation Algorithm
-  const planSmartRoute = useCallback(
-    async (req: RouteSearchRequest): Promise<RouteSearchResultDto> => {
+      // Persist in localStorage
       try {
-        const backendRes = await stationApi.searchRoute(req);
-        if (backendRes && backendRes.stations && backendRes.stations.length > 0) {
-          setActiveRouteResult(backendRes);
-          return backendRes;
+        const stored = localStorage.getItem(COMMUNITY_REPORTS_KEY);
+        const map = stored ? JSON.parse(stored) : {};
+        const target = next.find((s) => s.id === payload.stationId);
+        if (target) {
+          map[payload.stationId] = target;
+          localStorage.setItem(COMMUNITY_REPORTS_KEY, JSON.stringify(map));
         }
       } catch {}
 
-      // Check if this matches a known corridor with realistic highway curves (both forward & reverse)
+      return next;
+    });
+  }, []);
+
+  // Submit flag on incorrect information
+  const submitIncorrectFlag = useCallback((payload: IncorrectInfoFlagPayload) => {
+    setStations((prev) => {
+      const next = prev.map((s) => {
+        if (s.id === payload.stationId) {
+          let updated = { ...s };
+          if (payload.issueType === 'CLOSED') {
+            updated.operationalStatus = 'TEMPORARILY_CLOSED';
+            updated.verifiedOpen = false;
+            updated.recommendationReason = 'Flagged as closed by driver community.';
+          } else if (payload.issueType === 'NO_CNG') {
+            updated.cngAvailability = 'OUT_OF_STOCK';
+            updated.recommendationReason = 'Flagged as out of CNG stock.';
+          } else if (payload.issueType === 'LOW_PRESSURE') {
+            updated.currentPressureBar = Math.min(150, updated.currentPressureBar ?? 150);
+          } else if (payload.issueType === 'LONG_QUEUE') {
+            updated.vehiclesWaiting = Math.max(14, (updated.vehiclesWaiting ?? 4) + 6);
+          }
+          updated.verificationStatus = 'COMMUNITY_REPORTED';
+          updated.dataSourceLabel = 'Driver Discrepancy Flag';
+          updated.lastUpdatedTimestamp = new Date().toISOString();
+          return updated;
+        }
+        return s;
+      });
+      return next;
+    });
+  }, []);
+
+  const updateStationTelemetry = useCallback(
+    (stationId: number, vehicles: number, pressure: number) => {
+      submitCommunityReport({
+        stationId,
+        vehiclesWaiting: vehicles,
+        estimatedWaitMinutes: Math.round(vehicles * 2),
+        operationalStatus: 'OPERATIONAL',
+        cngAvailability: 'AVAILABLE',
+        pressureBar: pressure,
+        hasReliablePressureReading: true,
+      });
+    },
+    [submitCommunityReport]
+  );
+
+  // Smart Route Recommendation & Arrival Prediction Algorithm
+  const planSmartRoute = useCallback(
+    async (req: RouteSearchRequest): Promise<RouteSearchResultDto> => {
+      // 1. Identify corridor highway waypoints
       const forwardCorridor = CORRIDORS.find(
         (c) =>
           Math.abs(c.startLat - req.startLat) < 0.35 &&
@@ -224,7 +319,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
 
       const totalDur = Math.round((totalDist / 65) * 60);
 
-      // Find stations within corridor bounding box
+      // Find candidate stations within bounding corridor
       const minLat = Math.min(req.startLat, req.destLat) - 0.9;
       const maxLat = Math.max(req.startLat, req.destLat) + 0.9;
       const minLng = Math.min(req.startLng, req.destLng) - 0.9;
@@ -239,10 +334,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       );
 
       if (candidateStations.length === 0) {
-        candidateStations = stations.slice(0, 4);
+        candidateStations = stations.slice(0, 5);
       }
 
-      const scoredStations = candidateStations.map((s) => {
+      // Compute Distance, Detour, and Run Arrival Prediction Engine for each station
+      const enrichedCandidates = candidateStations.map((s) => {
         const distFromStart = Math.round(
           haversineDistance(req.startLat, req.startLng, s.latitude, s.longitude)
         );
@@ -254,19 +350,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         );
         const detourMin = Math.max(1, Math.round(detourKm * 1.8));
 
-        const pressure = s.currentPressureBar ?? 190;
-        const queue = s.vehiclesWaiting ?? 4;
+        // Travel time from driver/start to this station
+        const etaMins = Math.max(2, Math.round((distFromStart / 65) * 60));
 
-        // 1. Pressure Score (40%)
-        const pressureScore = Math.min(100, Math.max(20, Math.round(((pressure - 140) / 80) * 100)));
-
-        // 2. Queue Score (40%)
-        const queueScore = Math.max(10, Math.round(100 - queue * 7));
-
-        // 3. Detour Score (20%)
-        const detourScore = Math.max(10, Math.round(100 - detourKm * 15));
-
-        const totalScore = Math.round(pressureScore * 0.4 + queueScore * 0.4 + detourScore * 0.2);
+        // 🧠 Smart Arrival Prediction Engine Execution
+        const prediction = computeArrivalPrediction(s, distFromStart, etaMins);
 
         return {
           ...s,
@@ -274,50 +362,28 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           distanceFromRouteKm: Math.min(detourKm, 1.5),
           extraDetourKm: detourKm,
           estimatedDetourMinutes: detourMin,
-          pressureScore,
-          queueScore,
-          detourScore,
-          score: totalScore,
-          recommendationCategory: null as any,
-          recommendationReason: null as any,
+          arrivalPrediction: prediction,
         };
       });
 
-      scoredStations.sort((a, b) => (b.score ?? 0) - (a.score ?? 0));
-
-      if (scoredStations.length > 0) {
-        const best = scoredStations[0];
-        best.recommendationCategory = 'BEST_OVERALL';
-        best.convenienceBadge = 'Short Queue + Super Pressure';
-        best.recommendationReason = `⭐ Top Recommendation: Shortest queue (only ${best.vehiclesWaiting ?? 0} vehicles) and highest pressure (${Math.round(best.currentPressureBar ?? 200)} Bar)! Minimal detour (+${best.extraDetourKm} km) with fastest gas fill.`;
-      }
-
-      const sortedByQueue = [...scoredStations].sort((a, b) => (a.vehiclesWaiting ?? 0) - (b.vehiclesWaiting ?? 0));
-      if (sortedByQueue.length > 1 && sortedByQueue[0].id !== scoredStations[0].id) {
-        sortedByQueue[0].recommendationCategory = 'SHORTEST_QUEUE';
-      }
-
-      const sortedByPressure = [...scoredStations].sort((a, b) => (b.currentPressureBar ?? 0) - (a.currentPressureBar ?? 0));
-      if (sortedByPressure.length > 1 && sortedByPressure[0].id !== scoredStations[0].id) {
-        sortedByPressure[0].recommendationCategory = 'HIGH_PRESSURE';
-      }
+      // 🏆 Run Multi-Factor Ranking Engine across Candidate Stations
+      const rankingResult = rankStationsForRoute(enrichedCandidates, totalDist);
 
       const result: RouteSearchResultDto = {
         totalDistanceKm: totalDist,
         totalDurationMinutes: totalDur,
         routeGeometry,
-        stations: scoredStations,
-        bestOverall: scoredStations[0] || null,
-        shortestQueue: sortedByQueue[0] || null,
-        highestPressure: sortedByPressure[0] || null,
-        nearestOnRoute: scoredStations[1] || null,
-        alternatives: scoredStations.slice(1).map((st) => ({
+        stations: rankingResult.stations,
+        bestOverall: rankingResult.bestOverall,
+        fastestRefueling: rankingResult.fastestRefueling,
+        nearestStation: rankingResult.nearestStation,
+        alternatives: rankingResult.stations.slice(1).map((st) => ({
           station: st,
-          reason: `${Math.round(st.currentPressureBar ?? 0)} Bar • ${st.vehiclesWaiting ?? 0} cars • +${st.extraDetourKm}km`,
+          reason: `${st.currentPressureBar ?? 0} Bar • ${st.vehiclesWaiting ?? 0} cars • +${st.extraDetourKm}km detour`,
         })),
         isDemoRoute: true,
-        routeSource: 'Google Maps Directions Engine',
-        message: 'Optimal station selected based on low queue and high compressor pressure.',
+        routeSource: 'Google Maps Directions & Mobility Intelligence Engine',
+        message: 'Stations evaluated across arrival queue prediction, pressure reliability, and detour distance.',
       };
 
       setActiveRouteResult(result);
@@ -350,6 +416,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       clearSelection,
       refreshStations: fetchStations,
       updateStationTelemetry,
+      submitCommunityReport,
+      submitIncorrectFlag,
       planSmartRoute,
       activeRouteResult,
       setActiveRouteResult,
@@ -365,8 +433,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       clearSelection,
       fetchStations,
       updateStationTelemetry,
+      submitCommunityReport,
+      submitIncorrectFlag,
       planSmartRoute,
       activeRouteResult,
+      setActiveRouteResult,
     ]
   );
 

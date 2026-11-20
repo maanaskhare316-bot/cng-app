@@ -10,6 +10,9 @@ const path = require('path');
 
 const PORT = process.env.PORT || 8080;
 
+const now = Date.now();
+const minutesAgo = (mins) => new Date(now - mins * 60 * 1000).toISOString();
+
 // ── In-Memory Database: CNG Stations ─────────────────────────────────────────
 let STATIONS = [
   {
@@ -22,6 +25,8 @@ let STATIONS = [
     latitude: 28.5355,
     longitude: 77.2882,
     phoneNumber: '+91 11 2694 4501',
+    operationalStatus: 'OPERATIONAL',
+    cngAvailability: 'AVAILABLE',
     verifiedOpen: true,
     verifiedPricePerKg: 79.7,
     dispenserCapacityPerHour: 140,
@@ -39,6 +44,11 @@ let STATIONS = [
     queueDataSource: 'AI_CAMERA',
     isQueueLive: true,
     isPressureLive: true,
+    verificationStatus: 'LIVE_VERIFIED',
+    dataSourceLabel: 'IoT Sensor / SCADA',
+    dataConfidenceScore: 94,
+    lastUpdatedTimestamp: minutesAgo(8),
+    isDemoData: true,
     score: 72,
   },
   {
@@ -51,6 +61,8 @@ let STATIONS = [
     latitude: 28.4682,
     longitude: 77.5115,
     phoneNumber: '+91 120 456 7890',
+    operationalStatus: 'OPERATIONAL',
+    cngAvailability: 'AVAILABLE',
     verifiedOpen: true,
     verifiedPricePerKg: 82.2,
     dispenserCapacityPerHour: 160,
@@ -68,6 +80,12 @@ let STATIONS = [
     queueDataSource: 'AI_CAMERA',
     isQueueLive: true,
     isPressureLive: true,
+    verificationStatus: 'RECENTLY_UPDATED',
+    dataSourceLabel: 'Station Attendant Telemetry',
+    dataConfidenceScore: 84,
+    lastUpdatedTimestamp: minutesAgo(18),
+    isDemoData: true,
+    recommendationCategory: 'FASTEST_REFUELING',
     score: 87,
   },
   {
@@ -80,6 +98,8 @@ let STATIONS = [
     latitude: 28.142,
     longitude: 77.562,
     phoneNumber: '+91 565 240 1199',
+    operationalStatus: 'OPERATIONAL',
+    cngAvailability: 'AVAILABLE',
     verifiedOpen: true,
     verifiedPricePerKg: 82.5,
     dispenserCapacityPerHour: 180,
@@ -97,8 +117,13 @@ let STATIONS = [
     queueDataSource: 'AI_CAMERA',
     isQueueLive: true,
     isPressureLive: true,
+    verificationStatus: 'LIVE_VERIFIED',
+    dataSourceLabel: 'Connected SCADA Telemetry',
+    dataConfidenceScore: 98,
+    lastUpdatedTimestamp: minutesAgo(3),
+    isDemoData: true,
     recommendationCategory: 'BEST_OVERALL',
-    recommendationReason: '🌟 Top Recommendation: Short queue (only 2 vehicles) and maximum 218 Bar pressure for full-tank fast filling!',
+    recommendationReason: '🌟 Top Recommendation: Optimal 218 Bar pressure, short queue (2 cars), and instant highway access.',
     score: 98,
     convenienceBadge: 'Short Queue + Super Pressure',
   },
@@ -112,6 +137,8 @@ let STATIONS = [
     latitude: 27.521,
     longitude: 77.671,
     phoneNumber: '+91 565 250 8822',
+    operationalStatus: 'OPERATIONAL',
+    cngAvailability: 'AVAILABLE',
     verifiedOpen: true,
     verifiedPricePerKg: 83.1,
     dispenserCapacityPerHour: 90,
@@ -124,11 +151,16 @@ let STATIONS = [
     currentPressureBar: 178,
     minSafeLimitBar: 140,
     maxSafeLimitBar: 230,
-    sensorStatus: 'LIVE',
-    pressureDataSource: 'IOT_SCADA',
-    queueDataSource: 'LIVE_SENSOR',
-    isQueueLive: true,
-    isPressureLive: true,
+    sensorStatus: 'MANUAL',
+    pressureDataSource: 'COMMUNITY',
+    queueDataSource: 'COMMUNITY',
+    isQueueLive: false,
+    isPressureLive: false,
+    verificationStatus: 'COMMUNITY_REPORTED',
+    dataSourceLabel: 'Driver Community Report',
+    dataConfidenceScore: 76,
+    lastUpdatedTimestamp: minutesAgo(38),
+    isDemoData: true,
     score: 58,
   },
   {
@@ -141,6 +173,8 @@ let STATIONS = [
     latitude: 27.165,
     longitude: 78.045,
     phoneNumber: '+91 562 233 4455',
+    operationalStatus: 'OPERATIONAL',
+    cngAvailability: 'AVAILABLE',
     verifiedOpen: true,
     verifiedPricePerKg: 82.8,
     dispenserCapacityPerHour: 120,
@@ -153,68 +187,58 @@ let STATIONS = [
     currentPressureBar: 212,
     minSafeLimitBar: 140,
     maxSafeLimitBar: 240,
+    sensorStatus: 'MANUAL',
+    pressureDataSource: 'COMMUNITY',
+    queueDataSource: 'COMMUNITY',
+    isQueueLive: false,
+    isPressureLive: false,
+    verificationStatus: 'COMMUNITY_REPORTED',
+    dataSourceLabel: 'Driver Community Report',
+    dataConfidenceScore: 75,
+    lastUpdatedTimestamp: minutesAgo(42),
+    isDemoData: true,
+    score: 82,
+  },
+  {
+    id: 9008,
+    name: 'Aavantika Gas CNG - Bhopal Hoshangabad Road',
+    operator: 'Aavantika Gas Limited (AGL)',
+    address: 'Near Misrod, Hoshangabad Road',
+    city: 'Bhopal',
+    state: 'Madhya Pradesh',
+    latitude: 23.1678,
+    longitude: 77.4645,
+    phoneNumber: '+91 755 249 9001',
+    operationalStatus: 'OPERATIONAL',
+    cngAvailability: 'AVAILABLE',
+    verifiedOpen: true,
+    verifiedPricePerKg: 89.0,
+    dispenserCapacityPerHour: 100,
+    activeDispensers: 4,
+    totalDispensers: 4,
+    operatingHours: '06:00–23:30',
+    amenities: ['Restroom', 'Free Air', 'UPI'],
+    vehiclesWaiting: 5,
+    estimatedWaitMinutes: 10,
+    currentPressureBar: 196,
+    minSafeLimitBar: 140,
+    maxSafeLimitBar: 230,
     sensorStatus: 'LIVE',
     pressureDataSource: 'IOT_SCADA',
     queueDataSource: 'AI_CAMERA',
     isQueueLive: true,
     isPressureLive: true,
-    score: 93,
+    verificationStatus: 'LIVE_VERIFIED',
+    dataSourceLabel: 'Connected SCADA Telemetry',
+    dataConfidenceScore: 92,
+    lastUpdatedTimestamp: minutesAgo(12),
+    isDemoData: true,
+    recommendationCategory: 'NEAREST_STATION',
+    recommendationReason: '📍 Nearest Station: First available pump on Bhopal corridor departure.',
+    score: 75,
   },
   {
-    id: 9006,
-    name: 'MGL CNG Station - Chembur Eastern Freeway',
-    operator: 'Mahanagar Gas Limited (MGL)',
-    address: 'Sion-Trombay Road, Near Chembur Naka',
-    city: 'Mumbai',
-    state: 'Maharashtra',
-    latitude: 19.0522,
-    longitude: 72.8994,
-    phoneNumber: '+91 22 2522 1000',
-    verifiedOpen: true,
-    verifiedPricePerKg: 75.0,
-    dispenserCapacityPerHour: 130,
-    activeDispensers: 4,
-    totalDispensers: 4,
-    operatingHours: '24x7 Open',
-    amenities: ['Restroom', 'Air Filling', 'UPI'],
-    vehiclesWaiting: 8,
-    estimatedWaitMinutes: 16,
-    currentPressureBar: 185,
-    minSafeLimitBar: 140,
-    maxSafeLimitBar: 230,
-    sensorStatus: 'LIVE',
-    score: 68,
-  },
-  {
-    id: 9007,
-    name: 'MNGL CNG Expressway Mega Oasis - Khalapur',
-    operator: 'Maharashtra Natural Gas (MNGL)',
-    address: 'Mumbai-Pune Expressway KM 38, Khalapur Toll Plaza Food Mall',
-    city: 'Khalapur',
-    state: 'Maharashtra',
-    latitude: 18.8255,
-    longitude: 73.2842,
-    phoneNumber: '+91 2192 275 100',
-    verifiedOpen: true,
-    verifiedPricePerKg: 84.5,
-    dispenserCapacityPerHour: 220,
-    activeDispensers: 8,
-    totalDispensers: 8,
-    operatingHours: '24x7 Open',
-    amenities: ['Large Food Mall', 'Premium Restrooms', 'Children Play Area', 'Tyre Service', 'EV Fast Charging'],
-    vehiclesWaiting: 1,
-    estimatedWaitMinutes: 2,
-    currentPressureBar: 222,
-    minSafeLimitBar: 140,
-    maxSafeLimitBar: 245,
-    sensorStatus: 'LIVE',
-    recommendationCategory: 'BEST_OVERALL',
-    recommendationReason: '🌟 Top Recommendation: Only 1 vehicle in queue and 222 Bar maximum pressure! Located directly on expressway.',
-    score: 99,
-    convenienceBadge: 'Shortest Queue + Highest Pressure',
-  },
-  {
-    id: 9008,
+    id: 9009,
     name: 'Aavantika Gas CNG Highway Hub - Sehore Bypass',
     operator: 'Aavantika Gas Limited (AGL)',
     address: 'Bhopal-Indore State Highway SH-18, Sehore Crescent Bypass',
@@ -223,6 +247,8 @@ let STATIONS = [
     latitude: 23.1985,
     longitude: 77.0855,
     phoneNumber: '+91 7562 224 550',
+    operationalStatus: 'OPERATIONAL',
+    cngAvailability: 'AVAILABLE',
     verifiedOpen: true,
     verifiedPricePerKg: 89.5,
     dispenserCapacityPerHour: 150,
@@ -236,10 +262,95 @@ let STATIONS = [
     minSafeLimitBar: 140,
     maxSafeLimitBar: 240,
     sensorStatus: 'LIVE',
+    pressureDataSource: 'IOT_SCADA',
+    queueDataSource: 'AI_CAMERA',
+    isQueueLive: true,
+    isPressureLive: true,
+    verificationStatus: 'LIVE_VERIFIED',
+    dataSourceLabel: 'IoT Sensor / SCADA',
+    dataConfidenceScore: 98,
+    lastUpdatedTimestamp: minutesAgo(4),
+    isDemoData: true,
     recommendationCategory: 'BEST_OVERALL',
     recommendationReason: '🌟 Top Recommendation: Short queue (only 2 vehicles) and 216 Bar high pressure! Fast filling and minimal detour.',
     score: 97,
     convenienceBadge: 'Short Queue + Super Pressure',
+  },
+  {
+    id: 9010,
+    name: 'Aavantika Gas CNG - Dewas Bypass Station',
+    operator: 'Aavantika Gas Limited (AGL)',
+    address: 'AB Road Dewas Bypass, Near Chamunda Mata Mandir Crossing',
+    city: 'Dewas',
+    state: 'Madhya Pradesh',
+    latitude: 22.9654,
+    longitude: 76.0592,
+    phoneNumber: '+91 7272 255 110',
+    operationalStatus: 'OPERATIONAL',
+    cngAvailability: 'AVAILABLE',
+    verifiedOpen: true,
+    verifiedPricePerKg: 89.5,
+    dispenserCapacityPerHour: 110,
+    activeDispensers: 4,
+    totalDispensers: 4,
+    operatingHours: '24x7 Open',
+    amenities: ['Restroom', 'Highway Dhaba', 'Free Drinking Water'],
+    vehiclesWaiting: 3,
+    estimatedWaitMinutes: 6,
+    currentPressureBar: 198,
+    minSafeLimitBar: 140,
+    maxSafeLimitBar: 230,
+    sensorStatus: 'MANUAL',
+    pressureDataSource: 'COMMUNITY',
+    queueDataSource: 'COMMUNITY',
+    isQueueLive: false,
+    isPressureLive: false,
+    verificationStatus: 'RECENTLY_UPDATED',
+    dataSourceLabel: 'Attendant Live Verified',
+    dataConfidenceScore: 82,
+    lastUpdatedTimestamp: minutesAgo(24),
+    isDemoData: true,
+    recommendationCategory: 'FASTEST_REFUELING',
+    score: 84,
+  },
+  {
+    id: 9013,
+    name: 'MGL CNG Oasis - Khalapur Food Mall',
+    operator: 'Mahanagar Gas Limited (MGL)',
+    address: 'Mumbai-Pune Expressway KM 38, Khalapur Oasis Plaza',
+    city: 'Khalapur',
+    state: 'Maharashtra',
+    latitude: 18.8255,
+    longitude: 73.2842,
+    phoneNumber: '+91 2192 275 800',
+    operationalStatus: 'OPERATIONAL',
+    cngAvailability: 'AVAILABLE',
+    verifiedOpen: true,
+    verifiedPricePerKg: 76.0,
+    dispenserCapacityPerHour: 200,
+    activeDispensers: 8,
+    totalDispensers: 8,
+    operatingHours: '24x7 Open',
+    amenities: ['Food Mall', 'McDonalds', 'Clean Restrooms', 'Tyre Air', 'EV Charging', '24x7 Security'],
+    vehiclesWaiting: 3,
+    estimatedWaitMinutes: 6,
+    currentPressureBar: 220,
+    minSafeLimitBar: 140,
+    maxSafeLimitBar: 245,
+    sensorStatus: 'LIVE',
+    pressureDataSource: 'IOT_SCADA',
+    queueDataSource: 'AI_CAMERA',
+    isQueueLive: true,
+    isPressureLive: true,
+    verificationStatus: 'LIVE_VERIFIED',
+    dataSourceLabel: 'Connected SCADA Telemetry',
+    dataConfidenceScore: 97,
+    lastUpdatedTimestamp: minutesAgo(5),
+    isDemoData: true,
+    recommendationCategory: 'BEST_OVERALL',
+    recommendationReason: '🌟 Top Recommendation: Direct Expressway Food Mall access with 220 Bar super pressure.',
+    score: 99,
+    convenienceBadge: 'Expressway Food Mall + 220 Bar',
   },
 ];
 
@@ -328,91 +439,87 @@ function haversine(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// ── Background Simulation Engine (Every 10s) ─────────────────────────────────
+// ── Background Simulation Engine (Every 15s) ─────────────────────────────────
 setInterval(() => {
   STATIONS.forEach((s) => {
-    if (Math.random() < 0.4) {
+    if (s.verificationStatus === 'LIVE_VERIFIED' && Math.random() < 0.35) {
       const deltaQ = Math.random() > 0.5 ? 1 : -1;
-      s.vehiclesWaiting = Math.max(0, Math.min(18, (s.vehiclesWaiting || 2) + deltaQ));
-      s.estimatedWaitMinutes = Math.round(s.vehiclesWaiting * 2);
+      s.vehiclesWaiting = Math.max(0, Math.min(15, (s.vehiclesWaiting || 2) + deltaQ));
+      s.estimatedWaitMinutes = Math.round(s.vehiclesWaiting * (4.5 / (s.activeDispensers || 4)));
 
-      const deltaP = Math.floor(Math.random() * 8) - 3;
+      const deltaP = Math.floor(Math.random() * 5) - 2;
       s.currentPressureBar = Math.max(165, Math.min(225, (s.currentPressureBar || 200) + deltaP));
+      s.lastUpdatedTimestamp = new Date().toISOString();
     }
   });
-}, 10000);
+}, 15000);
 
-// ── Helper: CORS & JSON sender ───────────────────────────────────────────────
+// Helper: Send JSON Response
 function sendJson(res, statusCode, data) {
   res.writeHead(statusCode, {
     'Content-Type': 'application/json',
     'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+    'Access-Control-Allow-Headers': 'Content-Type',
   });
   res.end(JSON.stringify(data));
 }
 
-// ── Request Router ───────────────────────────────────────────────────────────
+// ── HTTP Request Router ──────────────────────────────────────────────────────
 const server = http.createServer((req, res) => {
-  const parsedUrl = url.parse(req.url, true);
-  const pathname = parsedUrl.pathname;
-  const method = req.method;
-
-  // Handle CORS Preflight
-  if (method === 'OPTIONS') {
+  // Handle CORS Pre-flight
+  if (req.method === 'OPTIONS') {
     res.writeHead(204, {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type',
     });
-    return res.end();
+    res.end();
+    return;
   }
 
-  // 1. Health Endpoint
+  const parsedUrl = url.parse(req.url, true);
+  const { pathname } = parsedUrl;
+  const method = req.method;
+
+  // 1. GET /api/health
   if (pathname === '/api/health' && method === 'GET') {
     return sendJson(res, 200, {
       status: 'UP',
-      uptime: process.uptime(),
       timestamp: new Date().toISOString(),
-      service: 'CNG Navigator Engine',
+      platform: 'CNG Navigator Smart Trip Intelligence',
+      engine: 'Arrival Forecast & Multi-Factor Scoring',
     });
   }
 
-  // 2. GET All Stations
+  // 2. GET /api/stations
   if (pathname === '/api/stations' && method === 'GET') {
     return sendJson(res, 200, STATIONS);
   }
 
-  // 3. GET Single Station by ID
+  // 3. GET /api/stations/:id
   const stationMatch = pathname.match(/^\/api\/stations\/(\d+)$/);
   if (stationMatch && method === 'GET') {
-    const stationId = parseInt(stationMatch[1], 10);
-    const station = STATIONS.find((s) => s.id === stationId);
-    if (!station) {
-      return sendJson(res, 404, { error: 'Station not found' });
+    const id = Number(stationMatch[1]);
+    const station = STATIONS.find((s) => s.id === id);
+    if (station) {
+      return sendJson(res, 200, station);
     }
-    return sendJson(res, 200, station);
+    return sendJson(res, 404, { error: 'Station not found' });
   }
 
-  // 4. POST Route Search & Recommendation Engine
+  // 4. POST /api/stations/search-route
   if (pathname === '/api/stations/search-route' && method === 'POST') {
     let body = '';
     req.on('data', (chunk) => (body += chunk));
     req.on('end', () => {
       try {
-        const payload = JSON.parse(body || '{}');
-        const { startLat, startLng, destLat, destLng, maxDetourKm = 5 } = payload;
+        const { startLat, startLng, destLat, destLng, maxDetourKm = 5 } = JSON.parse(body || '{}');
 
         if (!startLat || !startLng || !destLat || !destLng) {
           return sendJson(res, 400, { error: 'Missing startLat, startLng, destLat, or destLng' });
         }
 
-        const totalDist = Math.round(haversine(startLat, startLng, destLat, destLng) * 1.25);
-        const totalDur = Math.round((totalDist / 65) * 60);
-
-        // Generate geometry points
-        // Find matching highway corridor for realistic road waypoints (forward or reverse)
         const forwardCorridor = HIGHWAY_CORRIDORS.find(
           (c) =>
             Math.abs(c.startLat - startLat) < 0.35 &&
@@ -427,11 +534,15 @@ const server = http.createServer((req, res) => {
           : null;
 
         let routeGeometry = [];
+        let totalDist = 0;
         if (forwardCorridor) {
           routeGeometry = forwardCorridor.waypoints;
+          totalDist = 200;
         } else if (reverseCorridor) {
           routeGeometry = [...reverseCorridor.waypoints].reverse();
+          totalDist = 200;
         } else {
+          totalDist = Math.round(haversine(startLat, startLng, destLat, destLng) * 1.25);
           const numPoints = 25;
           for (let i = 0; i <= numPoints; i++) {
             const t = i / numPoints;
@@ -442,6 +553,8 @@ const server = http.createServer((req, res) => {
           }
         }
 
+        const totalDur = Math.round((totalDist / 65) * 60);
+
         // Score stations for this route
         const scored = STATIONS.map((s) => {
           const dStart = Math.round(haversine(startLat, startLng, s.latitude, s.longitude));
@@ -449,14 +562,23 @@ const server = http.createServer((req, res) => {
           const detourKm = Number(Math.max(0.2, (dStart + dDest - totalDist) * 0.4).toFixed(1));
           const detourMin = Math.max(1, Math.round(detourKm * 1.8));
 
+          const etaMins = Math.max(2, Math.round((dStart / 65) * 60));
           const pressure = s.currentPressureBar || 190;
           const queue = s.vehiclesWaiting || 4;
+          const waitMins = Math.round(queue * (4.5 / (s.activeDispensers || 4)));
 
-          // Smart Score Formula: (Pressure * 0.4) + (Queue * 0.4) + (Detour * 0.2)
-          const pScore = Math.min(100, Math.max(20, Math.round(((pressure - 140) / 80) * 100)));
-          const qScore = Math.max(10, Math.round(100 - queue * 7));
-          const dScore = Math.max(10, Math.round(100 - detourKm * 15));
-          const totalScore = Math.round(pScore * 0.4 + qScore * 0.4 + dScore * 0.2);
+          // Arrival prediction simulation
+          const predictedQ = Math.max(0, queue + Math.round((0.25 - 0.22) * etaMins));
+          const predictedWait = Math.round(predictedQ * (4.5 / (s.activeDispensers || 4)));
+          const predictedP = Math.max(160, Math.min(225, pressure - (predictedQ > 6 ? 6 : 0)));
+
+          // Multi-Factor Composite Score:
+          // 25% Reliability + 30% Wait + 25% Pressure + 20% Detour
+          let relScore = s.verificationStatus === 'LIVE_VERIFIED' ? 95 : 75;
+          let qScore = Math.max(10, Math.min(100, Math.round(100 - predictedWait * 3)));
+          let pScore = Math.min(100, Math.max(20, Math.round(((predictedP - 140) / 80) * 100)));
+          let dScore = Math.max(10, Math.round(100 - detourKm * 12));
+          let totalScore = Math.round(relScore * 0.25 + qScore * 0.30 + pScore * 0.25 + dScore * 0.20);
 
           return {
             ...s,
@@ -464,25 +586,50 @@ const server = http.createServer((req, res) => {
             distanceFromRouteKm: Math.min(detourKm, 1.5),
             extraDetourKm: detourKm,
             estimatedDetourMinutes: detourMin,
-            pressureScore: pScore,
-            queueScore: qScore,
-            detourScore: dScore,
             score: totalScore,
-            recommendationCategory: null,
-            recommendationReason: null,
+            arrivalPrediction: {
+              distanceKm: dStart,
+              etaMinutes: etaMins,
+              etaClockTime: `${Math.round(etaMins)} mins from now`,
+              currentQueue: queue,
+              predictedQueueAtArrival: predictedQ,
+              currentWaitMinutes: waitMins,
+              predictedWaitMinutesAtArrival: predictedWait,
+              currentPressureBar: pressure,
+              predictedPressureBarAtArrival: predictedP,
+              confidenceLevel: 'HIGH',
+              confidencePercentage: 90,
+              predictionAvailable: true,
+              disclaimer: 'Pressure & queue at arrival are statistical estimates.',
+            },
           };
         });
 
-        // Filter by max detour and sort by highest score
         let filtered = scored.filter((s) => s.extraDetourKm <= maxDetourKm);
         if (filtered.length === 0) filtered = scored.slice(0, 4);
-        filtered.sort((a, b) => b.score - a.score);
 
-        // Crown Best Overall (minimal queue and highest pressure)
-        if (filtered.length > 0) {
-          filtered[0].recommendationCategory = 'BEST_OVERALL';
-          filtered[0].convenienceBadge = 'Short Queue + Super Pressure';
-          filtered[0].recommendationReason = `🌟 Top Recommendation: Short queue (${filtered[0].vehiclesWaiting} vehicles) and high pressure (${Math.round(filtered[0].currentPressureBar)} Bar)! Minimal detour (+${filtered[0].extraDetourKm} km) with fastest gas fill.`;
+        // Sort for 3 categories
+        const sortedByScore = [...filtered].sort((a, b) => b.score - a.score);
+        const bestOverall = sortedByScore[0] || null;
+        if (bestOverall) {
+          bestOverall.recommendationCategory = 'BEST_OVERALL';
+          bestOverall.recommendationReason = `⭐ Best Overall: Optimal 216+ Bar pressure, short queue (${bestOverall.vehiclesWaiting} cars), and minimal detour (+${bestOverall.extraDetourKm} km).`;
+        }
+
+        const sortedBySpeed = [...filtered].sort(
+          (a, b) => (a.extraDetourKm + a.estimatedWaitMinutes) - (b.extraDetourKm + b.estimatedWaitMinutes)
+        );
+        const fastestRefueling = sortedBySpeed[0] || null;
+        if (fastestRefueling && fastestRefueling.id !== bestOverall?.id) {
+          fastestRefueling.recommendationCategory = 'FASTEST_REFUELING';
+          fastestRefueling.recommendationReason = `⚡ Fastest Refueling: Lowest total stop overhead (~${fastestRefueling.estimatedWaitMinutes}m wait).`;
+        }
+
+        const sortedByDist = [...filtered].sort((a, b) => a.distanceFromStartKm - b.distanceFromStartKm);
+        const nearestStation = sortedByDist[0] || null;
+        if (nearestStation && nearestStation.id !== bestOverall?.id && nearestStation.id !== fastestRefueling?.id) {
+          nearestStation.recommendationCategory = 'NEAREST_STATION';
+          nearestStation.recommendationReason = `📍 Nearest Station: Closest pump along corridor (${nearestStation.distanceFromStartKm} km away).`;
         }
 
         const responseData = {
@@ -490,12 +637,12 @@ const server = http.createServer((req, res) => {
           totalDurationMinutes: totalDur,
           routeGeometry,
           stations: filtered,
-          bestOverall: filtered[0] || null,
-          shortestQueue: [...filtered].sort((a, b) => a.vehiclesWaiting - b.vehiclesWaiting)[0] || null,
-          highestPressure: [...filtered].sort((a, b) => b.currentPressureBar - a.currentPressureBar)[0] || null,
+          bestOverall,
+          fastestRefueling: fastestRefueling || bestOverall,
+          nearestStation: nearestStation || bestOverall,
           isDemoRoute: true,
-          routeSource: 'Google Maps Directions Engine',
-          message: 'Optimal CNG station recommended based on minimal queue and maximum gas pressure.',
+          routeSource: 'Google Maps Directions & Mobility Intelligence Engine',
+          message: 'Top stations evaluated across arrival queue prediction, pressure reliability, and detour distance.',
         };
 
         return sendJson(res, 200, responseData);
@@ -506,22 +653,34 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 5. POST Crowdsourced Telemetry Report
+  // 5. POST /api/telemetry/report (Community Reporting)
   if (pathname === '/api/telemetry/report' && method === 'POST') {
     let body = '';
     req.on('data', (chunk) => (body += chunk));
     req.on('end', () => {
       try {
-        const { stationId, vehiclesWaiting, currentPressureBar } = JSON.parse(body || '{}');
+        const {
+          stationId,
+          vehiclesWaiting,
+          estimatedWaitMinutes,
+          operationalStatus,
+          cngAvailability,
+          pressureBar,
+        } = JSON.parse(body || '{}');
+
         const st = STATIONS.find((s) => s.id === Number(stationId));
         if (st) {
-          if (vehiclesWaiting !== undefined) {
-            st.vehiclesWaiting = Number(vehiclesWaiting);
-            st.estimatedWaitMinutes = Math.round(Number(vehiclesWaiting) * 2);
-          }
-          if (currentPressureBar !== undefined) {
-            st.currentPressureBar = Number(currentPressureBar);
-          }
+          if (vehiclesWaiting !== undefined) st.vehiclesWaiting = Number(vehiclesWaiting);
+          if (estimatedWaitMinutes !== undefined) st.estimatedWaitMinutes = Number(estimatedWaitMinutes);
+          if (operationalStatus) st.operationalStatus = operationalStatus;
+          if (cngAvailability) st.cngAvailability = cngAvailability;
+          if (pressureBar !== undefined && pressureBar !== null) st.currentPressureBar = Number(pressureBar);
+
+          st.verificationStatus = 'COMMUNITY_REPORTED';
+          st.dataSourceLabel = 'Driver Community Report';
+          st.lastUpdatedTimestamp = new Date().toISOString();
+          st.dataConfidenceScore = 82;
+
           return sendJson(res, 200, { success: true, updatedStation: st });
         }
         return sendJson(res, 404, { error: 'Station not found' });
@@ -532,7 +691,35 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 6. Fallback / Static build file server (for live single-port deployment)
+  // 6. POST /api/telemetry/flag (Report Incorrect Info)
+  if (pathname === '/api/telemetry/flag' && method === 'POST') {
+    let body = '';
+    req.on('data', (chunk) => (body += chunk));
+    req.on('end', () => {
+      try {
+        const { stationId, issueType, comment } = JSON.parse(body || '{}');
+        const st = STATIONS.find((s) => s.id === Number(stationId));
+        if (st) {
+          if (issueType === 'CLOSED') {
+            st.operationalStatus = 'TEMPORARILY_CLOSED';
+            st.verifiedOpen = false;
+          } else if (issueType === 'NO_CNG') {
+            st.cngAvailability = 'OUT_OF_STOCK';
+          }
+          st.verificationStatus = 'COMMUNITY_REPORTED';
+          st.dataSourceLabel = 'Driver Discrepancy Flag';
+          st.lastUpdatedTimestamp = new Date().toISOString();
+          return sendJson(res, 200, { success: true, flaggedStation: st });
+        }
+        return sendJson(res, 404, { error: 'Station not found' });
+      } catch {
+        return sendJson(res, 400, { error: 'Invalid JSON' });
+      }
+    });
+    return;
+  }
+
+  // 7. Fallback / Static build file server
   const distPath = path.join(__dirname, '..', 'frontend', 'dist');
   let filePath = path.join(distPath, pathname === '/' ? 'index.html' : pathname);
 
@@ -545,19 +732,14 @@ const server = http.createServer((req, res) => {
       '.json': 'application/json',
       '.png': 'image/png',
       '.jpg': 'image/jpeg',
-      '.jpeg': 'image/jpeg',
-      '.webp': 'image/webp',
       '.svg': 'image/svg+xml',
       '.ico': 'image/x-icon',
-      '.woff': 'font/woff',
       '.woff2': 'font/woff2',
-      '.ttf': 'font/ttf',
     };
     const contentType = mimeTypes[ext] || 'application/octet-stream';
     res.writeHead(200, { 'Content-Type': contentType });
     return fs.createReadStream(filePath).pipe(res);
   } else if (fs.existsSync(path.join(distPath, 'index.html'))) {
-    // SPA fallback
     res.writeHead(200, { 'Content-Type': 'text/html' });
     return fs.createReadStream(path.join(distPath, 'index.html')).pipe(res);
   }
@@ -567,7 +749,7 @@ const server = http.createServer((req, res) => {
 
 server.listen(PORT, () => {
   console.log(`=======================================================`);
-  console.log(`🚀 CNG Navigator Backend Server listening on port ${PORT}`);
+  console.log(`🚀 CNG Navigator Smart Trip Intelligence Server on port ${PORT}`);
   console.log(`📡 REST API: http://localhost:${PORT}/api/stations`);
   console.log(`🧭 Route Recommender: http://localhost:${PORT}/api/stations/search-route`);
   console.log(`=======================================================`);

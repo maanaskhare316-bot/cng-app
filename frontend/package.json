@@ -9,24 +9,25 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "react": "^18.3.1",
-    "react-dom": "^18.3.1",
-    "react-router-dom": "^6.26.2",
+    "@types/leaflet": "^1.9.14",
     "axios": "^1.7.7",
     "leaflet": "^1.9.4",
-    "react-leaflet": "^4.2.1",
-    "recharts": "^2.13.0",
     "lucide-react": "^0.400.0",
-    "@types/leaflet": "^1.9.14"
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "react-leaflet": "^4.2.1",
+    "react-router-dom": "^6.26.2",
+    "recharts": "^2.13.0"
   },
   "devDependencies": {
-    "vite": "^5.4.8",
-    "@vitejs/plugin-react": "^4.3.2",
-    "typescript": "^5.6.3",
     "@types/react": "^18.3.11",
     "@types/react-dom": "^18.3.1",
-    "tailwindcss": "^3.4.14",
+    "@vitejs/plugin-react": "^4.3.2",
+    "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
-    "autoprefixer": "^10.4.20"
+    "pptxgenjs": "^4.0.1",
+    "tailwindcss": "^3.4.14",
+    "typescript": "^5.6.3",
+    "vite": "^5.4.8"
   }
 }

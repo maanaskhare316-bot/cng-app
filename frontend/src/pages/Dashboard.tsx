@@ -58,7 +58,7 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { stations, updateStationTelemetry } = useAppContext();
+  const { stations, updateStationTelemetry, submitCommunityReport } = useAppContext();
   const [reportModalStation, setReportModalStation] = useState<StationSummaryDto | null>(null);
 
   const [filterMode, setFilterMode] = useState<'all' | 'highPressure' | 'lowQueue' | 'fastTurnaround'>('all');
@@ -94,6 +94,16 @@ export default function Dashboard() {
     const moderate = stations.filter((s) => (s.vehiclesWaiting ?? 0) > 3 && (s.vehiclesWaiting ?? 0) <= 8).length;
     const high = stations.filter((s) => (s.vehiclesWaiting ?? 0) > 8).length;
     return { low, moderate, high, total: low + moderate + high };
+  }, [stations]);
+
+  const verificationCounts = useMemo(() => {
+    const live = stations.filter((s) => s.verificationStatus === 'LIVE_VERIFIED').length;
+    const recent = stations.filter((s) => s.verificationStatus === 'RECENTLY_UPDATED').length;
+    const community = stations.filter((s) => s.verificationStatus === 'COMMUNITY_REPORTED').length;
+    const stale = stations.filter(
+      (s) => s.verificationStatus === 'STALE_DATA' || s.verificationStatus === 'UNAVAILABLE'
+    ).length;
+    return { live, recent, community, stale };
   }, [stations]);
 
   // Filtered stations for display
@@ -443,6 +453,40 @@ export default function Dashboard() {
               </div>
             </div>
           </div>
+
+          {/* Data Verification & Transparency Health */}
+          <div className="bg-[#111827] rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-slate-800 shadow-md space-y-2.5">
+            <div className="flex items-center justify-between">
+              <h4 className="font-bold text-xs sm:text-sm text-white flex items-center gap-1.5">
+                <span>Data Verification Health</span>
+              </h4>
+              <span className="text-[9.5px] uppercase font-black bg-purple-950/70 text-purple-300 border border-purple-500/30 px-1.5 py-0.5 rounded">
+                DEMO DATA
+              </span>
+            </div>
+            <p className="text-[11px] text-slate-400">
+              Transparency verification across all {stations.length} network stations:
+            </p>
+
+            <div className="grid grid-cols-2 gap-2 pt-1 text-[11px]">
+              <div className="bg-[#0c1220] p-2 rounded-xl border border-slate-800">
+                <span className="text-[10px] text-emerald-400 font-bold block">● Live Verified</span>
+                <span className="text-sm font-extrabold text-white">{verificationCounts.live} Stations</span>
+              </div>
+              <div className="bg-[#0c1220] p-2 rounded-xl border border-slate-800">
+                <span className="text-[10px] text-sky-400 font-bold block">● Recent Updates</span>
+                <span className="text-sm font-extrabold text-white">{verificationCounts.recent} Stations</span>
+              </div>
+              <div className="bg-[#0c1220] p-2 rounded-xl border border-slate-800">
+                <span className="text-[10px] text-amber-400 font-bold block">● Community</span>
+                <span className="text-sm font-extrabold text-white">{verificationCounts.community} Stations</span>
+              </div>
+              <div className="bg-[#0c1220] p-2 rounded-xl border border-slate-800">
+                <span className="text-[10px] text-slate-500 font-bold block">● Stale / Offline</span>
+                <span className="text-sm font-extrabold text-white">{verificationCounts.stale} Stations</span>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -455,7 +499,7 @@ export default function Dashboard() {
         isOpen={!!reportModalStation}
         station={reportModalStation}
         onClose={() => setReportModalStation(null)}
-        onSubmit={(id, v, p) => updateStationTelemetry(id, v, p)}
+        onSubmit={(payload) => submitCommunityReport(payload)}
       />
     </div>
   );

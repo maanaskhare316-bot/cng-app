@@ -364,36 +364,53 @@ export const GoogleStationMap: React.FC<GoogleStationMapProps> = ({
             ? `+${station.extraDetourKm.toFixed(1)} km (~${station.estimatedDetourMinutes ?? 1} min)`
             : 'Direct highway route';
 
+        const verificationLabel = (station.verificationStatus || 'LIVE_VERIFIED').replace('_', ' ');
+        const pred = station.arrivalPrediction;
+        const arrivalText = pred && pred.predictionAvailable
+          ? `<div style="margin-top:6px; padding:6px; background:#0c1d2e; border-radius:8px; border:1px solid #1e3a5f; font-size:10px;">
+              <span style="color:#38bdf8; font-weight:800; text-transform:uppercase;">Forecast at Arrival:</span>
+              <div style="display:flex; justify-content:space-between; margin-top:2px; color:#e2e8f0;">
+                <span>Queue: <strong>${pred.predictedQueueAtArrival} Cars</strong> (~${pred.predictedWaitMinutesAtArrival}m)</span>
+                <span>Pressure: <strong>~${pred.predictedPressureBarAtArrival} Bar</strong></span>
+              </div>
+            </div>`
+          : '';
+
         const contentString = `
           <div style="font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; max-width:280px; padding:3px; background:#0f172a; color:#f8fafc; border-radius:12px;">
-            ${
-              isBest
-                ? `
-              <div style="background:#064e3b; color:#a7f3d0; padding:3px 8px; border-radius:999px; font-size:10px; font-weight:800; display:inline-flex; align-items:center; gap:4px; margin-bottom:6px; border:1px solid #059669;">
-                ⭐ Best Highway Choice (Short Queue & High Bar)
-              </div>
-            `
-                : ''
-            }
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+              <span style="background:#064e3b; color:#a7f3d0; padding:2px 7px; border-radius:6px; font-size:9.5px; font-weight:800; border:1px solid #059669;">
+                ● ${verificationLabel}
+              </span>
+              ${
+                isBest
+                  ? `<span style="background:#f59e0b; color:#000; padding:2px 7px; border-radius:6px; font-size:9.5px; font-weight:900;">
+                      ★ BEST CHOICE
+                    </span>`
+                  : ''
+              }
+            </div>
             <h4 style="margin:0 0 2px 0; font-size:13px; font-weight:800; color:#ffffff; line-height:1.2;">${station.name}</h4>
             <p style="margin:0 0 8px 0; font-size:11px; color:#94a3b8;">${station.operator || 'CNG'} • ${station.city}</p>
             
             <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-bottom:8px; background:#162032; padding:8px; border-radius:10px; border:1px solid #1e293b;">
               <div>
-                <span style="font-size:9.5px; color:#94a3b8; font-weight:800; text-transform:uppercase;">Gas Pressure</span>
+                <span style="font-size:9.5px; color:#94a3b8; font-weight:800; text-transform:uppercase;">Measured Gas Pressure</span>
                 <div style="font-size:15px; font-weight:900; color:${color};">${pressureBar} Bar</div>
                 <div style="font-size:9.5px; color:#64748b;">${psi} PSI</div>
                 <div style="font-size:9px; font-weight:700; color:${color}; margin-top:2px;">${pressureStatus}</div>
               </div>
               <div>
-                <span style="font-size:9.5px; color:#94a3b8; font-weight:800; text-transform:uppercase;">Live Queue</span>
+                <span style="font-size:9.5px; color:#94a3b8; font-weight:800; text-transform:uppercase;">Measured Queue</span>
                 <div style="font-size:15px; font-weight:900; color:#f8fafc;">${vehiclesCount} Cars</div>
                 <div style="font-size:9.5px; color:#64748b;">~${waitMin} min wait</div>
                 <div style="font-size:9px; color:#34d399; font-weight:700; margin-top:2px;">${station.activeDispensers ?? 4}/${station.totalDispensers ?? 4} Nozzles</div>
               </div>
             </div>
 
-            <div style="font-size:10.5px; color:#cbd5e1; margin-bottom:8px; display:flex; justify-content:space-between;">
+            ${arrivalText}
+
+            <div style="font-size:10.5px; color:#cbd5e1; margin-top:6px; margin-bottom:8px; display:flex; justify-content:space-between;">
               <span>🛣️ <strong>Detour:</strong> ${detourInfo}</span>
               <span style="color:#a7f3d0; font-weight:700;">₹${station.verifiedPricePerKg ?? 82.5}/kg</span>
             </div>
@@ -405,7 +422,7 @@ export const GoogleStationMap: React.FC<GoogleStationMapProps> = ({
               </a>
               <a href="/stations/${station.id}" 
                  style="flex:1; text-align:center; background:#1e293b; color:#e2e8f0; padding:8px 10px; border-radius:8px; font-size:11px; font-weight:800; text-decoration:none; display:flex; align-items:center; justify-content:center; border:1px solid #334155;">
-                 Live Telemetry
+                 Details & Telemetry
               </a>
             </div>
           </div>
