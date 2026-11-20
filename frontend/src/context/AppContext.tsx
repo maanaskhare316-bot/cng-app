@@ -15,15 +15,28 @@ import type {
   RouteSearchResultDto,
   CommunityReportPayload,
   IncorrectInfoFlagPayload,
+  StationAlertNotification,
+  AlertPreferences,
+  DriverTrustProfile,
+  VisitedStationRecord,
 } from '../types/index';
 import { DEMO_STATIONS } from '../data/demoStations';
 import { CORRIDORS } from '../data/corridors';
 import { getStoredGoogleApiKey, storeGoogleApiKey } from '../services/googleMapsLoader';
-import { computeArrivalPrediction } from '../utils/predictionEngine';
+import { computeArrivalPrediction, computeQueueIntelligence } from '../utils/predictionEngine';
 import { rankStationsForRoute } from '../utils/rankingEngine';
+import { evaluateStationFreshness, DEFAULT_FRESHNESS_CONFIG } from '../utils/freshnessEngine';
+import {
+  getDriverTrustProfile,
+  validateDriverReport,
+  recordReportSubmission,
+} from '../utils/trustEngine';
+import { detectStationAlerts, DEFAULT_ALERT_PREFERENCES } from '../utils/alertEngine';
 
 const SETTINGS_KEY = 'cng-navigator-settings';
 const COMMUNITY_REPORTS_KEY = 'cng-navigator-community-reports';
+const VISITED_STATIONS_KEY = 'cng-navigator-visited-stations';
+const ALERTS_STORAGE_KEY = 'cng-navigator-active-alerts';
 const MAX_SELECTION = 3;
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -35,6 +48,8 @@ const DEFAULT_SETTINGS: AppSettings = {
   simulationEnabled: true,
   mapProvider: 'google',
   googleMapsApiKey: getStoredGoogleApiKey(),
+  freshnessConfig: DEFAULT_FRESHNESS_CONFIG,
+  alertPreferences: DEFAULT_ALERT_PREFERENCES,
 };
 
 export interface AppContextValue {
@@ -47,9 +62,23 @@ export interface AppContextValue {
   toggleStationSelection: (id: number) => void;
   clearSelection: () => void;
   refreshStations: () => void;
-  updateStationTelemetry: (stationId: number, vehicles: number, pressure: number) => void;
-  submitCommunityReport: (payload: CommunityReportPayload) => void;
+
+  // Alerts
+  alerts: StationAlertNotification[];
+  dismissAlert: (id: string) => void;
+  clearAllAlerts: () => void;
+  updateAlertPreferences: (prefs: Partial<AlertPreferences>) => void;
+
+  // Driver Trust & Community Reporting
+  driverProfile: DriverTrustProfile;
+  submitCommunityReport: (payload: CommunityReportPayload) => { success: boolean; error?: string };
   submitIncorrectFlag: (payload: IncorrectInfoFlagPayload) => void;
+
+  // Post-Visit Verification
+  visitedStations: VisitedStationRecord[];
+  markStationVisited: (record: VisitedStationRecord) => void;
+
+  // Smart Routing & Prediction
   planSmartRoute: (req: RouteSearchRequest) => Promise<RouteSearchResultDto>;
   activeRouteResult: RouteSearchResultDto | null;
   setActiveRouteResult: (res: RouteSearchResultDto | null) => void;
@@ -91,23 +120,59 @@ function haversineDistance(lat1: number, lon1: number, lat2: number, lon2: numbe
 }
 
 export function AppProvider({ children }: { children: React.ReactNode }) {
+  const [settings, setSettings] = useState<AppSettings>(loadSettings);
+
+  // Initialize stations and evaluate freshness dynamically
   const [stations, setStations] = useState<StationSummaryDto[]>(() => {
-    // Merge any stored community reports from localStorage
+    let initialList = DEMO_STATIONS;
     try {
       const stored = localStorage.getItem(COMMUNITY_REPORTS_KEY);
       if (stored) {
         const overrides: Record<number, Partial<StationSummaryDto>> = JSON.parse(stored);
-        return DEMO_STATIONS.map((s) => (overrides[s.id] ? { ...s, ...overrides[s.id] } : s));
+        initialList = DEMO_STATIONS.map((s) => (overrides[s.id] ? { ...s, ...overrides[s.id] } : s));
       }
     } catch {}
-    return DEMO_STATIONS;
+
+    // Evaluate freshness & queue intelligence for each station
+    return initialList.map((st) => {
+      const freshness = evaluateStationFreshness(st, DEFAULT_FRESHNESS_CONFIG);
+      const queueInt = computeQueueIntelligence(st, null);
+      return {
+        ...st,
+        verificationStatus: freshness.status,
+        dataConfidenceScore: freshness.confidenceScore,
+        freshnessInfo: freshness,
+        queueTrend: queueInt.queueTrend,
+        queueIntelligence: queueInt,
+      };
+    });
   });
 
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [settings, setSettings] = useState<AppSettings>(loadSettings);
   const [selectedStations, setSelectedStations] = useState<number[]>([]);
   const [activeRouteResult, setActiveRouteResult] = useState<RouteSearchResultDto | null>(null);
+
+  // Alerts state
+  const [alerts, setAlerts] = useState<StationAlertNotification[]>(() => {
+    try {
+      const raw = localStorage.getItem(ALERTS_STORAGE_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return [];
+  });
+
+  // Driver trust profile
+  const [driverProfile, setDriverProfile] = useState<DriverTrustProfile>(getDriverTrustProfile);
+
+  // Visited stations history
+  const [visitedStations, setVisitedStations] = useState<VisitedStationRecord[]>(() => {
+    try {
+      const raw = localStorage.getItem(VISITED_STATIONS_KEY);
+      if (raw) return JSON.parse(raw);
+    } catch {}
+    return [];
+  });
 
   const mountedRef = useRef(true);
   useEffect(() => {
@@ -117,13 +182,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     };
   }, []);
 
+  // Save alerts to storage
+  useEffect(() => {
+    try {
+      localStorage.setItem(ALERTS_STORAGE_KEY, JSON.stringify(alerts.slice(0, 20)));
+    } catch {}
+  }, [alerts]);
+
   const fetchStations = useCallback(async () => {
     setIsLoading(true);
     setError(null);
     try {
       const data = await stationApi.getAll();
       if (mountedRef.current && Array.isArray(data) && data.length > 0) {
-        // Overlay any local community reports
         let currentOverrides: Record<number, Partial<StationSummaryDto>> = {};
         try {
           const stored = localStorage.getItem(COMMUNITY_REPORTS_KEY);
@@ -131,9 +202,19 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         } catch {}
 
         setStations(
-          data.map((st: StationSummaryDto) =>
-            currentOverrides[st.id] ? { ...st, ...currentOverrides[st.id] } : st
-          )
+          data.map((st: StationSummaryDto) => {
+            const merged = currentOverrides[st.id] ? { ...st, ...currentOverrides[st.id] } : st;
+            const freshness = evaluateStationFreshness(merged, settings.freshnessConfig);
+            const queueInt = computeQueueIntelligence(merged, null);
+            return {
+              ...merged,
+              verificationStatus: freshness.status,
+              dataConfidenceScore: freshness.confidenceScore,
+              freshnessInfo: freshness,
+              queueTrend: queueInt.queueTrend,
+              queueIntelligence: queueInt,
+            };
+          })
         );
       }
     } catch {
@@ -141,47 +222,69 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     } finally {
       if (mountedRef.current) setIsLoading(false);
     }
-  }, []);
+  }, [settings.freshnessConfig]);
 
   useEffect(() => {
     void fetchStations();
   }, [fetchStations]);
 
-  // Live simulation tick (Only fluctuates LIVE_VERIFIED stations by subtle sensor jitter)
+  // Periodic Freshness Evaluation & Simulation Tick
   useEffect(() => {
-    if (!settings.simulationEnabled) return;
-
     const timer = setInterval(() => {
-      setStations((prevStations) =>
-        prevStations.map((s) => {
-          // Only simulate subtle fluctuations if station is operational and has live verification
-          if (s.verificationStatus === 'LIVE_VERIFIED' && s.operationalStatus === 'OPERATIONAL' && Math.random() < 0.35) {
+      setStations((prevStations) => {
+        const updatedList = prevStations.map((s) => {
+          let updated = { ...s };
+
+          // 1. Re-evaluate Data Freshness (downgrade expired readings)
+          const freshness = evaluateStationFreshness(updated, settings.freshnessConfig);
+          updated.verificationStatus = freshness.status;
+          updated.dataConfidenceScore = freshness.confidenceScore;
+          updated.freshnessInfo = freshness;
+
+          // 2. Controlled Sensor Simulation (Only for LIVE_VERIFIED stations)
+          if (
+            settings.simulationEnabled &&
+            freshness.status === 'LIVE_VERIFIED' &&
+            s.operationalStatus === 'OPERATIONAL' &&
+            Math.random() < 0.28
+          ) {
             const deltaQueue = Math.random() > 0.5 ? 1 : -1;
-            const newQueue = Math.max(0, Math.min(15, (s.vehiclesWaiting ?? 2) + deltaQueue));
+            const newQueue = Math.max(0, Math.min(16, (s.vehiclesWaiting ?? 2) + deltaQueue));
             const activeNozzles = s.activeDispensers || 4;
-            const newWait = Math.round(newQueue * (4.5 / activeNozzles));
+            const newWait = Math.round(newQueue * (4.2 / activeNozzles));
 
             const deltaPressure = Math.floor(Math.random() * 5) - 2;
             const currentP = s.currentPressureBar ?? 200;
             const newPressure = Math.max(165, Math.min(225, currentP + deltaPressure));
 
-            return {
-              ...s,
-              vehiclesWaiting: newQueue,
-              estimatedWaitMinutes: newWait,
-              currentPressureBar: newPressure,
-              queueUpdatedAt: new Date().toISOString(),
-              pressureUpdatedAt: new Date().toISOString(),
-              lastUpdatedTimestamp: new Date().toISOString(),
-            };
+            updated.vehiclesWaiting = newQueue;
+            updated.estimatedWaitMinutes = newWait;
+            updated.currentPressureBar = newPressure;
+            updated.queueUpdatedAt = new Date().toISOString();
+            updated.pressureUpdatedAt = new Date().toISOString();
+            updated.lastUpdatedTimestamp = new Date().toISOString();
+
+            // Detect Real State Alerts
+            const detected = detectStationAlerts(s, updated, settings.alertPreferences);
+            if (detected.length > 0) {
+              setAlerts((curr) => [...detected, ...curr].slice(0, 25));
+            }
           }
-          return s;
-        })
-      );
+
+          // Compute Queue Intelligence
+          const queueInt = computeQueueIntelligence(updated, null);
+          updated.queueTrend = queueInt.queueTrend;
+          updated.queueIntelligence = queueInt;
+
+          return updated;
+        });
+
+        return updatedList;
+      });
     }, 12000);
 
     return () => clearInterval(timer);
-  }, [settings.simulationEnabled]);
+  }, [settings.simulationEnabled, settings.freshnessConfig, settings.alertPreferences]);
 
   const updateSettings = useCallback((patch: Partial<AppSettings>) => {
     setSettings((prev) => {
@@ -191,50 +294,99 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  // Submit community telemetry report
-  const submitCommunityReport = useCallback((payload: CommunityReportPayload) => {
-    setStations((prev) => {
-      const next = prev.map((s) => {
-        if (s.id === payload.stationId) {
-          const updated: StationSummaryDto = {
-            ...s,
-            vehiclesWaiting: payload.vehiclesWaiting,
-            estimatedWaitMinutes: payload.estimatedWaitMinutes,
-            operationalStatus: payload.operationalStatus,
-            cngAvailability: payload.cngAvailability,
-            verifiedOpen: payload.operationalStatus === 'OPERATIONAL',
-            currentPressureBar:
-              payload.hasReliablePressureReading && payload.pressureBar
-                ? payload.pressureBar
-                : s.currentPressureBar,
-            verificationStatus: 'COMMUNITY_REPORTED',
-            dataSourceLabel: 'Driver Community Report',
-            dataConfidenceScore: 82,
-            lastUpdatedTimestamp: new Date().toISOString(),
-            queueUpdatedAt: new Date().toISOString(),
-            pressureUpdatedAt: payload.hasReliablePressureReading ? new Date().toISOString() : s.pressureUpdatedAt,
-            isQueueLive: true,
-            isPressureLive: payload.hasReliablePressureReading,
-          };
-          return updated;
-        }
-        return s;
-      });
-
-      // Persist in localStorage
-      try {
-        const stored = localStorage.getItem(COMMUNITY_REPORTS_KEY);
-        const map = stored ? JSON.parse(stored) : {};
-        const target = next.find((s) => s.id === payload.stationId);
-        if (target) {
-          map[payload.stationId] = target;
-          localStorage.setItem(COMMUNITY_REPORTS_KEY, JSON.stringify(map));
-        }
-      } catch {}
-
+  const updateAlertPreferences = useCallback((prefs: Partial<AlertPreferences>) => {
+    setSettings((prev) => {
+      const next: AppSettings = {
+        ...prev,
+        alertPreferences: { ...prev.alertPreferences, ...prefs },
+      };
+      saveSettings(next);
       return next;
     });
   }, []);
+
+  const dismissAlert = useCallback((id: string) => {
+    setAlerts((prev) => prev.filter((a) => a.id !== id));
+  }, []);
+
+  const clearAllAlerts = useCallback(() => {
+    setAlerts([]);
+  }, []);
+
+  // Submit community telemetry report with abuse prevention & validation
+  const submitCommunityReport = useCallback(
+    (payload: CommunityReportPayload): { success: boolean; error?: string } => {
+      const targetStation = stations.find((s) => s.id === payload.stationId);
+      if (!targetStation) return { success: false, error: 'Station not found.' };
+
+      // 1. Abuse prevention & duplicate validation
+      const validation = validateDriverReport(payload, targetStation);
+      if (!validation.isValid) {
+        return { success: false, error: validation.errorMessage || 'Invalid report submission.' };
+      }
+
+      // 2. Record report submission & update driver reliability profile
+      const updatedProfile = recordReportSubmission(payload, true);
+      setDriverProfile(updatedProfile);
+
+      setStations((prev) => {
+        const next = prev.map((s) => {
+          if (s.id === payload.stationId) {
+            const updated: StationSummaryDto = {
+              ...s,
+              vehiclesWaiting: payload.vehiclesWaiting,
+              estimatedWaitMinutes: payload.estimatedWaitMinutes,
+              operationalStatus: payload.operationalStatus,
+              cngAvailability: payload.cngAvailability,
+              verifiedOpen: payload.operationalStatus === 'OPERATIONAL',
+              currentPressureBar:
+                payload.hasReliablePressureReading && payload.pressureBar
+                  ? payload.pressureBar
+                  : s.currentPressureBar,
+              verificationStatus: 'COMMUNITY_REPORTED',
+              dataSourceLabel: 'Driver Community Report',
+              dataConfidenceScore: 82,
+              lastUpdatedTimestamp: new Date().toISOString(),
+              queueUpdatedAt: new Date().toISOString(),
+              pressureUpdatedAt: payload.hasReliablePressureReading
+                ? new Date().toISOString()
+                : s.pressureUpdatedAt,
+              isQueueLive: true,
+              isPressureLive: payload.hasReliablePressureReading,
+            };
+
+            const freshness = evaluateStationFreshness(updated, settings.freshnessConfig);
+            updated.freshnessInfo = freshness;
+
+            // Detect any alerts triggered by community update
+            const detected = detectStationAlerts(s, updated, settings.alertPreferences);
+            if (detected.length > 0) {
+              setAlerts((curr) => [...detected, ...curr].slice(0, 25));
+            }
+
+            return updated;
+          }
+          return s;
+        });
+
+        // Persist in localStorage
+        try {
+          const stored = localStorage.getItem(COMMUNITY_REPORTS_KEY);
+          const map = stored ? JSON.parse(stored) : {};
+          const target = next.find((s) => s.id === payload.stationId);
+          if (target) {
+            map[payload.stationId] = target;
+            localStorage.setItem(COMMUNITY_REPORTS_KEY, JSON.stringify(map));
+          }
+        } catch {}
+
+        return next;
+      });
+
+      return { success: true };
+    },
+    [stations, settings.freshnessConfig, settings.alertPreferences]
+  );
 
   // Submit flag on incorrect information
   const submitIncorrectFlag = useCallback((payload: IncorrectInfoFlagPayload) => {
@@ -265,20 +417,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  const updateStationTelemetry = useCallback(
-    (stationId: number, vehicles: number, pressure: number) => {
-      submitCommunityReport({
-        stationId,
-        vehiclesWaiting: vehicles,
-        estimatedWaitMinutes: Math.round(vehicles * 2),
-        operationalStatus: 'OPERATIONAL',
-        cngAvailability: 'AVAILABLE',
-        pressureBar: pressure,
-        hasReliablePressureReading: true,
-      });
-    },
-    [submitCommunityReport]
-  );
+  // Post-visit confirmation
+  const markStationVisited = useCallback((record: VisitedStationRecord) => {
+    setVisitedStations((prev) => {
+      const updated = [record, ...prev];
+      try {
+        localStorage.setItem(VISITED_STATIONS_KEY, JSON.stringify(updated.slice(0, 20)));
+      } catch {}
+      return updated;
+    });
+  }, []);
 
   // Smart Route Recommendation & Arrival Prediction Algorithm
   const planSmartRoute = useCallback(
@@ -337,7 +485,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         candidateStations = stations.slice(0, 5);
       }
 
-      // Compute Distance, Detour, and Run Arrival Prediction Engine for each station
+      // Compute Distance, Detour, Arrival Prediction, and Queue Intelligence
       const enrichedCandidates = candidateStations.map((s) => {
         const distFromStart = Math.round(
           haversineDistance(req.startLat, req.startLng, s.latitude, s.longitude)
@@ -353,8 +501,11 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         // Travel time from driver/start to this station
         const etaMins = Math.max(2, Math.round((distFromStart / 65) * 60));
 
-        // 🧠 Smart Arrival Prediction Engine Execution
+        // Smart Arrival Prediction Engine
         const prediction = computeArrivalPrediction(s, distFromStart, etaMins);
+
+        // Queue Intelligence
+        const queueInt = computeQueueIntelligence(s, prediction.predictedQueueAtArrival);
 
         return {
           ...s,
@@ -363,10 +514,12 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           extraDetourKm: detourKm,
           estimatedDetourMinutes: detourMin,
           arrivalPrediction: prediction,
+          queueTrend: queueInt.queueTrend,
+          queueIntelligence: queueInt,
         };
       });
 
-      // 🏆 Run Multi-Factor Ranking Engine across Candidate Stations
+      // Run Multi-Factor Ranking Engine across Candidate Stations
       const rankingResult = rankStationsForRoute(enrichedCandidates, totalDist);
 
       const result: RouteSearchResultDto = {
@@ -415,9 +568,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       toggleStationSelection,
       clearSelection,
       refreshStations: fetchStations,
-      updateStationTelemetry,
+      alerts,
+      dismissAlert,
+      clearAllAlerts,
+      updateAlertPreferences,
+      driverProfile,
       submitCommunityReport,
       submitIncorrectFlag,
+      visitedStations,
+      markStationVisited,
       planSmartRoute,
       activeRouteResult,
       setActiveRouteResult,
@@ -432,9 +591,15 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       toggleStationSelection,
       clearSelection,
       fetchStations,
-      updateStationTelemetry,
+      alerts,
+      dismissAlert,
+      clearAllAlerts,
+      updateAlertPreferences,
+      driverProfile,
       submitCommunityReport,
       submitIncorrectFlag,
+      visitedStations,
+      markStationVisited,
       planSmartRoute,
       activeRouteResult,
       setActiveRouteResult,

@@ -1,6 +1,19 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Save, RotateCcw, Info, Key, ShieldCheck, CheckCircle2, MapPin } from 'lucide-react';
+import {
+  Save,
+  RotateCcw,
+  Info,
+  Key,
+  ShieldCheck,
+  CheckCircle2,
+  MapPin,
+  Bell,
+  Award,
+  TrendingUp,
+  AlertTriangle,
+  UserCheck,
+} from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { getStoredGoogleApiKey, storeGoogleApiKey, resetGoogleMapsLoader } from '../services/googleMapsLoader';
 
@@ -52,7 +65,14 @@ function SettingRow({
 }
 
 export default function Settings() {
-  const { settings, updateSettings, clearSelection } = useAppContext();
+  const {
+    settings,
+    updateSettings,
+    clearSelection,
+    driverProfile,
+    visitedStations,
+    updateAlertPreferences,
+  } = useAppContext();
   const navigate = useNavigate();
 
   const [apiKey, setApiKey] = useState(getStoredGoogleApiKey());
@@ -84,12 +104,18 @@ export default function Settings() {
     window.location.reload();
   };
 
+  const alertPrefs = settings.alertPreferences;
+  const accuracyRate =
+    driverProfile.totalReportsSubmitted > 0
+      ? Math.round((driverProfile.acceptedReports / driverProfile.totalReportsSubmitted) * 100)
+      : 100;
+
   return (
     <div className="max-w-3xl mx-auto space-y-6 pb-16 text-slate-100">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-black text-white">Settings</h1>
-          <p className="text-xs text-slate-400 mt-0.5">Configure Google Maps API and telemetry preferences</p>
+          <h1 className="text-2xl font-black text-white">Settings &amp; Driver Profile</h1>
+          <p className="text-xs text-slate-400 mt-0.5">Configure maps, smart corridor alerts, and trust credentials</p>
         </div>
         {saved && (
           <div className="flex items-center gap-1.5 bg-emerald-950/60 border border-emerald-500/40 rounded-xl px-3 py-1.5 text-xs font-bold text-emerald-300 animate-in fade-in">
@@ -97,6 +123,132 @@ export default function Settings() {
           </div>
         )}
       </div>
+
+      {/* 🛡️ SECTION 5: DRIVER TRUST AND REPORT VERIFICATION */}
+      <Section title="🏅 Driver Trust & Contributor Profile">
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-[#0a1526] rounded-2xl border border-blue-500/30">
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-gradient-to-br from-blue-600 to-indigo-600 flex items-center justify-center text-white text-xl shadow-lg border border-white/20">
+                <UserCheck size={24} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h3 className="font-extrabold text-sm sm:text-base text-white">
+                    Driver {driverProfile.driverId}
+                  </h3>
+                  <span className="text-[10px] font-black uppercase px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40">
+                    {driverProfile.trustBadge.replace('_', ' ')}
+                  </span>
+                </div>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Verified Mobility Contributor • {visitedStations.length} Stations Verified
+                </p>
+              </div>
+            </div>
+
+            <div className="text-left sm:text-right">
+              <span className="text-[10px] uppercase font-bold text-slate-400 block">Trust Reliability</span>
+              <div className="flex items-baseline gap-1">
+                <span className="text-2xl font-black text-emerald-400">{driverProfile.trustScore}%</span>
+                <span className="text-[11px] text-slate-400">score</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Trust Score Progress Bar */}
+          <div>
+            <div className="flex items-center justify-between text-[11px] mb-1 font-bold text-slate-400">
+              <span>Contributor Reliability Index</span>
+              <span className="text-emerald-400">{accuracyRate}% Accuracy Rate</span>
+            </div>
+            <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden border border-slate-700/60">
+              <div
+                className="h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500"
+                style={{ width: `${driverProfile.trustScore}%` }}
+              />
+            </div>
+          </div>
+
+          {/* Stats 4-box */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+            <div className="bg-[#0c1220] p-3 rounded-xl border border-slate-800 text-center">
+              <span className="text-[10px] text-slate-400 font-bold uppercase block">Total Reports</span>
+              <span className="text-base font-extrabold text-white mt-0.5 block">
+                {driverProfile.totalReportsSubmitted}
+              </span>
+            </div>
+            <div className="bg-[#0c1220] p-3 rounded-xl border border-slate-800 text-center">
+              <span className="text-[10px] text-slate-400 font-bold uppercase block">Accepted</span>
+              <span className="text-base font-extrabold text-emerald-400 mt-0.5 block">
+                {driverProfile.acceptedReports}
+              </span>
+            </div>
+            <div className="bg-[#0c1220] p-3 rounded-xl border border-slate-800 text-center">
+              <span className="text-[10px] text-slate-400 font-bold uppercase block">Rejected / Outliers</span>
+              <span className="text-base font-extrabold text-rose-400 mt-0.5 block">
+                {driverProfile.rejectedReports}
+              </span>
+            </div>
+            <div className="bg-[#0c1220] p-3 rounded-xl border border-slate-800 text-center">
+              <span className="text-[10px] text-slate-400 font-bold uppercase block">Visited Verified</span>
+              <span className="text-base font-extrabold text-blue-400 mt-0.5 block">
+                {visitedStations.length}
+              </span>
+            </div>
+          </div>
+
+          <div className="p-3 bg-[#131d2e] rounded-xl border border-slate-800 text-[11px] text-slate-400 leading-relaxed">
+            <strong className="text-slate-200">Abuse Prevention Policy: </strong>
+            Trust score is earned through verified telemetry agreement and post-visit confirmations. Spammed reports, duplicate submissions within 10 minutes, or values outside physical safety limits (120–245 Bar) are rejected automatically.
+          </div>
+        </div>
+      </Section>
+
+      {/* 🔔 SECTION 4: SMART ALERT SYSTEM PREFERENCES */}
+      <Section title="🔔 Smart Highway Alert Preferences">
+        <div className="space-y-4">
+          <SettingRow
+            label="Queue Spike Alerts"
+            description="Notify when wait queue jumps by 3 or more vehicles unexpectedly"
+          >
+            <Toggle
+              checked={alertPrefs.queueSpikes}
+              onChange={(v) => updateAlertPreferences({ queueSpikes: v })}
+            />
+          </SettingRow>
+
+          <SettingRow
+            label="Station Closure & Out-of-Stock Alerts"
+            description="High-priority instant notification when a station goes offline or runs out of gas"
+          >
+            <Toggle
+              checked={alertPrefs.stationClosure}
+              onChange={(v) => updateAlertPreferences({ stationClosure: v })}
+            />
+          </SettingRow>
+
+          <SettingRow
+            label="Pressure Drop Alerts"
+            description="Alert when compressor bank pressure falls below 165 Bar (slow pumping)"
+          >
+            <Toggle
+              checked={alertPrefs.pressureDrops}
+              onChange={(v) => updateAlertPreferences({ pressureDrops: v })}
+            />
+          </SettingRow>
+
+          <SettingRow
+            label="Station Metadata Changes"
+            description="Notify when operating hours, nozzle count, or CNG price updates"
+          >
+            <Toggle
+              checked={alertPrefs.infoChanges}
+              onChange={(v) => updateAlertPreferences({ infoChanges: v })}
+            />
+          </SettingRow>
+        </div>
+      </Section>
 
       {/* Google Maps Configuration */}
       <Section title="🗺️ Google Maps JavaScript API">

@@ -13,7 +13,11 @@ const PORT = process.env.PORT || 8080;
 const now = Date.now();
 const minutesAgo = (mins) => new Date(now - mins * 60 * 1000).toISOString();
 
-// ── In-Memory Database: CNG Stations ─────────────────────────────────────────
+// In-Memory Database: CNG Stations and Driver Visit Feedback Logs
+let VISIT_RECORDS = [];
+const RECENT_REPORTS_COOLDOWN_MS = 60 * 1000; // 60s cooldown per station
+const RECENT_REPORTS = new Map(); // stationId -> timestamp
+
 let STATIONS = [
   {
     id: 9001,
@@ -653,7 +657,7 @@ const server = http.createServer((req, res) => {
     return;
   }
 
-  // 5. POST /api/telemetry/report (Community Reporting)
+  // 5. POST /api/telemetry/report (Community Reporting with Validation & Cooldown)
   if (pathname === '/api/telemetry/report' && method === 'POST') {
     let body = '';
     req.on('data', (chunk) => (body += chunk));
@@ -668,30 +672,137 @@ const server = http.createServer((req, res) => {
           pressureBar,
         } = JSON.parse(body || '{}');
 
-        const st = STATIONS.find((s) => s.id === Number(stationId));
-        if (st) {
-          if (vehiclesWaiting !== undefined) st.vehiclesWaiting = Number(vehiclesWaiting);
-          if (estimatedWaitMinutes !== undefined) st.estimatedWaitMinutes = Number(estimatedWaitMinutes);
-          if (operationalStatus) st.operationalStatus = operationalStatus;
-          if (cngAvailability) st.cngAvailability = cngAvailability;
-          if (pressureBar !== undefined && pressureBar !== null) st.currentPressureBar = Number(pressureBar);
-
-          st.verificationStatus = 'COMMUNITY_REPORTED';
-          st.dataSourceLabel = 'Driver Community Report';
-          st.lastUpdatedTimestamp = new Date().toISOString();
-          st.dataConfidenceScore = 82;
-
-          return sendJson(res, 200, { success: true, updatedStation: st });
+        const sId = Number(stationId);
+        const st = STATIONS.find((s) => s.id === sId);
+        if (!st) {
+          return sendJson(res, 404, { error: 'Station not found' });
         }
-        return sendJson(res, 404, { error: 'Station not found' });
+
+        // Duplicate report rate-limiting (anti-spam cooldown)
+        const lastReportTime = RECENT_REPORTS.get(sId);
+        if (lastReportTime && Date.now() - lastReportTime < RECENT_REPORTS_COOLDOWN_MS) {
+          return sendJson(res, 429, {
+            error: 'Duplicate report throttled. Please wait 1 minute between updates for the same station.',
+          });
+        }
+
+        // Input validation bounds
+        if (vehiclesWaiting !== undefined) {
+          const q = Number(vehiclesWaiting);
+          if (isNaN(q) || q < 0 || q > 35) {
+            return sendJson(res, 400, { error: 'Vehicle queue must be between 0 and 35' });
+          }
+          st.vehiclesWaiting = q;
+        }
+
+        if (pressureBar !== undefined && pressureBar !== null) {
+          const p = Number(pressureBar);
+          if (isNaN(p) || p < 120 || p > 245) {
+            return sendJson(res, 400, { error: 'Pressure reading must be between 120 and 245 Bar' });
+          }
+          st.currentPressureBar = p;
+        }
+
+        if (estimatedWaitMinutes !== undefined) {
+          st.estimatedWaitMinutes = Math.max(1, Number(estimatedWaitMinutes));
+        }
+        if (operationalStatus) st.operationalStatus = operationalStatus;
+        if (cngAvailability) st.cngAvailability = cngAvailability;
+
+        st.verificationStatus = 'COMMUNITY_REPORTED';
+        st.dataSourceLabel = 'Driver Community Report';
+        st.lastUpdatedTimestamp = new Date().toISOString();
+        st.dataConfidenceScore = 82;
+        RECENT_REPORTS.set(sId, Date.now());
+
+        return sendJson(res, 200, { success: true, updatedStation: st });
       } catch {
-        return sendJson(res, 400, { error: 'Invalid JSON' });
+        return sendJson(res, 400, { error: 'Invalid JSON payload' });
       }
     });
     return;
   }
 
-  // 6. POST /api/telemetry/flag (Report Incorrect Info)
+  // 6. POST /api/telemetry/visit-feedback (Post-Visit Accuracy Verification)
+  if (pathname === '/api/telemetry/visit-feedback' && method === 'POST') {
+    let body = '';
+    req.on('data', (chunk) => (body += chunk));
+    req.on('end', () => {
+      try {
+        const payload = JSON.parse(body || '{}');
+        const {
+          stationId,
+          actualQueue,
+          actualWaitMinutes,
+          actualPressureBar,
+          cngAvailable,
+          predictedQueue,
+          predictedWaitMinutes,
+          rating,
+          driverNotes,
+        } = payload;
+
+        const sId = Number(stationId);
+        const st = STATIONS.find((s) => s.id === sId);
+        if (!st) {
+          return sendJson(res, 404, { error: 'Station not found' });
+        }
+
+        const waitVariance =
+          predictedWaitMinutes !== undefined ? actualWaitMinutes - predictedWaitMinutes : 0;
+        const queueVariance =
+          predictedQueue !== undefined ? actualQueue - predictedQueue : 0;
+
+        const visitRecord = {
+          id: `visit_${Date.now()}_${Math.random().toString(36).substr(2, 5)}`,
+          stationId: sId,
+          stationName: st.name,
+          visitedAt: new Date().toISOString(),
+          actualQueue: Number(actualQueue) || 0,
+          actualWaitMinutes: Number(actualWaitMinutes) || 0,
+          actualPressureBar: actualPressureBar ? Number(actualPressureBar) : undefined,
+          cngAvailable: Boolean(cngAvailable),
+          predictedQueue,
+          predictedWaitMinutes,
+          waitVarianceMinutes: waitVariance,
+          queueVariance,
+          rating: Number(rating) || 5,
+          driverNotes: driverNotes || '',
+        };
+
+        VISIT_RECORDS.unshift(visitRecord);
+        if (VISIT_RECORDS.length > 200) VISIT_RECORDS.pop();
+
+        // Update station live metrics based on ground-truth driver feedback
+        st.vehiclesWaiting = visitRecord.actualQueue;
+        st.estimatedWaitMinutes = visitRecord.actualWaitMinutes;
+        if (visitRecord.actualPressureBar) st.currentPressureBar = visitRecord.actualPressureBar;
+        st.cngAvailability = visitRecord.cngAvailable ? 'AVAILABLE' : 'OUT_OF_STOCK';
+        st.verificationStatus = 'COMMUNITY_REPORTED';
+        st.dataSourceLabel = 'Verified Driver Visit';
+        st.lastUpdatedTimestamp = visitRecord.visitedAt;
+
+        return sendJson(res, 201, {
+          success: true,
+          message: 'Post-visit verification logged successfully',
+          record: visitRecord,
+        });
+      } catch {
+        return sendJson(res, 400, { error: 'Invalid JSON payload' });
+      }
+    });
+    return;
+  }
+
+  // 7. GET /api/telemetry/visit-feedback (Recent Verified Visits)
+  if (pathname === '/api/telemetry/visit-feedback' && method === 'GET') {
+    return sendJson(res, 200, {
+      count: VISIT_RECORDS.length,
+      visits: VISIT_RECORDS.slice(0, 50),
+    });
+  }
+
+  // 8. POST /api/telemetry/flag (Report Incorrect Info)
   if (pathname === '/api/telemetry/flag' && method === 'POST') {
     let body = '';
     req.on('data', (chunk) => (body += chunk));

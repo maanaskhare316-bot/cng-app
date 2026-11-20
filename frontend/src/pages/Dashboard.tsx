@@ -58,7 +58,7 @@ function haversine(lat1: number, lon1: number, lat2: number, lon2: number) {
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { stations, updateStationTelemetry, submitCommunityReport } = useAppContext();
+  const { stations, submitCommunityReport } = useAppContext();
   const [reportModalStation, setReportModalStation] = useState<StationSummaryDto | null>(null);
 
   const [filterMode, setFilterMode] = useState<'all' | 'highPressure' | 'lowQueue' | 'fastTurnaround'>('all');

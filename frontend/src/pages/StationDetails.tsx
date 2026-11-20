@@ -25,6 +25,12 @@ import {
   Sparkles,
   AlertTriangle,
   Info,
+  TrendingUp,
+  TrendingDown,
+  Minus,
+  CheckCircle2,
+  ChevronDown,
+  ChevronUp,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { StationMap } from '../components/map/StationMap';
@@ -32,9 +38,10 @@ import PressureGauge from '../components/stations/PressureGauge';
 import QueueVisualizer from '../components/stations/QueueVisualizer';
 import ReportStatusModal from '../components/stations/ReportStatusModal';
 import ReportIncorrectModal from '../components/stations/ReportIncorrectModal';
+import { PostVisitModal } from '../components/stations/PostVisitModal';
 import DataStatusBadge from '../components/stations/DataStatusBadge';
 import ArrivalPredictionCard from '../components/stations/ArrivalPredictionCard';
-import { computeArrivalPrediction } from '../utils/predictionEngine';
+import { computeArrivalPrediction, computeQueueIntelligence } from '../utils/predictionEngine';
 import { formatPressure, formatPrice, formatTimestamp } from '../utils/formatters';
 import type {
   StationSummaryDto,
@@ -51,10 +58,13 @@ export default function StationDetails() {
     toggleStationSelection,
     submitCommunityReport,
     submitIncorrectFlag,
+    markStationVisited,
   } = useAppContext();
 
   const [isReportOpen, setIsReportOpen] = useState(false);
   const [isFlagOpen, setIsFlagOpen] = useState(false);
+  const [isPostVisitOpen, setIsPostVisitOpen] = useState(false);
+  const [showAssumptions, setShowAssumptions] = useState(false);
 
   const station = stations.find((s) => String(s.id) === id);
 
@@ -84,6 +94,17 @@ export default function StationDetails() {
     const etaMins = Math.max(3, Math.round((dist / 65) * 60));
     return computeArrivalPrediction(station, dist, etaMins);
   }, [station]);
+
+  // Compute Advanced Queue Intelligence
+  const queueIntel = useMemo(() => {
+    return (
+      station.queueIntelligence ||
+      computeQueueIntelligence(
+        station,
+        stationPrediction.predictionAvailable ? stationPrediction.predictedQueueAtArrival : null
+      )
+    );
+  }, [station, stationPrediction]);
 
   // Mock 2-hour telemetry history for charts
   const pData = [
@@ -270,6 +291,126 @@ export default function StationDetails() {
             </div>
           </div>
 
+          {/* 🚦 ADVANCED QUEUE INTELLIGENCE CARD (Section 2 Requirement) */}
+          <div className="bg-[#111827] rounded-3xl border border-slate-800 p-5 sm:p-6 shadow-xl space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-blue-500/10 text-blue-400 rounded-xl border border-blue-500/20">
+                  <Users size={18} />
+                </div>
+                <div>
+                  <h3 className="font-extrabold text-sm sm:text-base text-white">Advanced Queue Intelligence</h3>
+                  <p className="text-[11px] text-slate-400">Throughput modeling &amp; service rate breakdown</p>
+                </div>
+              </div>
+
+              {/* Queue Trend Badge */}
+              <div className="flex items-center gap-2">
+                <span
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border shadow-sm ${
+                    queueIntel.queueTrend === 'INCREASING'
+                      ? 'bg-rose-950/80 text-rose-300 border-rose-500/40'
+                      : queueIntel.queueTrend === 'DECREASING'
+                      ? 'bg-emerald-950/80 text-emerald-300 border-emerald-500/40'
+                      : 'bg-blue-950/80 text-blue-300 border-blue-500/40'
+                  }`}
+                >
+                  {queueIntel.queueTrend === 'INCREASING' ? (
+                    <>
+                      <TrendingUp size={13} className="text-rose-400" />
+                      <span>Trend: Increasing (Peak Flow)</span>
+                    </>
+                  ) : queueIntel.queueTrend === 'DECREASING' ? (
+                    <>
+                      <TrendingDown size={13} className="text-emerald-400" />
+                      <span>Trend: Decreasing (Fast Clearing)</span>
+                    </>
+                  ) : (
+                    <>
+                      <Minus size={13} className="text-blue-400" />
+                      <span>Trend: Stable (Balanced Inflow)</span>
+                    </>
+                  )}
+                </span>
+              </div>
+            </div>
+
+            {/* Metrics Breakdown Grid */}
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <div className="bg-[#0c1220] p-3.5 rounded-2xl border border-slate-800">
+                <span className="text-[10px] text-slate-400 font-bold uppercase block">Current Queue</span>
+                <span className="text-lg font-black text-white mt-0.5 block">
+                  {queueIntel.currentQueue} Vehicles
+                </span>
+                <span className="text-[10px] text-slate-500 block">Measured at pump</span>
+              </div>
+
+              <div className="bg-[#0c1220] p-3.5 rounded-2xl border border-slate-800">
+                <span className="text-[10px] text-slate-400 font-bold uppercase block">Est. Wait Time</span>
+                <span className="text-lg font-black text-amber-400 mt-0.5 block">
+                  ~{queueIntel.estimatedWaitMinutes} mins
+                </span>
+                <span className="text-[10px] text-slate-500 block">Prior to dispensing</span>
+              </div>
+
+              <div className="bg-[#0c1220] p-3.5 rounded-2xl border border-slate-800">
+                <span className="text-[10px] text-slate-400 font-bold uppercase block">Avg. Service Time</span>
+                <span className="text-lg font-black text-emerald-400 mt-0.5 block">
+                  ~{queueIntel.avgServiceTimeMinutes} mins
+                </span>
+                <span className="text-[10px] text-slate-500 block">Per vehicle fill</span>
+              </div>
+
+              <div className="bg-[#0c1220] p-3.5 rounded-2xl border border-slate-800">
+                <span className="text-[10px] text-slate-400 font-bold uppercase block">Predicted at ETA</span>
+                <span className="text-lg font-black text-sky-400 mt-0.5 block">
+                  {queueIntel.predictedQueueAtArrival !== null && queueIntel.predictedQueueAtArrival !== undefined
+                    ? `${queueIntel.predictedQueueAtArrival} Cars`
+                    : 'Insufficient data'}
+                </span>
+                <span className="text-[10px] text-slate-500 block">Forecast arrival queue</span>
+              </div>
+            </div>
+
+            {/* Assumptions Behind Calculation (Collapsible / Transparent) */}
+            <div className="bg-[#0c1220] rounded-2xl border border-slate-800/80 p-3.5 space-y-2">
+              <button
+                type="button"
+                onClick={() => setShowAssumptions(!showAssumptions)}
+                className="w-full flex items-center justify-between text-xs font-bold text-slate-300 hover:text-white transition"
+              >
+                <div className="flex items-center gap-1.5">
+                  <Info size={13} className="text-blue-400" />
+                  <span>How are queue and wait times calculated? (Assumptions)</span>
+                </div>
+                {showAssumptions ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
+              </button>
+
+              {showAssumptions && (
+                <div className="text-[11px] text-slate-300 space-y-2 pt-2 border-t border-slate-800 leading-relaxed animate-in fade-in duration-150">
+                  <p className="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800 text-slate-300">
+                    {queueIntel.assumptionsText}
+                  </p>
+                  <ul className="text-slate-400 space-y-1 list-disc list-inside">
+                    <li>
+                      <strong className="text-slate-200">Parallel Serving Capacity:</strong>{' '}
+                      {queueIntel.activeDispensers} active nozzles dispensing concurrently.
+                    </li>
+                    <li>
+                      <strong className="text-slate-200">Vehicle Fill Standard:</strong> 4.2 minutes baseline for 10–12 kg cascade fill.
+                    </li>
+                    <li>
+                      <strong className="text-slate-200">Queue Trend:</strong> {queueIntel.queueTrendLabel}.
+                    </li>
+                    <li className="italic text-slate-500">
+                      Actual wait may vary with nozzle coupling time and digital UPI payments.
+                    </li>
+                  </ul>
+                </div>
+              )}
+            </div>
+          </div>
+
           {/* Action Navigation Buttons */}
           <div className="flex flex-wrap gap-3">
             <a
@@ -279,12 +420,22 @@ export default function StationDetails() {
               className="flex-1 py-4 px-6 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-700 hover:from-emerald-500 hover:to-teal-600 text-white font-black text-sm text-center shadow-lg transition flex items-center justify-center gap-2"
             >
               <Navigation size={18} />
-              <span>Start Turn-by-Turn Navigation in Google Maps</span>
+              <span>Start Navigation in Google Maps</span>
             </a>
+
+            {/* Mark as Visited Button */}
+            <button
+              type="button"
+              onClick={() => setIsPostVisitOpen(true)}
+              className="py-4 px-5 rounded-2xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 border border-emerald-500/30 font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-sm"
+            >
+              <CheckCircle2 size={16} className="text-emerald-400" />
+              <span>Mark Visited &amp; Verify</span>
+            </button>
 
             <button
               onClick={() => toggleStationSelection(Number(station.id))}
-              className={`py-4 px-6 rounded-2xl font-bold text-xs border transition ${
+              className={`py-4 px-5 rounded-2xl font-bold text-xs border transition ${
                 isSelected
                   ? 'bg-emerald-950 text-emerald-400 border-emerald-500'
                   : 'bg-[#162032] text-slate-300 border-slate-700 hover:bg-[#1f2c44]'
@@ -382,6 +533,14 @@ export default function StationDetails() {
         station={station}
         onClose={() => setIsFlagOpen(false)}
         onSubmitFlag={(payload) => submitIncorrectFlag(payload)}
+      />
+
+      {/* Post-Visit Driver Verification Modal */}
+      <PostVisitModal
+        isOpen={isPostVisitOpen}
+        station={station}
+        onClose={() => setIsPostVisitOpen(false)}
+        onSubmitVisit={(record) => markStationVisited(record)}
       />
     </div>
   );

@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Menu, Bell, Key, Navigation, Zap } from 'lucide-react';
 import { ApiKeyModal } from '../components/ui/ApiKeyModal';
+import { SmartAlertDrawer } from '../components/stations/SmartAlertDrawer';
 import { getStoredGoogleApiKey } from '../services/googleMapsLoader';
 import { useAppContext } from '../context/AppContext';
 
@@ -22,10 +23,20 @@ interface NavbarProps {
 const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
   const { pathname } = useLocation();
   const navigate = useNavigate();
-  const { stations } = useAppContext();
+  const {
+    stations,
+    alerts,
+    dismissAlert,
+    clearAllAlerts,
+    settings,
+    updateAlertPreferences,
+  } = useAppContext();
 
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
+  const [isAlertDrawerOpen, setIsAlertDrawerOpen] = useState(false);
   const hasGoogleKey = !!getStoredGoogleApiKey();
+
+  const unreadAlertsCount = alerts.filter((a) => !a.read).length;
 
   const pageTitle =
     PAGE_TITLES[pathname] ??
@@ -56,6 +67,21 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
 
         {/* Right Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
+          {/* Smart Corridor Alerts Button */}
+          <button
+            type="button"
+            onClick={() => setIsAlertDrawerOpen(true)}
+            aria-label="Smart Corridor Alerts"
+            className="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700/60 transition"
+          >
+            <Bell size={16} />
+            {unreadAlertsCount > 0 && (
+              <span className="absolute -top-1 -right-1 px-1.5 py-0.2 bg-red-500 text-[10px] font-black text-white rounded-full ring-2 ring-[#0c1220] animate-pulse">
+                {unreadAlertsCount > 9 ? '9+' : unreadAlertsCount}
+              </span>
+            )}
+          </button>
+
           <button
             onClick={() => navigate('/plan')}
             className="hidden sm:inline-flex items-center gap-1.5 text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-1.5 rounded-xl shadow-md transition"
@@ -83,6 +109,17 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
           </span>
         </div>
       </div>
+
+      {/* Smart Alerts Drawer */}
+      <SmartAlertDrawer
+        isOpen={isAlertDrawerOpen}
+        onClose={() => setIsAlertDrawerOpen(false)}
+        alerts={alerts}
+        onDismissAlert={dismissAlert}
+        onClearAll={clearAllAlerts}
+        preferences={settings.alertPreferences}
+        onUpdatePreferences={updateAlertPreferences}
+      />
 
       <ApiKeyModal
         isOpen={isKeyModalOpen}

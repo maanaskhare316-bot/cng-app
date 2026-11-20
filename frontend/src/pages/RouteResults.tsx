@@ -23,6 +23,9 @@ import { ReportStatusModal } from '../components/stations/ReportStatusModal';
 import { ReportIncorrectModal } from '../components/stations/ReportIncorrectModal';
 import { DataStatusBadge } from '../components/stations/DataStatusBadge';
 import { ArrivalPredictionCard } from '../components/stations/ArrivalPredictionCard';
+import { AlternativeComparisonTable } from '../components/stations/AlternativeComparisonTable';
+import { PostVisitModal } from '../components/stations/PostVisitModal';
+import { RouteResultsSkeleton } from '../components/ui/SkeletonCard';
 import type {
   StationSummaryDto,
   CommunityReportPayload,
@@ -34,15 +37,26 @@ export default function RouteResults() {
   const navigate = useNavigate();
   const {
     activeRouteResult,
+    isLoading,
     submitCommunityReport,
     submitIncorrectFlag,
+    markStationVisited,
   } = useAppContext();
 
   const [selectedStation, setSelectedStation] = useState<StationSummaryDto | null>(null);
   const [reportModalStation, setReportModalStation] = useState<StationSummaryDto | null>(null);
   const [flagModalStation, setFlagModalStation] = useState<StationSummaryDto | null>(null);
+  const [postVisitStation, setPostVisitStation] = useState<StationSummaryDto | null>(null);
   const [mobileView, setMobileView] = useState<'map' | 'list'>('map');
   const [activeTabCategory, setActiveTabCategory] = useState<RecommendationCategory>('BEST_OVERALL');
+
+  if (isLoading) {
+    return (
+      <div className="max-w-7xl mx-auto py-6">
+        <RouteResultsSkeleton />
+      </div>
+    );
+  }
 
   if (!activeRouteResult || !activeRouteResult.stations || activeRouteResult.stations.length === 0) {
     return (
@@ -253,6 +267,16 @@ export default function RouteResults() {
                   <span>Details ↗</span>
                 </Link>
               </div>
+
+              {/* One-Tap Mark as Visited & Verify */}
+              <button
+                type="button"
+                onClick={() => setPostVisitStation(heroStation)}
+                className="w-full py-2.5 px-3 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 text-emerald-300 font-bold text-xs text-center border border-emerald-500/30 transition flex items-center justify-center gap-1.5 shadow-sm"
+              >
+                <CheckCircle2 size={14} className="text-emerald-400" />
+                <span>Mark as Visited &amp; Verify</span>
+              </button>
             </div>
           </div>
 
@@ -264,6 +288,12 @@ export default function RouteResults() {
           )}
         </div>
       )}
+
+      {/* ⚖️ SECTION 3: ALTERNATIVE STATION COMPARISON (Side-by-side Top 3) */}
+      <AlternativeComparisonTable
+        stations={stations}
+        onSelectStation={(st) => setSelectedStation(st)}
+      />
 
       {/* Mobile Tab Switcher: Map vs List */}
       <div className="flex lg:hidden bg-[#111827] p-1 rounded-2xl border border-slate-800 shadow-md text-xs font-bold">
@@ -449,6 +479,19 @@ export default function RouteResults() {
                         <AlertTriangle size={13} />
                       </button>
 
+                      {/* Mark as Visited */}
+                      <button
+                        type="button"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setPostVisitStation(st);
+                        }}
+                        className="p-1.5 rounded-lg border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 transition"
+                        title="Mark as Visited & Verify Accuracy"
+                      >
+                        <CheckCircle2 size={13} />
+                      </button>
+
                       {/* Community Report */}
                       <button
                         type="button"
@@ -497,6 +540,14 @@ export default function RouteResults() {
         station={flagModalStation}
         onClose={() => setFlagModalStation(null)}
         onSubmitFlag={(payload) => submitIncorrectFlag(payload)}
+      />
+
+      {/* Post-Visit Verification Modal */}
+      <PostVisitModal
+        isOpen={!!postVisitStation}
+        station={postVisitStation}
+        onClose={() => setPostVisitStation(null)}
+        onSubmitVisit={(record) => markStationVisited(record)}
       />
     </div>
   );

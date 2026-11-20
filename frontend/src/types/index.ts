@@ -1,3 +1,19 @@
+// ─── Telemetry Sensor Readings ───────────────────────────────────────────────
+
+export interface PressureReading {
+  timestamp: string;
+  pressureBar: number;
+  status: 'OPTIMAL' | 'MODERATE' | 'LOW';
+  source?: string;
+}
+
+export interface QueueObservation {
+  timestamp: string;
+  vehiclesWaiting: number;
+  estimatedWaitMinutes: number;
+  source?: string;
+}
+
 // ─── Station & Route Types ────────────────────────────────────────────────────
 
 export type RecommendationCategory =
@@ -8,7 +24,7 @@ export type RecommendationCategory =
 
 export type DataVerificationStatus =
   | 'LIVE_VERIFIED'        // Connected & recently reporting IoT sensor data (<15 mins)
-  | 'RECENTLY_UPDATED'     // Station attendant or driver update (15–60 mins)
+  | 'RECENTLY_UPDATED'     // Station attendant or driver update (15–45 mins)
   | 'COMMUNITY_REPORTED'   // User/driver crowdsourced submission
   | 'STALE_DATA'           // Information is outdated (>60 mins)
   | 'UNAVAILABLE';         // No reliable information available
@@ -36,6 +52,43 @@ export type QueueFreshness = 'LIVE' | 'RECENT' | 'STALE' | 'UNKNOWN';
 
 export type PressureFreshness = 'LIVE' | 'RECENT' | 'STALE' | 'UNKNOWN';
 
+export type QueueTrend = 'INCREASING' | 'DECREASING' | 'STABLE';
+
+// ─── Advanced Queue Intelligence ──────────────────────────────────────────────
+
+export interface QueueIntelligence {
+  currentQueue: number;
+  estimatedWaitMinutes: number;
+  avgServiceTimeMinutes: number; // e.g. 4.2 mins / vehicle
+  activeDispensers: number;
+  totalDispensers: number;
+  queueTrend: QueueTrend;
+  queueTrendLabel: string; // e.g. "Increasing (+2 cars/15m)"
+  predictedQueueAtArrival: number | null;
+  assumptionsText: string;
+}
+
+// ─── Data Freshness & Expiry Model ────────────────────────────────────────────
+
+export interface FreshnessExpiryConfig {
+  liveVerifiedExpiryMinutes: number; // default 15
+  recentlyUpdatedExpiryMinutes: number; // default 45
+  communityReportExpiryMinutes: number; // default 60
+  staleThresholdMinutes: number; // default 90
+}
+
+export interface DataFreshnessInfo {
+  status: DataVerificationStatus;
+  lastUpdatedTimestamp: string;
+  relativeTimeAgo: string;
+  expiresAt: string;
+  isExpired: boolean;
+  minutesRemainingUntilExpiry: number;
+  dataSourceLabel: string;
+  confidenceScore: number;
+  isDemoData: boolean;
+}
+
 // ─── Arrival Prediction Model ─────────────────────────────────────────────────
 
 export interface ArrivalPrediction {
@@ -57,6 +110,8 @@ export interface ArrivalPrediction {
   currentPressureBar: number | null;
   /** Estimated pressure upon arrival (only when sufficient telemetry exists) */
   predictedPressureBarAtArrival: number | null;
+  /** Queue trend towards station */
+  queueTrend?: QueueTrend;
   /** Confidence level classification */
   confidenceLevel: PredictionConfidence;
   /** Confidence percentage 0-100 */
@@ -105,6 +160,8 @@ export interface StationSummaryDto {
   queueUpdatedAt: string | null;
   queueFreshness: QueueFreshness | null;
   isQueueLive: boolean;
+  queueTrend?: QueueTrend;
+  queueIntelligence?: QueueIntelligence;
 
   // Pressure telemetry
   currentPressureBar: number | null;
@@ -121,7 +178,10 @@ export interface StationSummaryDto {
   dataSourceLabel: string;
   dataConfidenceScore: number; // 0 - 100
   lastUpdatedTimestamp: string;
+  expiresAt?: string;
+  isExpired?: boolean;
   isDemoData: boolean;
+  freshnessInfo?: DataFreshnessInfo;
 
   // Arrival Prediction Engine Output
   arrivalPrediction?: ArrivalPrediction;
@@ -172,7 +232,38 @@ export interface RouteSearchResultDto {
   message: string | null;
 }
 
-// ─── Community Reporting DTOs ─────────────────────────────────────────────────
+// ─── Smart Alerts System ──────────────────────────────────────────────────────
+
+export interface AlertPreferences {
+  queueSpikes: boolean;       // Alert when queue increases by >= 3 cars
+  stationClosure: boolean;    // Alert if target station closes or runs out of gas
+  pressureDrops: boolean;     // Alert if compressor pressure drops below 165 Bar
+  infoChanges: boolean;       // Alert if active nozzles or price changes
+}
+
+export interface StationAlertNotification {
+  id: string;
+  stationId: number;
+  stationName: string;
+  type: 'QUEUE_SPIKE' | 'STATION_CLOSED' | 'OUT_OF_STOCK' | 'PRESSURE_DROP' | 'INFO_CHANGE';
+  severity: 'CRITICAL' | 'WARNING' | 'INFO';
+  title: string;
+  message: string;
+  timestamp: string;
+  read: boolean;
+}
+
+// ─── Driver Trust & Community Verification ────────────────────────────────────
+
+export interface DriverTrustProfile {
+  driverId: string;
+  totalReportsSubmitted: number;
+  acceptedReports: number;
+  rejectedReports: number;
+  trustScore: number; // 0 - 100
+  trustBadge: 'NEWBIE' | 'TRUSTED_CONTRIBUTOR' | 'COMMUNITY_CHAMPION';
+  lastReportTimestamp?: string;
+}
 
 export interface CommunityReportPayload {
   stationId: number;
@@ -191,29 +282,23 @@ export interface IncorrectInfoFlagPayload {
   comment?: string;
 }
 
-// ─── Telemetry Readings ───────────────────────────────────────────────────────
+// ─── Post-Visit Verification & Feedback ───────────────────────────────────────
 
-export interface PressureReading {
-  id: number;
+export interface VisitedStationRecord {
+  id: string;
   stationId: number;
-  pressureBar: number;
-  minSafeLimitBar: number;
-  maxSafeLimitBar: number;
-  sensorStatus: SensorStatus;
-  dataSource: string;
-  isLiveSensor: boolean;
-  createdAt: string;
-}
-
-export interface QueueObservation {
-  id: number;
-  stationId: number;
-  vehiclesWaiting: number;
-  estimatedWaitMinutes: number;
-  dataSource: string;
-  observationMethod: string;
-  isLiveSensor: boolean;
-  createdAt: string;
+  stationName: string;
+  city: string;
+  visitedAt: string;
+  predictedQueueAtVisit?: number;
+  predictedWaitAtVisit?: number;
+  actualQueueConfirmed?: number;
+  actualWaitConfirmed?: number;
+  actualPressureConfirmed?: number;
+  cngAvailableConfirmed: boolean;
+  predictionVarianceMinutes?: number;
+  feedbackRating?: number; // 1 to 5
+  driverNotes?: string;
 }
 
 // ─── App Settings ─────────────────────────────────────────────────────────────
@@ -227,6 +312,8 @@ export interface AppSettings {
   simulationEnabled: boolean;
   mapProvider: 'google' | 'leaflet';
   googleMapsApiKey: string;
+  freshnessConfig: FreshnessExpiryConfig;
+  alertPreferences: AlertPreferences;
 }
 
 // ─── Corridor ─────────────────────────────────────────────────────────────────
