@@ -16,6 +16,7 @@ import {
   Compass,
   UserCheck,
   Fuel,
+  ExternalLink,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { StationMap } from '../components/map/StationMap';
@@ -26,6 +27,7 @@ import { ArrivalPredictionCard } from '../components/stations/ArrivalPredictionC
 import { AlternativeComparisonTable } from '../components/stations/AlternativeComparisonTable';
 import { PostVisitModal } from '../components/stations/PostVisitModal';
 import { RouteResultsSkeleton } from '../components/ui/SkeletonCard';
+import { InternalNavigationHUD } from '../components/navigation/InternalNavigationHUD';
 import { DEFAULT_CORRIDOR } from '../data/corridors';
 import type {
   StationSummaryDto,
@@ -51,6 +53,7 @@ export default function RouteResults() {
   const [mobileView, setMobileView] = useState<'map' | 'list'>('map');
   const [activeTabCategory, setActiveTabCategory] = useState<RecommendationCategory>('BEST_OVERALL');
   const [selectedRouteIndex, setSelectedRouteIndex] = useState<number>(0);
+  const [isInAppNavActive, setIsInAppNavActive] = useState<boolean>(false);
 
   useEffect(() => {
     if (!activeRouteResult && !isLoading) {
@@ -309,15 +312,28 @@ export default function RouteResults() {
               </div>
             </div>
 
-            <div className="w-full lg:w-64 space-y-2.5 flex-shrink-0">
+            <div className="w-full lg:w-72 space-y-2 flex-shrink-0">
+              {/* Dual Navigation Actions: Google Maps Turn-by-Turn + In-App Route Tracking */}
               <a
-                href={`https://www.google.com/maps/dir/?api=1&destination=${heroStation.latitude},${heroStation.longitude}`}
+                href={`https://www.google.com/maps/dir/?api=1&destination=${heroStation.latitude},${heroStation.longitude}&travelmode=driving&dir_action=navigate`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full py-3.5 px-4 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-extrabold text-xs uppercase tracking-wider text-center shadow-xs transition flex items-center justify-center gap-1.5"
+                className="w-full py-3 px-4 rounded-xl bg-[#16B8C9] hover:bg-[#119EAD] text-white font-black text-xs uppercase tracking-wider text-center shadow-md transition flex items-center justify-center gap-2"
+                title="Launch Google Maps for turn-by-turn driving navigation"
               >
-                <Navigation size={16} /> Start Turn-by-Turn Nav ↗
+                <span>Navigate with Google Maps</span>
+                <ExternalLink size={14} />
               </a>
+
+              <button
+                type="button"
+                onClick={() => setIsInAppNavActive(true)}
+                className="w-full py-2.5 px-4 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-extrabold text-xs uppercase tracking-wider text-center shadow-xs transition flex items-center justify-center gap-2"
+                title="Track journey and station arrival forecast inside CNG Navigator"
+              >
+                <Compass size={14} className="text-[#16B8C9]" />
+                <span>Start In-App Tracking</span>
+              </button>
 
               <div className="grid grid-cols-2 gap-2">
                 <button
@@ -659,6 +675,22 @@ export default function RouteResults() {
         station={postVisitStation}
         onClose={() => setPostVisitStation(null)}
         onSubmitVisit={(record) => markStationVisited(record)}
+      />
+
+      {/* Internal In-App Route Tracking HUD (Phase 7 & 8) */}
+      <InternalNavigationHUD
+        isActive={isInAppNavActive}
+        onClose={() => setIsInAppNavActive(false)}
+        destinationStation={selectedStation || heroStation}
+        startAddress={startAddress}
+        destAddress={destAddress}
+        totalDistanceKm={totalDistanceKm}
+        totalDurationMinutes={totalDurationMinutes}
+        routeGeometry={
+          activeRouteResult.drivingRouteOptions && activeRouteResult.drivingRouteOptions[selectedRouteIndex]
+            ? activeRouteResult.drivingRouteOptions[selectedRouteIndex].geometry
+            : routeGeometry
+        }
       />
     </div>
   );

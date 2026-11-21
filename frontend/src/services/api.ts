@@ -73,6 +73,26 @@ export const telemetryApi = {
 };
 
 // ---------------------------------------------------------------------------
+// Google Routes API (Backend Endpoints)
+// ---------------------------------------------------------------------------
+export const routesApi = {
+  /** Compute primary route with TRAFFIC_AWARE preference. */
+  computeRoute(req: RouteSearchRequest): Promise<any> {
+    return apiClient.post('/routes/compute', req).then((r) => r.data);
+  },
+
+  /** Compute primary and alternative routes. */
+  computeAlternatives(req: RouteSearchRequest): Promise<any> {
+    return apiClient.post('/routes/alternatives', req).then((r) => r.data);
+  },
+
+  /** Multi-station comparison matrix along route. */
+  compareStations(payload: { startLat: number; startLng: number; destLat: number; destLng: number; stationIds: number[] }): Promise<any> {
+    return apiClient.post('/routes/station-comparison', payload).then((r) => r.data);
+  },
+};
+
+// ---------------------------------------------------------------------------
 // Nominatim geocoding — location autocomplete (India only)
 // Falls back to empty array on any network/parse error.
 // ---------------------------------------------------------------------------

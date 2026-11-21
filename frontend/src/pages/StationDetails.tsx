@@ -390,13 +390,13 @@ export default function StationDetails() {
           {/* Action Navigation Buttons */}
           <div className="flex flex-wrap gap-3">
             <a
-              href={`https://www.google.com/maps/dir/?api=1&destination=${station.latitude},${station.longitude}`}
+              href={`https://www.google.com/maps/dir/?api=1&destination=${station.latitude},${station.longitude}&travelmode=driving&dir_action=navigate`}
               target="_blank"
               rel="noreferrer"
-              className="flex-1 py-4 px-6 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-black text-sm text-center shadow-xs transition flex items-center justify-center gap-2"
+              className="flex-1 py-4 px-6 rounded-xl bg-[#16B8C9] hover:bg-[#119EAD] text-white font-black text-sm text-center shadow-md transition flex items-center justify-center gap-2"
             >
               <Navigation size={18} />
-              <span>Start Navigation in Google Maps</span>
+              <span>Navigate with Google Maps</span>
             </a>
 
             <button
