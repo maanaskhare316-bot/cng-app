@@ -15,6 +15,8 @@ L.Icon.Default.mergeOptions({
   shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png',
 });
 
+import type { GoogleRouteOption } from '../../services/googleRoutingService';
+
 export interface LatLng {
   lat: number;
   lng: number;
@@ -29,6 +31,9 @@ interface StationMapProps {
   onStationClick?: (station: StationSummaryDto) => void;
   height?: string;
   defaultEngine?: 'google' | 'leaflet';
+  alternativeRoutes?: GoogleRouteOption[];
+  selectedRouteIndex?: number;
+  onSelectRouteIndex?: (index: number) => void;
 }
 
 function getPressureColor(bar: number | null | undefined): string {
@@ -74,6 +79,9 @@ export const StationMap: React.FC<StationMapProps> = ({
   onStationClick,
   height = '500px',
   defaultEngine = 'google',
+  alternativeRoutes = [],
+  selectedRouteIndex = 0,
+  onSelectRouteIndex,
 }) => {
   const [engine, setEngine] = useState<'google' | 'leaflet'>(() => {
     try {
@@ -190,6 +198,9 @@ export const StationMap: React.FC<StationMapProps> = ({
           onAuthError={() => handleEngineChange('leaflet')}
           onSwitchToOSM={() => handleEngineChange('leaflet')}
           onEnterKey={() => setIsKeyModalOpen(true)}
+          alternativeRoutes={alternativeRoutes}
+          selectedRouteIndex={selectedRouteIndex}
+          onSelectRouteIndex={onSelectRouteIndex}
         />
       ) : (
         <div style={{ height }} className="w-full relative">

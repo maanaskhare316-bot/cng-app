@@ -1,17 +1,16 @@
-import React, { useState, useRef } from 'react';
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  MapPin,
-  Navigation,
   ArrowUpDown,
   Search,
   Sparkles,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { StationMap } from '../components/map/StationMap';
+import { PlacesAutocompleteInput } from '../components/map/PlacesAutocompleteInput';
 import { CORRIDORS, DEFAULT_CORRIDOR } from '../data/corridors';
-import { nominatimSearch } from '../services/api';
 import type { Corridor, RouteSearchRequest } from '../types';
+import type { ResolvedPlace } from '../services/googlePlacesService';
 
 interface LocationState {
   address: string;
@@ -40,14 +39,6 @@ export default function TripPlanner() {
   const [isSearching, setIsSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
 
-  const [startSuggestions, setStartSuggestions] = useState<any[]>([]);
-  const [destSuggestions, setDestSuggestions] = useState<any[]>([]);
-  const [showStartDrop, setShowStartDrop] = useState(false);
-  const [showDestDrop, setShowDestDrop] = useState(false);
-
-  const startTimer = useRef<any>(null);
-  const destTimer = useRef<any>(null);
-
   const handleCorridorSelect = (corridor: Corridor) => {
     setSelectedCorridorId(corridor.id);
     setStartLoc({
@@ -63,45 +54,32 @@ export default function TripPlanner() {
   };
 
   const handleSwap = () => {
+    const temp = { ...startLoc };
     setStartLoc(destLoc);
-    setDestLoc(startLoc);
+    setDestLoc(temp);
   };
 
-  const handleStartTyping = (text: string) => {
-    setStartLoc({ address: text, lat: null, lng: null });
+  const handleStartSelected = (place: ResolvedPlace) => {
     setSelectedCorridorId('');
-    if (startTimer.current) clearTimeout(startTimer.current);
-    if (text.length > 2) {
-      startTimer.current = setTimeout(async () => {
-        const res = await nominatimSearch(text);
-        setStartSuggestions(res.slice(0, 5));
-        setShowStartDrop(true);
-      }, 300);
-    } else {
-      setStartSuggestions([]);
-      setShowStartDrop(false);
-    }
+    setStartLoc({
+      address: place.address,
+      lat: place.lat,
+      lng: place.lng,
+    });
   };
 
-  const handleDestTyping = (text: string) => {
-    setDestLoc({ address: text, lat: null, lng: null });
+  const handleDestSelected = (place: ResolvedPlace) => {
     setSelectedCorridorId('');
-    if (destTimer.current) clearTimeout(destTimer.current);
-    if (text.length > 2) {
-      destTimer.current = setTimeout(async () => {
-        const res = await nominatimSearch(text);
-        setDestSuggestions(res.slice(0, 5));
-        setShowDestDrop(true);
-      }, 300);
-    } else {
-      setDestSuggestions([]);
-      setShowDestDrop(false);
-    }
+    setDestLoc({
+      address: place.address,
+      lat: place.lat,
+      lng: place.lng,
+    });
   };
 
   const handleFindBestStation = async () => {
     if (!startLoc.lat || !startLoc.lng || !destLoc.lat || !destLoc.lng) {
-      setSearchError('Please select valid start and destination locations.');
+      setSearchError('Please select valid start and destination locations using the autocomplete suggestions.');
       return;
     }
 
@@ -177,52 +155,19 @@ export default function TripPlanner() {
             </div>
           </div>
 
-          {/* Locations Input */}
-          <div className="space-y-2.5 relative">
+          {/* Locations Input with Google Places Autocomplete */}
+          <div className="space-y-3 relative">
             {/* Start Location */}
-            <div className="relative">
-              <label className="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-1">
-                Origin (Start Location)
-              </label>
-              <div className="relative flex items-center">
-                <span className="absolute left-3 text-[#16B8C9]">
-                  <MapPin size={16} />
-                </span>
-                <input
-                  type="text"
-                  value={startLoc.address}
-                  onChange={(e) => handleStartTyping(e.target.value)}
-                  placeholder="e.g. Connaught Place, New Delhi"
-                  className="w-full pl-9 pr-8 py-2.5 sm:py-3 rounded-xl border border-[#DCE5EE] bg-[#F8FAFC] text-xs sm:text-sm text-[#243447] placeholder-[#94A3B8] font-medium focus:outline-none focus:ring-2 focus:ring-[#16B8C9] transition"
-                />
-                {startLoc.lat && <span className="absolute right-3 text-[#26734D] font-bold text-xs">✓</span>}
-              </div>
-
-              {showStartDrop && startSuggestions.length > 0 && (
-                <div className="absolute z-50 mt-1 w-full bg-[#F8FAFC] border border-[#DCE5EE] rounded-xl shadow-modal max-h-44 overflow-y-auto">
-                  {startSuggestions.map((s, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onMouseDown={() => {
-                        setStartLoc({
-                          address: s.display_name.split(',').slice(0, 3).join(','),
-                          lat: parseFloat(s.lat),
-                          lng: parseFloat(s.lon),
-                        });
-                        setShowStartDrop(false);
-                      }}
-                      className="w-full text-left px-3 py-2 text-xs text-[#243447] hover:bg-[#E8EEF5] border-b border-[#DCE5EE] last:border-0 transition"
-                    >
-                      <span className="font-bold text-[#14283F]">{s.display_name.split(',')[0]}</span>
-                      <span className="text-[#64748B] ml-1 truncate">
-                        {s.display_name.split(',').slice(1, 3).join(',')}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <PlacesAutocompleteInput
+              id="start-location-input"
+              label="Origin (Start Location)"
+              value={startLoc.address}
+              onChange={(val) => setStartLoc((prev) => ({ ...prev, address: val }))}
+              onPlaceSelected={handleStartSelected}
+              icon="start"
+              showCurrentLocationButton={true}
+              placeholder="e.g. Connaught Place, New Delhi"
+            />
 
             {/* Swap Button */}
             <div className="flex justify-center -my-1">
@@ -237,49 +182,15 @@ export default function TripPlanner() {
             </div>
 
             {/* Destination Location */}
-            <div className="relative">
-              <label className="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-1">
-                Destination
-              </label>
-              <div className="relative flex items-center">
-                <span className="absolute left-3 text-[#B54747]">
-                  <Navigation size={16} />
-                </span>
-                <input
-                  type="text"
-                  value={destLoc.address}
-                  onChange={(e) => handleDestTyping(e.target.value)}
-                  placeholder="e.g. Taj Mahal, Agra"
-                  className="w-full pl-9 pr-8 py-2.5 sm:py-3 rounded-xl border border-[#DCE5EE] bg-[#F8FAFC] text-xs sm:text-sm text-[#243447] placeholder-[#94A3B8] font-medium focus:outline-none focus:ring-2 focus:ring-[#16B8C9] transition"
-                />
-                {destLoc.lat && <span className="absolute right-3 text-[#26734D] font-bold text-xs">✓</span>}
-              </div>
-
-              {showDestDrop && destSuggestions.length > 0 && (
-                <div className="absolute z-50 mt-1 w-full bg-[#F8FAFC] border border-[#DCE5EE] rounded-xl shadow-modal max-h-44 overflow-y-auto">
-                  {destSuggestions.map((s, idx) => (
-                    <button
-                      key={idx}
-                      type="button"
-                      onMouseDown={() => {
-                        setDestLoc({
-                          address: s.display_name.split(',').slice(0, 3).join(','),
-                          lat: parseFloat(s.lat),
-                          lng: parseFloat(s.lon),
-                        });
-                        setShowDestDrop(false);
-                      }}
-                      className="w-full text-left px-3 py-2 text-xs text-[#243447] hover:bg-[#E8EEF5] border-b border-[#DCE5EE] last:border-0 transition"
-                    >
-                      <span className="font-bold text-[#14283F]">{s.display_name.split(',')[0]}</span>
-                      <span className="text-[#64748B] ml-1 truncate">
-                        {s.display_name.split(',').slice(1, 3).join(',')}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              )}
-            </div>
+            <PlacesAutocompleteInput
+              id="dest-location-input"
+              label="Destination"
+              value={destLoc.address}
+              onChange={(val) => setDestLoc((prev) => ({ ...prev, address: val }))}
+              onPlaceSelected={handleDestSelected}
+              icon="dest"
+              placeholder="e.g. Taj Mahal, Agra"
+            />
           </div>
 
           {/* Max Detour Slider */}

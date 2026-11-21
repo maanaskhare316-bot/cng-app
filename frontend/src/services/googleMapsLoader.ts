@@ -1,4 +1,4 @@
-// Google Maps JavaScript API dynamic loader with robust timeout & error handling
+// Google Maps JavaScript API dynamic loader with Places, Geometry & Routes support
 
 const STORAGE_KEY = 'cng_google_maps_api_key';
 
@@ -6,11 +6,26 @@ let loadPromise: Promise<boolean> | null = null;
 let isLoaded = false;
 let authFailed = false;
 
+type LoaderListener = (loaded: boolean, error?: string | null) => void;
+const listeners = new Set<LoaderListener>();
+
+function notifyListeners(loaded: boolean, error?: string | null) {
+  listeners.forEach((fn) => {
+    try {
+      fn(loaded, error);
+    } catch (e) {
+      console.error('[GoogleMaps] Error in loader listener:', e);
+    }
+  });
+}
+
 // Global callback for Google Maps authentication failures
 if (typeof window !== 'undefined') {
   (window as any).gm_authFailure = () => {
     console.warn('[GoogleMaps] Authentication failed or billing not active for this API key.');
     authFailed = true;
+    isLoaded = false;
+    notifyListeners(false, 'Google Maps Authentication failed (billing/referrer restriction).');
     window.dispatchEvent(new CustomEvent('google-maps-auth-error'));
   };
 }
@@ -41,8 +56,28 @@ export function isGoogleMapsLoaded(): boolean {
   return isLoaded && typeof window !== 'undefined' && !!(window as any).google?.maps;
 }
 
+export function getGoogle(): any {
+  if (typeof window !== 'undefined' && (window as any).google?.maps) {
+    return (window as any).google;
+  }
+  return null;
+}
+
 export function hasGoogleMapsAuthFailed(): boolean {
   return authFailed;
+}
+
+export function subscribeGoogleMapsState(listener: LoaderListener): () => void {
+  listeners.add(listener);
+  // Initial immediate notification if already resolved
+  if (isGoogleMapsLoaded()) {
+    listener(true, null);
+  } else if (authFailed) {
+    listener(false, 'Google Maps authentication failed.');
+  }
+  return () => {
+    listeners.delete(listener);
+  };
 }
 
 export function resetGoogleMapsLoader(): void {
@@ -63,6 +98,7 @@ export function loadGoogleMaps(customKey?: string): Promise<boolean> {
   // If already loaded with google.maps present
   if ((window as any).google?.maps) {
     isLoaded = true;
+    notifyListeners(true, null);
     return Promise.resolve(true);
   }
 
@@ -81,26 +117,35 @@ export function loadGoogleMaps(customKey?: string): Promise<boolean> {
     (window as any)[callbackName] = () => {
       if (timeoutId) clearTimeout(timeoutId);
       isLoaded = true;
+      authFailed = false;
       delete (window as any)[callbackName];
+      notifyListeners(true, null);
       resolve(true);
     };
 
     script.onerror = () => {
       if (timeoutId) clearTimeout(timeoutId);
       console.warn('[GoogleMaps] Failed to load Google Maps script tag.');
+      isLoaded = false;
+      notifyListeners(false, 'Failed to fetch Google Maps script from Google servers.');
       resolve(false);
     };
 
     // Timeout fallback after 8 seconds
     timeoutId = setTimeout(() => {
       console.warn('[GoogleMaps] Google Maps loading timed out.');
-      resolve(false);
+      if (!isLoaded) {
+        notifyListeners(false, 'Google Maps script connection timed out.');
+        resolve(false);
+      }
     }, 8000);
 
     const keyParam = key ? `&key=${encodeURIComponent(key)}` : '';
-    script.src = `https://maps.googleapis.com/maps/api/js?v=weekly&libraries=places,geometry&callback=${callbackName}${keyParam}`;
+    // Load official libraries: places, geometry, marker
+    script.src = `https://maps.googleapis.com/maps/api/js?v=weekly&libraries=places,geometry,marker&loading=async&callback=${callbackName}${keyParam}`;
     document.head.appendChild(script);
   });
 
   return loadPromise;
 }
+

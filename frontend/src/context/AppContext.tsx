@@ -31,6 +31,10 @@ import {
   validateDriverReport,
   recordReportSubmission,
 } from '../utils/trustEngine';
+import {
+  calculateGoogleDrivingRoute,
+  calculateActualStationDetours,
+} from '../services/googleRoutingService';
 import { detectStationAlerts, DEFAULT_ALERT_PREFERENCES } from '../utils/alertEngine';
 
 const SETTINGS_KEY = 'cng-navigator-settings';
@@ -443,46 +447,71 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
     });
   }, []);
 
-  // Smart Route Recommendation & Arrival Prediction Algorithm
+  // Smart Route Recommendation & Arrival Prediction Algorithm with Google Routes & Distance Matrix
   const planSmartRoute = useCallback(
     async (req: RouteSearchRequest): Promise<RouteSearchResultDto> => {
-      // 1. Identify corridor highway waypoints
-      const forwardCorridor = CORRIDORS.find(
-        (c) =>
-          Math.abs(c.startLat - req.startLat) < 0.35 &&
-          Math.abs(c.destLat - req.destLat) < 0.35
-      );
-      const reverseCorridor = !forwardCorridor
-        ? CORRIDORS.find(
-            (c) =>
-              Math.abs(c.destLat - req.startLat) < 0.35 &&
-              Math.abs(c.startLat - req.destLat) < 0.35
-          )
-        : null;
+      // 1. Try real-world Google Routes API driving route calculation
+      let googleRouteRes = null;
+      try {
+        googleRouteRes = await calculateGoogleDrivingRoute(
+          { lat: req.startLat, lng: req.startLng },
+          { lat: req.destLat, lng: req.destLng }
+        );
+      } catch (err) {
+        console.warn('[AppContext] Google Routes calculation fallback:', err);
+      }
 
       let routeGeometry: [number, number][] = [];
       let totalDist = 0;
+      let totalDur = 0;
+      let trafficAwareDur = 0;
+      let routeSource = 'Google Routes API (Live Driving & Traffic)';
+      let isDemo = false;
 
-      if (forwardCorridor && forwardCorridor.waypoints && forwardCorridor.waypoints.length > 0) {
-        routeGeometry = forwardCorridor.waypoints;
-        totalDist = forwardCorridor.distanceKm || Math.round(haversineDistance(req.startLat, req.startLng, req.destLat, req.destLng) * 1.15);
-      } else if (reverseCorridor && reverseCorridor.waypoints && reverseCorridor.waypoints.length > 0) {
-        routeGeometry = [...reverseCorridor.waypoints].reverse();
-        totalDist = reverseCorridor.distanceKm || Math.round(haversineDistance(req.startLat, req.startLng, req.destLat, req.destLng) * 1.15);
+      if (googleRouteRes && googleRouteRes.routeGeometry.length > 0) {
+        routeGeometry = googleRouteRes.routeGeometry;
+        totalDist = googleRouteRes.totalDistanceKm;
+        totalDur = googleRouteRes.totalDurationMinutes;
+        trafficAwareDur = googleRouteRes.trafficAwareDurationMinutes || totalDur;
+        routeSource = googleRouteRes.routeSource;
       } else {
-        totalDist = Math.round(haversineDistance(req.startLat, req.startLng, req.destLat, req.destLng) * 1.25);
-        const numPoints = 25;
-        for (let i = 0; i <= numPoints; i++) {
-          const t = i / numPoints;
-          const lat = req.startLat + (req.destLat - req.startLat) * t;
-          const lng = req.startLng + (req.destLng - req.startLng) * t;
-          routeGeometry.push([lat, lng]);
+        // Fallback: Identify corridor highway waypoints
+        const forwardCorridor = CORRIDORS.find(
+          (c) =>
+            Math.abs(c.startLat - req.startLat) < 0.35 &&
+            Math.abs(c.destLat - req.destLat) < 0.35
+        );
+        const reverseCorridor = !forwardCorridor
+          ? CORRIDORS.find(
+              (c) =>
+                Math.abs(c.destLat - req.startLat) < 0.35 &&
+                Math.abs(c.startLat - req.destLat) < 0.35
+            )
+          : null;
+
+        if (forwardCorridor && forwardCorridor.waypoints && forwardCorridor.waypoints.length > 0) {
+          routeGeometry = forwardCorridor.waypoints;
+          totalDist = forwardCorridor.distanceKm || Math.round(haversineDistance(req.startLat, req.startLng, req.destLat, req.destLng) * 1.15);
+        } else if (reverseCorridor && reverseCorridor.waypoints && reverseCorridor.waypoints.length > 0) {
+          routeGeometry = [...reverseCorridor.waypoints].reverse();
+          totalDist = reverseCorridor.distanceKm || Math.round(haversineDistance(req.startLat, req.startLng, req.destLat, req.destLng) * 1.15);
+        } else {
+          totalDist = Math.round(haversineDistance(req.startLat, req.startLng, req.destLat, req.destLng) * 1.25);
+          const numPoints = 25;
+          for (let i = 0; i <= numPoints; i++) {
+            const t = i / numPoints;
+            const lat = req.startLat + (req.destLat - req.startLat) * t;
+            const lng = req.startLng + (req.destLng - req.startLng) * t;
+            routeGeometry.push([lat, lng]);
+          }
         }
+        totalDur = Math.round((totalDist / 65) * 60);
+        trafficAwareDur = totalDur;
+        routeSource = 'Highway Corridor & Offline Routing Engine';
+        isDemo = true;
       }
 
-      const totalDur = Math.round((totalDist / 65) * 60);
-
-      // Find candidate stations within bounding corridor
+      // 2. Find candidate stations within bounding corridor
       const minLat = Math.min(req.startLat, req.destLat) - 0.9;
       const maxLat = Math.max(req.startLat, req.destLat) + 0.9;
       const minLng = Math.min(req.startLng, req.destLng) - 0.9;
@@ -500,21 +529,40 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         candidateStations = stations.slice(0, 5);
       }
 
-      // Compute Distance, Detour, Arrival Prediction, and Queue Intelligence
+      // 3. Compute Actual Road Detour using Google Distance Matrix API (not straight line)
+      let detourMap = new Map<number, { actualRoadDetourKm: number; actualRoadDetourMinutes: number; drivingDistanceToStationKm: number; drivingTimeToStationMinutes: number; calculationMethod: string }>();
+      try {
+        const detourResults = await calculateActualStationDetours(
+          { lat: req.startLat, lng: req.startLng },
+          { lat: req.destLat, lng: req.destLng },
+          candidateStations,
+          totalDist
+        );
+        detourResults.forEach((d) => detourMap.set(d.stationId, d));
+      } catch (err) {
+        console.warn('[AppContext] Detour matrix error:', err);
+      }
+
+      // 4. Enrich Candidate Stations with Actual Road Detour, Arrival Prediction, and Queue Intelligence
       const enrichedCandidates = candidateStations.map((s) => {
-        const distFromStart = Math.round(
+        const detourData = detourMap.get(s.id);
+
+        const fallbackDistFromStart = Math.round(
           haversineDistance(req.startLat, req.startLng, s.latitude, s.longitude)
         );
-        const distToDest = Math.round(
+        const fallbackDistToDest = Math.round(
           haversineDistance(s.latitude, s.longitude, req.destLat, req.destLng)
         );
-        const detourKm = Number(
-          Math.max(0.2, (distFromStart + distToDest - totalDist) * 0.4).toFixed(1)
+        const fallbackDetourKm = Number(
+          Math.max(0.2, (fallbackDistFromStart + fallbackDistToDest - totalDist) * 0.4).toFixed(1)
         );
-        const detourMin = Math.max(1, Math.round(detourKm * 1.8));
+        const fallbackDetourMin = Math.max(1, Math.round(fallbackDetourKm * 1.8));
+        const fallbackEtaMins = Math.max(2, Math.round((fallbackDistFromStart / 65) * 60));
 
-        // Travel time from driver/start to this station
-        const etaMins = Math.max(2, Math.round((distFromStart / 65) * 60));
+        const distFromStart = detourData ? detourData.drivingDistanceToStationKm : fallbackDistFromStart;
+        const etaMins = detourData ? detourData.drivingTimeToStationMinutes : fallbackEtaMins;
+        const detourKm = detourData ? detourData.actualRoadDetourKm : fallbackDetourKm;
+        const detourMin = detourData ? detourData.actualRoadDetourMinutes : fallbackDetourMin;
 
         // Smart Arrival Prediction Engine
         const prediction = computeArrivalPrediction(s, distFromStart, etaMins);
@@ -528,13 +576,16 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           distanceFromRouteKm: Math.min(detourKm, 1.5),
           extraDetourKm: detourKm,
           estimatedDetourMinutes: detourMin,
+          actualRoadDetourKm: detourKm,
+          actualRoadDetourMinutes: detourMin,
+          actualRoadDetourSource: detourData ? detourData.calculationMethod : 'POLYLINE_PROJECTION',
           arrivalPrediction: prediction,
           queueTrend: queueInt.queueTrend,
           queueIntelligence: queueInt,
         };
       });
 
-      // Run Multi-Factor Ranking Engine across Candidate Stations
+      // 5. Run Multi-Factor Ranking Engine across Candidate Stations
       const rankingResult = rankStationsForRoute(enrichedCandidates, totalDist);
 
       const result: RouteSearchResultDto = {
@@ -542,6 +593,7 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
         destAddress: req.destAddress,
         totalDistanceKm: totalDist,
         totalDurationMinutes: totalDur,
+        trafficAwareDurationMinutes: trafficAwareDur,
         routeGeometry,
         stations: rankingResult.stations,
         bestOverall: rankingResult.bestOverall,
@@ -551,9 +603,13 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
           station: st,
           reason: `${st.currentPressureBar ?? 0} Bar • ${st.vehiclesWaiting ?? 0} cars • +${st.extraDetourKm}km detour`,
         })),
-        isDemoRoute: true,
-        routeSource: 'Google Maps Directions & Mobility Intelligence Engine',
-        message: 'Stations evaluated across arrival queue prediction, pressure reliability, and detour distance.',
+        drivingRouteOptions: googleRouteRes
+          ? [googleRouteRes.primaryRoute, ...googleRouteRes.alternativeRoutes]
+          : [],
+        selectedRouteIndex: 0,
+        isDemoRoute: isDemo,
+        routeSource,
+        message: 'Stations evaluated across actual driving detour distance, arrival queue forecast, and pressure reliability.',
       };
 
       setActiveRouteResult(result);

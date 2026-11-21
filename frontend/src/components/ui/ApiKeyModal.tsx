@@ -84,23 +84,45 @@ export const ApiKeyModal: React.FC<ApiKeyModalProps> = ({ isOpen, onClose, onKey
             </div>
           </div>
 
-          <div className="bg-[#E8EEF5] border border-[#DCE5EE] rounded-xl p-3.5 text-xs text-[#243447] space-y-2">
+          <div className="bg-[#E8EEF5] border border-[#DCE5EE] rounded-xl p-3.5 text-xs text-[#243447] space-y-2.5">
             <div className="flex items-center gap-1.5 font-bold text-[#14283F]">
               <ShieldCheck size={16} className="text-[#16B8C9]" />
-              <span>How to get a Google Maps API Key?</span>
+              <span>Google Cloud Platform Configuration (4 APIs Required)</span>
             </div>
-            <ol className="list-decimal list-inside space-y-1 text-[#64748B] pl-1 text-[11px] leading-relaxed">
-              <li>Open Google Cloud Console and enable <strong>Maps JavaScript API</strong>.</li>
-              <li>Also enable <strong>Directions API</strong> and <strong>Places API</strong>.</li>
-              <li>Go to Credentials, create an API Key, and paste it here.</li>
-            </ol>
+            <p className="text-[11px] text-[#64748B] leading-relaxed">
+              Enable the following APIs in your Google Cloud Console for the full navigation experience:
+            </p>
+            <div className="grid grid-cols-2 gap-1.5 text-[11px] font-bold text-[#14283F]">
+              <div className="p-1.5 rounded-lg bg-[#F8FAFC] border border-[#DCE5EE] flex items-center gap-1">
+                <span className="text-[#16B8C9]">✓</span> Maps JavaScript API
+              </div>
+              <div className="p-1.5 rounded-lg bg-[#F8FAFC] border border-[#DCE5EE] flex items-center gap-1">
+                <span className="text-[#16B8C9]">✓</span> Places API (New)
+              </div>
+              <div className="p-1.5 rounded-lg bg-[#F8FAFC] border border-[#DCE5EE] flex items-center gap-1">
+                <span className="text-[#16B8C9]">✓</span> Routes / Directions API
+              </div>
+              <div className="p-1.5 rounded-lg bg-[#F8FAFC] border border-[#DCE5EE] flex items-center gap-1">
+                <span className="text-[#16B8C9]">✓</span> Distance Matrix API
+              </div>
+            </div>
+
+            <div className="pt-1 text-[11px] text-[#64748B] space-y-1 leading-relaxed">
+              <p>
+                <strong>Security:</strong> Restrict your browser API key to <em>HTTP Referrers</em> (e.g. <code className="bg-[#DCE5EE] px-1 py-0.5 rounded text-[#14283F]">https://cng-app.vercel.app/*</code> and <code className="bg-[#DCE5EE] px-1 py-0.5 rounded text-[#14283F]">http://localhost:*</code>).
+              </p>
+              <p>
+                <strong>Billing:</strong> Google grants \$200 monthly free credit. You can set a budget alert in Google Cloud Billing to prevent unexpected charges.
+              </p>
+            </div>
+
             <a
               href="https://console.cloud.google.com/google/maps-apis/overview"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 text-[11px] font-bold text-[#16B8C9] hover:text-[#119EAD] transition"
+              className="inline-flex items-center gap-1 text-[11px] font-bold text-[#16B8C9] hover:text-[#119EAD] transition pt-1"
             >
-              <span>Google Cloud Console</span>
+              <span>Open Google Cloud Console ↗</span>
               <ExternalLink size={11} />
             </a>
           </div>

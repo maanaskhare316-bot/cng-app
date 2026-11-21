@@ -50,6 +50,7 @@ export default function RouteResults() {
   const [postVisitStation, setPostVisitStation] = useState<StationSummaryDto | null>(null);
   const [mobileView, setMobileView] = useState<'map' | 'list'>('map');
   const [activeTabCategory, setActiveTabCategory] = useState<RecommendationCategory>('BEST_OVERALL');
+  const [selectedRouteIndex, setSelectedRouteIndex] = useState<number>(0);
 
   useEffect(() => {
     if (!activeRouteResult && !isLoading) {
@@ -399,10 +400,10 @@ export default function RouteResults() {
             <div>
               <h3 className="font-extrabold text-xs sm:text-sm text-[#14283F] flex items-center gap-1.5">
                 <Compass size={14} className="text-[#16B8C9]" />
-                <span>Live Highway Corridor Map</span>
+                <span>Live Google Maps Corridor</span>
               </h3>
               <p className="text-[11px] text-[#64748B]">
-                Turn-by-turn trajectory with live gas pressure &amp; queue pins
+                {activeRouteResult.routeSource || 'Google Routes API with live traffic & telemetry'}
               </p>
             </div>
             <div className="hidden sm:flex items-center gap-2 text-[10px] text-[#64748B] font-semibold">
@@ -415,14 +416,55 @@ export default function RouteResults() {
             </div>
           </div>
 
+          {/* Alternative Routes Selector (Google Routes API) */}
+          {activeRouteResult.drivingRouteOptions && activeRouteResult.drivingRouteOptions.length > 1 && (
+            <div className="flex items-center gap-2 overflow-x-auto pb-2 mb-1">
+              <span className="text-[10px] font-bold text-[#64748B] uppercase tracking-wider flex-shrink-0">
+                Routes:
+              </span>
+              {activeRouteResult.drivingRouteOptions.map((opt: any, idx: number) => {
+                const isSelected = selectedRouteIndex === idx;
+                return (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => setSelectedRouteIndex(idx)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border flex-shrink-0 ${
+                      isSelected
+                        ? 'bg-[#14283F] text-white border-[#14283F] shadow-xs'
+                        : 'bg-[#E8EEF5] text-[#64748B] border-[#DCE5EE] hover:bg-[#DCE5EE] hover:text-[#14283F]'
+                    }`}
+                  >
+                    <span>{idx === 0 ? 'Primary Route' : `Alternative ${idx}`}</span>
+                    <span className="text-[10.5px] opacity-90 font-mono">
+                      {opt.distanceKm} km • ~{opt.durationInTrafficMinutes || opt.durationMinutes}m
+                    </span>
+                    {opt.trafficDelayMinutes > 0 && (
+                      <span className="text-[9.5px] text-[#F59E0B] font-bold">
+                        (+{opt.trafficDelayMinutes}m traffic)
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
           <StationMap
             stations={stations}
-            routeGeometry={routeGeometry}
+            routeGeometry={
+              activeRouteResult.drivingRouteOptions && activeRouteResult.drivingRouteOptions[selectedRouteIndex]
+                ? activeRouteResult.drivingRouteOptions[selectedRouteIndex].geometry
+                : routeGeometry
+            }
             startPoint={startCoord}
             destPoint={destCoord}
             selectedStationId={selectedStation?.id || heroStation?.id}
             onStationClick={(st) => setSelectedStation(st)}
             height="530px"
+            alternativeRoutes={activeRouteResult.drivingRouteOptions}
+            selectedRouteIndex={selectedRouteIndex}
+            onSelectRouteIndex={(idx) => setSelectedRouteIndex(idx)}
           />
         </div>
 

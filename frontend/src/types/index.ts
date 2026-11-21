@@ -152,6 +152,9 @@ export interface StationSummaryDto {
   extraDetourKm: number | null;
   estimatedDetourMinutes: number | null;
   distanceFromStartKm: number | null;
+  actualRoadDetourKm?: number | null;
+  actualRoadDetourMinutes?: number | null;
+  actualRoadDetourSource?: string | null;
 
   // Queue telemetry
   vehiclesWaiting: number | null;
@@ -229,6 +232,9 @@ export interface RouteSearchResultDto {
   nearestStation: StationSummaryDto | null;
 
   alternatives: RouteAlternativeDto[];
+  drivingRouteOptions?: any[];
+  selectedRouteIndex?: number;
+  trafficAwareDurationMinutes?: number;
   isDemoRoute: boolean;
   routeSource: string | null;
   message: string | null;
