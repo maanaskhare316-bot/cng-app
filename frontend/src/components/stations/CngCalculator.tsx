@@ -42,17 +42,17 @@ export const CngCalculator: React.FC<CngCalculatorProps> = ({
   const moneySaved = Math.max(0, equivalentPetrolCost - totalCngCost);
 
   return (
-    <div className="bg-white rounded-[14px] border border-[#E3EAF0] p-5 sm:p-6 shadow-sm space-y-5 text-[#243447]">
+    <div className="bg-[#F8FAFC] rounded-[14px] border border-[#DCE5EE] p-5 sm:p-6 shadow-sm space-y-5 text-[#243447]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="p-2.5 bg-[#F4F7FA] border border-[#E3EAF0] text-[#14283F] rounded-xl">
+          <div className="p-2.5 bg-[#E8EEF5] border border-[#DCE5EE] text-[#14283F] rounded-xl">
             <Calculator size={20} />
           </div>
           <div>
             <h3 className="font-extrabold text-[#14283F] text-sm sm:text-base">
               CNG Pressure & Highway Range Calculator
             </h3>
-            <p className="text-[11px] text-[#718096]">
+            <p className="text-[11px] text-[#64748B]">
               Calculate cylinder filling capacity and range gains at 200+ Bar pressure
             </p>
           </div>
@@ -61,7 +61,7 @@ export const CngCalculator: React.FC<CngCalculatorProps> = ({
 
       {/* Vehicle Type Selector */}
       <div>
-        <label className="block text-[11px] font-bold text-[#718096] uppercase tracking-wider mb-2">
+        <label className="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-2">
           Select Vehicle Type
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -73,14 +73,14 @@ export const CngCalculator: React.FC<CngCalculatorProps> = ({
               className={`p-3 rounded-xl border text-left transition ${
                 selectedVehicle.name === v.name
                   ? 'bg-[#14283F] border-[#14283F] text-white'
-                  : 'bg-[#F4F7FA] border-[#E3EAF0] text-[#243447] hover:bg-[#E3EAF0]'
+                  : 'bg-[#E8EEF5] border-[#DCE5EE] text-[#243447] hover:bg-[#DCE5EE]'
               }`}
             >
               <div className="text-xl mb-1">{v.emoji}</div>
               <p className={`text-xs font-bold leading-tight truncate ${selectedVehicle.name === v.name ? 'text-white' : 'text-[#14283F]'}`}>
                 {v.name.split(' (')[0]}
               </p>
-              <p className={`text-[10px] mt-0.5 ${selectedVehicle.name === v.name ? 'text-slate-300' : 'text-[#718096]'}`}>
+              <p className={`text-[10px] mt-0.5 ${selectedVehicle.name === v.name ? 'text-slate-300' : 'text-[#64748B]'}`}>
                 {v.avgMileageKmPerKg} km/kg avg
               </p>
             </button>
@@ -89,7 +89,7 @@ export const CngCalculator: React.FC<CngCalculatorProps> = ({
       </div>
 
       {/* Pressure Slider */}
-      <div className="bg-[#F4F7FA] p-4 rounded-xl border border-[#E3EAF0] space-y-2">
+      <div className="bg-[#E8EEF5] p-4 rounded-xl border border-[#DCE5EE] space-y-2">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5 text-xs font-bold text-[#14283F]">
             <Zap size={14} className="text-[#16B8C9]" />
@@ -115,10 +115,10 @@ export const CngCalculator: React.FC<CngCalculatorProps> = ({
           step={5}
           value={pressureBar}
           onChange={(e) => setPressureBar(Number(e.target.value))}
-          className="w-full accent-[#16B8C9] h-2 bg-[#E3EAF0] rounded-lg cursor-pointer"
+          className="w-full accent-[#16B8C9] h-2 bg-[#CBD5E1] rounded-lg cursor-pointer"
         />
 
-        <div className="flex justify-between text-[10px] font-bold text-[#718096]">
+        <div className="flex justify-between text-[10px] font-bold text-[#64748B]">
           <span>140 Bar (Low Pressure)</span>
           <span>185 Bar (Standard)</span>
           <span className="text-[#26734D] font-extrabold">220 Bar (Peak Fast Fill)</span>

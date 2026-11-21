@@ -59,13 +59,13 @@ export default function StationDetails() {
 
   if (!station) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 p-8 bg-white rounded-[14px] border border-[#E3EAF0] text-center text-[#243447]">
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 p-8 bg-[#F8FAFC] rounded-[14px] border border-[#DCE5EE] text-center text-[#243447]">
         <span className="text-5xl">⛽</span>
         <h2 className="text-xl font-bold text-[#14283F]">Station Not Found</h2>
-        <p className="text-[#718096] text-xs">This station ID is not available or has been moved.</p>
+        <p className="text-[#64748B] text-xs">This station ID is not available or has been moved.</p>
         <button
           onClick={() => navigate('/stations')}
-          className="bg-[#14283F] text-white px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-[#1D3854] transition shadow-sm"
+          className="bg-[#14283F] text-white px-6 py-2.5 rounded-xl font-bold text-xs hover:bg-[#1D3854] transition shadow-xs"
         >
           Back to Stations
         </button>
@@ -77,14 +77,12 @@ export default function StationDetails() {
   const isBest = station.recommendationCategory === 'BEST_OVERALL';
   const pressureVal = station.currentPressureBar ? Math.round(station.currentPressureBar) : 200;
 
-  // Compute live arrival prediction for this station
   const stationPrediction = useMemo(() => {
     const dist = station.distanceFromStartKm ?? 15;
     const etaMins = Math.max(3, Math.round((dist / 65) * 60));
     return computeArrivalPrediction(station, dist, etaMins);
   }, [station]);
 
-  // Compute Advanced Queue Intelligence
   const queueIntel = useMemo(() => {
     return (
       station.queueIntelligence ||
@@ -117,27 +115,25 @@ export default function StationDetails() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-1.5 text-xs font-bold text-[#718096] hover:text-[#14283F] bg-white px-3.5 py-2 rounded-xl border border-[#E3EAF0] transition shadow-xs"
+          className="flex items-center gap-1.5 text-xs font-bold text-[#64748B] hover:text-[#14283F] bg-[#F8FAFC] px-3.5 py-2 rounded-xl border border-[#DCE5EE] transition shadow-xs"
         >
           <ArrowLeft size={14} /> Back
         </button>
 
         <div className="flex items-center gap-2">
-          {/* Flag Incorrect Info */}
           <button
             type="button"
             onClick={() => setIsFlagOpen(true)}
-            className="px-3.5 py-2 rounded-xl border border-[#E3EAF0] text-[#718096] hover:text-[#B54747] hover:bg-[#FCEAEA] font-bold text-xs transition flex items-center gap-1.5"
+            className="px-3.5 py-2 rounded-xl border border-[#DCE5EE] text-[#64748B] hover:text-[#B54747] hover:bg-[#FCEAEA] font-bold text-xs transition flex items-center gap-1.5"
           >
             <AlertTriangle size={13} />
             <span>Report Issue</span>
           </button>
 
-          {/* Submit Community Report */}
           <button
             type="button"
             onClick={() => setIsReportOpen(true)}
-            className="px-4 py-2 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5"
+            className="px-4 py-2 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-bold text-xs shadow-xs transition flex items-center gap-1.5"
           >
             <Sparkles size={14} className="text-[#16B8C9]" />
             <span>Update Live Telemetry</span>
@@ -149,7 +145,7 @@ export default function StationDetails() {
         {/* Left Column: 7 cols */}
         <div className="lg:col-span-7 space-y-6">
           {/* Station Hero Card */}
-          <div className="bg-white rounded-[14px] border border-[#E3EAF0] p-6 shadow-sm space-y-4">
+          <div className="bg-[#F8FAFC] rounded-[14px] border border-[#DCE5EE] p-6 shadow-card space-y-4">
             <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-3">
               <div>
                 {isBest && (
@@ -159,12 +155,11 @@ export default function StationDetails() {
                 )}
                 <h1 className="text-2xl font-black text-[#14283F] leading-tight">{station.name}</h1>
                 <p className="text-xs font-semibold text-[#16B8C9] mt-0.5">{station.operator}</p>
-                <p className="text-xs text-[#718096] mt-1 flex items-center gap-1">
+                <p className="text-xs text-[#64748B] mt-1 flex items-center gap-1">
                   <span>📍</span> {station.address}, {station.city}, {station.state}
                 </p>
               </div>
 
-              {/* Status Pill */}
               <div className="flex flex-col items-start sm:items-end gap-1.5">
                 <span
                   className={`text-xs font-extrabold px-3 py-1 rounded-full border ${
@@ -192,36 +187,35 @@ export default function StationDetails() {
 
             {/* Quick Specs Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5 pt-2">
-              <div className="bg-[#F4F7FA] p-3 rounded-xl border border-[#E3EAF0] text-center">
-                <span className="text-[10px] text-[#718096] font-bold uppercase">CNG Price</span>
+              <div className="bg-[#E8EEF5] p-3 rounded-xl border border-[#DCE5EE] text-center">
+                <span className="text-[10px] text-[#64748B] font-bold uppercase">CNG Price</span>
                 <p className="text-base font-extrabold text-[#14283F] mt-0.5">
                   ₹{station.verifiedPricePerKg ?? 82.5}/kg
                 </p>
               </div>
-              <div className="bg-[#F4F7FA] p-3 rounded-xl border border-[#E3EAF0] text-center">
-                <span className="text-[10px] text-[#718096] font-bold uppercase">Active Nozzles</span>
+              <div className="bg-[#E8EEF5] p-3 rounded-xl border border-[#DCE5EE] text-center">
+                <span className="text-[10px] text-[#64748B] font-bold uppercase">Active Nozzles</span>
                 <p className="text-base font-extrabold text-[#14283F] mt-0.5">
                   {station.activeDispensers ?? 4}/{station.totalDispensers ?? 4} Disp.
                 </p>
               </div>
-              <div className="bg-[#F4F7FA] p-3 rounded-xl border border-[#E3EAF0] text-center">
-                <span className="text-[10px] text-[#718096] font-bold uppercase">Operating Hours</span>
+              <div className="bg-[#E8EEF5] p-3 rounded-xl border border-[#DCE5EE] text-center">
+                <span className="text-[10px] text-[#64748B] font-bold uppercase">Operating Hours</span>
                 <p className="text-base font-extrabold text-[#14283F] mt-0.5">
                   {station.operatingHours ?? '24x7 Open'}
                 </p>
               </div>
-              <div className="bg-[#F4F7FA] p-3 rounded-xl border border-[#E3EAF0] text-center">
-                <span className="text-[10px] text-[#718096] font-bold uppercase">Pumping Rate</span>
+              <div className="bg-[#E8EEF5] p-3 rounded-xl border border-[#DCE5EE] text-center">
+                <span className="text-[10px] text-[#64748B] font-bold uppercase">Pumping Rate</span>
                 <p className="text-base font-extrabold text-[#14283F] mt-0.5">
                   {station.dispenserCapacityPerHour ?? 140} kg/hr
                 </p>
               </div>
             </div>
 
-            {/* Amenities */}
             {station.amenities && station.amenities.length > 0 && (
-              <div className="pt-2 border-t border-[#E3EAF0]">
-                <span className="text-xs font-bold text-[#718096] uppercase tracking-wider block mb-2">
+              <div className="pt-2 border-t border-[#DCE5EE]">
+                <span className="text-xs font-bold text-[#64748B] uppercase tracking-wider block mb-2">
                   Available Station Amenities
                 </span>
                 <div className="flex flex-wrap gap-1.5">
@@ -238,38 +232,35 @@ export default function StationDetails() {
             )}
           </div>
 
-          {/* Smart Arrival Prediction Section */}
           <ArrivalPredictionCard prediction={stationPrediction} />
 
-          {/* Telemetry Live Row: Pressure Gauge + Queue Visualizer */}
+          {/* Telemetry Live Row */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
-            {/* Pressure Gauge */}
-            <div className="bg-white rounded-[14px] border border-[#E3EAF0] p-6 shadow-sm flex flex-col items-center justify-between">
+            <div className="bg-[#F8FAFC] rounded-[14px] border border-[#DCE5EE] p-6 shadow-card flex flex-col items-center justify-between">
               <div className="w-full flex items-center justify-between mb-2">
                 <h3 className="text-xs font-extrabold uppercase tracking-wider text-[#14283F] flex items-center gap-1.5">
                   <Zap size={14} className="text-[#16B8C9]" /> Measured Gas Pressure
                 </h3>
-                <span className="text-[10px] bg-[#F4F7FA] text-[#718096] border border-[#E3EAF0] font-bold px-2 py-0.5 rounded-full">
+                <span className="text-[10px] bg-[#E8EEF5] text-[#64748B] border border-[#DCE5EE] font-bold px-2 py-0.5 rounded-full">
                   SCADA FEED
                 </span>
               </div>
 
               <PressureGauge value={station.currentPressureBar} size="md" />
 
-              <div className="w-full mt-4 pt-3 border-t border-[#E3EAF0] grid grid-cols-2 text-center text-xs">
+              <div className="w-full mt-4 pt-3 border-t border-[#DCE5EE] grid grid-cols-2 text-center text-xs">
                 <div>
-                  <span className="text-[#718096] block text-[10px] uppercase font-bold">Min Safe Limit</span>
+                  <span className="text-[#64748B] block text-[10px] uppercase font-bold">Min Safe Limit</span>
                   <span className="font-bold text-[#14283F]">{station.minSafeLimitBar ?? 140} Bar</span>
                 </div>
                 <div>
-                  <span className="text-[#718096] block text-[10px] uppercase font-bold">Max Safe Limit</span>
+                  <span className="text-[#64748B] block text-[10px] uppercase font-bold">Max Safe Limit</span>
                   <span className="font-bold text-[#14283F]">{station.maxSafeLimitBar ?? 240} Bar</span>
                 </div>
               </div>
             </div>
 
-            {/* Queue Visualizer */}
-            <div className="bg-white rounded-[14px] border border-[#E3EAF0] p-6 shadow-sm flex flex-col justify-between">
+            <div className="bg-[#F8FAFC] rounded-[14px] border border-[#DCE5EE] p-6 shadow-card flex flex-col justify-between">
               <QueueVisualizer
                 vehiclesWaiting={station.vehiclesWaiting}
                 estimatedWaitMinutes={station.estimatedWaitMinutes}
@@ -279,20 +270,19 @@ export default function StationDetails() {
             </div>
           </div>
 
-          {/* ADVANCED QUEUE INTELLIGENCE CARD */}
-          <div className="bg-white rounded-[14px] border border-[#E3EAF0] p-5 sm:p-6 shadow-sm space-y-4">
-            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E3EAF0] pb-3">
+          {/* Advanced Queue Intelligence Card */}
+          <div className="bg-[#F8FAFC] rounded-[14px] border border-[#DCE5EE] p-5 sm:p-6 shadow-card space-y-4">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#DCE5EE] pb-3">
               <div className="flex items-center gap-2">
-                <div className="p-2 bg-[#F4F7FA] text-[#14283F] rounded-xl border border-[#E3EAF0]">
+                <div className="p-2 bg-[#E8EEF5] text-[#14283F] rounded-xl border border-[#DCE5EE]">
                   <Users size={18} />
                 </div>
                 <div>
                   <h3 className="font-extrabold text-sm sm:text-base text-[#14283F]">Advanced Queue Intelligence</h3>
-                  <p className="text-[11px] text-[#718096]">Throughput modeling &amp; service rate breakdown</p>
+                  <p className="text-[11px] text-[#64748B]">Throughput modeling &amp; service rate breakdown</p>
                 </div>
               </div>
 
-              {/* Queue Trend Badge */}
               <div className="flex items-center gap-2">
                 <span
                   className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black uppercase tracking-wider border shadow-xs ${
@@ -300,7 +290,7 @@ export default function StationDetails() {
                       ? 'bg-[#FCEAEA] text-[#B54747] border-[#F4BBBB]'
                       : queueIntel.queueTrend === 'DECREASING'
                       ? 'bg-[#E3F4EC] text-[#26734D] border-[#C0E4D0]'
-                      : 'bg-[#F4F7FA] text-[#14283F] border-[#E3EAF0]'
+                      : 'bg-[#E8EEF5] text-[#14283F] border-[#DCE5EE]'
                   }`}
                 >
                   {queueIntel.queueTrend === 'INCREASING' ? (
@@ -323,45 +313,43 @@ export default function StationDetails() {
               </div>
             </div>
 
-            {/* Metrics Breakdown Grid */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-              <div className="bg-[#F4F7FA] p-3.5 rounded-xl border border-[#E3EAF0]">
-                <span className="text-[10px] text-[#718096] font-bold uppercase block">Current Queue</span>
+              <div className="bg-[#E8EEF5] p-3.5 rounded-xl border border-[#DCE5EE]">
+                <span className="text-[10px] text-[#64748B] font-bold uppercase block">Current Queue</span>
                 <span className="text-lg font-black text-[#14283F] mt-0.5 block">
                   {queueIntel.currentQueue} Vehicles
                 </span>
-                <span className="text-[10px] text-[#718096] block">Measured at pump</span>
+                <span className="text-[10px] text-[#64748B] block">Measured at pump</span>
               </div>
 
-              <div className="bg-[#F4F7FA] p-3.5 rounded-xl border border-[#E3EAF0]">
-                <span className="text-[10px] text-[#718096] font-bold uppercase block">Est. Wait Time</span>
+              <div className="bg-[#E8EEF5] p-3.5 rounded-xl border border-[#DCE5EE]">
+                <span className="text-[10px] text-[#64748B] font-bold uppercase block">Est. Wait Time</span>
                 <span className="text-lg font-black text-[#98651C] mt-0.5 block">
                   ~{queueIntel.estimatedWaitMinutes} mins
                 </span>
-                <span className="text-[10px] text-[#718096] block">Prior to dispensing</span>
+                <span className="text-[10px] text-[#64748B] block">Prior to dispensing</span>
               </div>
 
-              <div className="bg-[#F4F7FA] p-3.5 rounded-xl border border-[#E3EAF0]">
-                <span className="text-[10px] text-[#718096] font-bold uppercase block">Avg. Service Time</span>
+              <div className="bg-[#E8EEF5] p-3.5 rounded-xl border border-[#DCE5EE]">
+                <span className="text-[10px] text-[#64748B] font-bold uppercase block">Avg. Service Time</span>
                 <span className="text-lg font-black text-[#26734D] mt-0.5 block">
                   ~{queueIntel.avgServiceTimeMinutes} mins
                 </span>
-                <span className="text-[10px] text-[#718096] block">Per vehicle fill</span>
+                <span className="text-[10px] text-[#64748B] block">Per vehicle fill</span>
               </div>
 
-              <div className="bg-[#F4F7FA] p-3.5 rounded-xl border border-[#E3EAF0]">
-                <span className="text-[10px] text-[#718096] font-bold uppercase block">Predicted at ETA</span>
+              <div className="bg-[#E8EEF5] p-3.5 rounded-xl border border-[#DCE5EE]">
+                <span className="text-[10px] text-[#64748B] font-bold uppercase block">Predicted at ETA</span>
                 <span className="text-lg font-black text-[#14283F] mt-0.5 block">
                   {queueIntel.predictedQueueAtArrival !== null && queueIntel.predictedQueueAtArrival !== undefined
                     ? `${queueIntel.predictedQueueAtArrival} Cars`
                     : 'Insufficient data'}
                 </span>
-                <span className="text-[10px] text-[#718096] block">Forecast arrival queue</span>
+                <span className="text-[10px] text-[#64748B] block">Forecast arrival queue</span>
               </div>
             </div>
 
-            {/* Assumptions Behind Calculation */}
-            <div className="bg-[#F4F7FA] rounded-xl border border-[#E3EAF0] p-3.5 space-y-2">
+            <div className="bg-[#E8EEF5] rounded-xl border border-[#DCE5EE] p-3.5 space-y-2">
               <button
                 type="button"
                 onClick={() => setShowAssumptions(!showAssumptions)}
@@ -375,11 +363,11 @@ export default function StationDetails() {
               </button>
 
               {showAssumptions && (
-                <div className="text-[11px] text-[#243447] space-y-2 pt-2 border-t border-[#E3EAF0] leading-relaxed animate-in fade-in duration-150">
-                  <p className="bg-white p-2.5 rounded-xl border border-[#E3EAF0] text-[#718096]">
+                <div className="text-[11px] text-[#243447] space-y-2 pt-2 border-t border-[#DCE5EE] leading-relaxed animate-in fade-in duration-150">
+                  <p className="bg-[#F8FAFC] p-2.5 rounded-xl border border-[#DCE5EE] text-[#64748B]">
                     {queueIntel.assumptionsText}
                   </p>
-                  <ul className="text-[#718096] space-y-1 list-disc list-inside">
+                  <ul className="text-[#64748B] space-y-1 list-disc list-inside">
                     <li>
                       <strong className="text-[#14283F]">Parallel Serving Capacity:</strong>{' '}
                       {queueIntel.activeDispensers} active nozzles dispensing concurrently.
@@ -390,7 +378,7 @@ export default function StationDetails() {
                     <li>
                       <strong className="text-[#14283F]">Queue Trend:</strong> {queueIntel.queueTrendLabel}.
                     </li>
-                    <li className="italic text-[#A0AEC0]">
+                    <li className="italic text-[#94A3B8]">
                       Actual wait may vary with nozzle coupling time and digital UPI payments.
                     </li>
                   </ul>
@@ -405,13 +393,12 @@ export default function StationDetails() {
               href={`https://www.google.com/maps/dir/?api=1&destination=${station.latitude},${station.longitude}`}
               target="_blank"
               rel="noreferrer"
-              className="flex-1 py-4 px-6 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-black text-sm text-center shadow-sm transition flex items-center justify-center gap-2"
+              className="flex-1 py-4 px-6 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-black text-sm text-center shadow-xs transition flex items-center justify-center gap-2"
             >
               <Navigation size={18} />
               <span>Start Navigation in Google Maps</span>
             </a>
 
-            {/* Mark as Visited Button */}
             <button
               type="button"
               onClick={() => setIsPostVisitOpen(true)}
@@ -426,7 +413,7 @@ export default function StationDetails() {
               className={`py-4 px-5 rounded-xl font-bold text-xs border transition ${
                 isSelected
                   ? 'bg-[#14283F] text-white border-[#14283F]'
-                  : 'bg-white text-[#718096] border-[#E3EAF0] hover:bg-[#F4F7FA]'
+                  : 'bg-[#F8FAFC] text-[#64748B] border-[#DCE5EE] hover:bg-[#E8EEF5]'
               }`}
             >
               {isSelected ? '✓ In Compare' : '+ Compare'}
@@ -434,10 +421,9 @@ export default function StationDetails() {
           </div>
         </div>
 
-        {/* Right Column: Map + Trend Charts (5 cols) */}
+        {/* Right Column: Map + Trend Charts */}
         <div className="lg:col-span-5 space-y-6">
-          {/* Mini Station Map Preview */}
-          <div className="bg-white rounded-[14px] border border-[#E3EAF0] p-4 shadow-sm space-y-3">
+          <div className="bg-[#F8FAFC] rounded-[14px] border border-[#DCE5EE] p-4 shadow-card space-y-3">
             <div className="flex items-center justify-between px-1">
               <h3 className="font-bold text-sm text-[#14283F]">Station Location on Map</h3>
               <a
@@ -457,8 +443,7 @@ export default function StationDetails() {
             />
           </div>
 
-          {/* Pressure History Chart */}
-          <div className="bg-white rounded-[14px] border border-[#E3EAF0] p-5 shadow-sm space-y-3">
+          <div className="bg-[#F8FAFC] rounded-[14px] border border-[#DCE5EE] p-5 shadow-card space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-xs uppercase tracking-wider text-[#14283F]">
                 Pressure Cycle History (Last 2 Hours)
@@ -469,11 +454,11 @@ export default function StationDetails() {
             </div>
             <ResponsiveContainer width="100%" height={160}>
               <LineChart data={pData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E3EAF0" />
-                <XAxis dataKey="time" tick={{ fontSize: 10, fill: '#718096' }} />
-                <YAxis domain={[150, 240]} tick={{ fontSize: 10, fill: '#718096' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#DCE5EE" />
+                <XAxis dataKey="time" tick={{ fontSize: 10, fill: '#64748B' }} />
+                <YAxis domain={[150, 240]} tick={{ fontSize: 10, fill: '#64748B' }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#E3EAF0', color: '#243447', borderRadius: '10px' }}
+                  contentStyle={{ backgroundColor: '#F8FAFC', borderColor: '#DCE5EE', color: '#243447', borderRadius: '10px' }}
                   formatter={(v: any) => [`${v} Bar`, 'Gas Pressure']}
                 />
                 <Line type="monotone" dataKey="bar" stroke="#26734D" strokeWidth={3} dot={{ r: 4 }} />
@@ -481,8 +466,7 @@ export default function StationDetails() {
             </ResponsiveContainer>
           </div>
 
-          {/* Queue History Chart */}
-          <div className="bg-white rounded-[14px] border border-[#E3EAF0] p-5 shadow-sm space-y-3">
+          <div className="bg-[#F8FAFC] rounded-[14px] border border-[#DCE5EE] p-5 shadow-card space-y-3">
             <div className="flex items-center justify-between">
               <h3 className="font-bold text-xs uppercase tracking-wider text-[#14283F]">
                 Queue Trend History (Hourly)
@@ -493,11 +477,11 @@ export default function StationDetails() {
             </div>
             <ResponsiveContainer width="100%" height={140}>
               <BarChart data={qData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#E3EAF0" />
-                <XAxis dataKey="time" tick={{ fontSize: 10, fill: '#718096' }} />
-                <YAxis tick={{ fontSize: 10, fill: '#718096' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#DCE5EE" />
+                <XAxis dataKey="time" tick={{ fontSize: 10, fill: '#64748B' }} />
+                <YAxis tick={{ fontSize: 10, fill: '#64748B' }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#E3EAF0', color: '#243447', borderRadius: '10px' }}
+                  contentStyle={{ backgroundColor: '#F8FAFC', borderColor: '#DCE5EE', color: '#243447', borderRadius: '10px' }}
                   formatter={(v: any) => [`${v} Vehicles`, 'Cars Waiting']}
                 />
                 <Bar dataKey="vehicles" fill="#14283F" radius={[6, 6, 0, 0]} />
@@ -507,7 +491,6 @@ export default function StationDetails() {
         </div>
       </div>
 
-      {/* Community Report Modal */}
       <ReportStatusModal
         isOpen={isReportOpen}
         station={station}
@@ -515,7 +498,6 @@ export default function StationDetails() {
         onSubmit={(payload) => submitCommunityReport(payload)}
       />
 
-      {/* Flag Incorrect Info Modal */}
       <ReportIncorrectModal
         isOpen={isFlagOpen}
         station={station}
@@ -523,7 +505,6 @@ export default function StationDetails() {
         onSubmitFlag={(payload) => submitIncorrectFlag(payload)}
       />
 
-      {/* Post-Visit Driver Verification Modal */}
       <PostVisitModal
         isOpen={isPostVisitOpen}
         station={station}

@@ -131,16 +131,16 @@ export default function TripPlanner() {
   return (
     <div className="space-y-5 sm:space-y-6 max-w-7xl mx-auto pb-16 px-1 sm:px-0 text-[#243447]">
       {/* Hero Header */}
-      <div className="bg-white rounded-[14px] p-5 sm:p-8 border border-[#E3EAF0] shadow-sm relative overflow-hidden border-l-4 border-l-[#16B8C9]">
+      <div className="bg-[#F8FAFC] rounded-[14px] p-5 sm:p-8 border border-[#DCE5EE] shadow-card relative overflow-hidden border-l-4 border-l-[#16B8C9]">
         <div className="relative z-10 max-w-3xl">
-          <div className="inline-flex items-center gap-1.5 bg-[#F4F7FA] text-[#14283F] border border-[#E3EAF0] px-3 py-0.5 sm:px-3.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-2.5">
+          <div className="inline-flex items-center gap-1.5 bg-[#E8EEF5] text-[#14283F] border border-[#DCE5EE] px-3 py-0.5 sm:px-3.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-2.5">
             <Sparkles size={13} className="text-[#16B8C9]" />
             AI Smart CNG Station Recommender
           </div>
           <h1 className="text-xl sm:text-3xl font-black tracking-tight leading-tight mb-2 text-[#14283F]">
             Find the Best CNG Station on Your Route
           </h1>
-          <p className="text-[#718096] text-xs sm:text-sm leading-relaxed">
+          <p className="text-[#64748B] text-xs sm:text-sm leading-relaxed">
             Plan your highway trip with Google Maps. Identifies the optimal filling station with <strong>shortest queue</strong> and <strong>highest pressure (&gt;200 Bar)</strong> for faster, 100% full-tank fills!
           </p>
         </div>
@@ -149,10 +149,10 @@ export default function TripPlanner() {
       {/* Main Grid: Inputs + Map */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Left Form: 5 cols */}
-        <div className="lg:col-span-5 bg-white rounded-[14px] p-4 sm:p-6 shadow-sm border border-[#E3EAF0] space-y-5">
+        <div className="lg:col-span-5 bg-[#F8FAFC] rounded-[14px] p-4 sm:p-6 shadow-card border border-[#DCE5EE] space-y-5">
           {/* Popular Corridors */}
           <div>
-            <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#718096] mb-2">
+            <label className="block text-[11px] font-extrabold uppercase tracking-wider text-[#64748B] mb-2">
               Popular Highway Corridors
             </label>
             <div className="flex flex-wrap gap-1.5">
@@ -166,7 +166,7 @@ export default function TripPlanner() {
                     className={`px-3 py-1.5 rounded-xl text-xs font-bold transition flex items-center gap-1.5 border ${
                       isSelected
                         ? 'bg-[#14283F] text-white border-[#14283F] shadow-xs'
-                        : 'bg-[#F4F7FA] text-[#718096] border-[#E3EAF0] hover:bg-[#E3EAF0] hover:text-[#14283F]'
+                        : 'bg-[#E8EEF5] text-[#64748B] border-[#DCE5EE] hover:bg-[#DCE5EE] hover:text-[#14283F]'
                     }`}
                   >
                     <span>{c.emoji}</span>
@@ -181,7 +181,7 @@ export default function TripPlanner() {
           <div className="space-y-2.5 relative">
             {/* Start Location */}
             <div className="relative">
-              <label className="block text-[11px] font-bold text-[#718096] uppercase tracking-wider mb-1">
+              <label className="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-1">
                 Origin (Start Location)
               </label>
               <div className="relative flex items-center">
@@ -193,13 +193,13 @@ export default function TripPlanner() {
                   value={startLoc.address}
                   onChange={(e) => handleStartTyping(e.target.value)}
                   placeholder="e.g. Connaught Place, New Delhi"
-                  className="w-full pl-9 pr-8 py-2.5 sm:py-3 rounded-xl border border-[#E3EAF0] bg-white text-xs sm:text-sm text-[#243447] placeholder-[#A0AEC0] font-medium focus:outline-none focus:ring-2 focus:ring-[#16B8C9] transition"
+                  className="w-full pl-9 pr-8 py-2.5 sm:py-3 rounded-xl border border-[#DCE5EE] bg-[#F8FAFC] text-xs sm:text-sm text-[#243447] placeholder-[#94A3B8] font-medium focus:outline-none focus:ring-2 focus:ring-[#16B8C9] transition"
                 />
                 {startLoc.lat && <span className="absolute right-3 text-[#26734D] font-bold text-xs">✓</span>}
               </div>
 
               {showStartDrop && startSuggestions.length > 0 && (
-                <div className="absolute z-50 mt-1 w-full bg-white border border-[#E3EAF0] rounded-xl shadow-modal max-h-44 overflow-y-auto">
+                <div className="absolute z-50 mt-1 w-full bg-[#F8FAFC] border border-[#DCE5EE] rounded-xl shadow-modal max-h-44 overflow-y-auto">
                   {startSuggestions.map((s, idx) => (
                     <button
                       key={idx}
@@ -212,10 +212,10 @@ export default function TripPlanner() {
                         });
                         setShowStartDrop(false);
                       }}
-                      className="w-full text-left px-3 py-2 text-xs text-[#243447] hover:bg-[#F4F7FA] border-b border-[#E3EAF0] last:border-0 transition"
+                      className="w-full text-left px-3 py-2 text-xs text-[#243447] hover:bg-[#E8EEF5] border-b border-[#DCE5EE] last:border-0 transition"
                     >
                       <span className="font-bold text-[#14283F]">{s.display_name.split(',')[0]}</span>
-                      <span className="text-[#718096] ml-1 truncate">
+                      <span className="text-[#64748B] ml-1 truncate">
                         {s.display_name.split(',').slice(1, 3).join(',')}
                       </span>
                     </button>
@@ -230,7 +230,7 @@ export default function TripPlanner() {
                 type="button"
                 onClick={handleSwap}
                 title="Swap Start & Destination"
-                className="p-1.5 rounded-full bg-[#F4F7FA] hover:bg-[#E3EAF0] text-[#718096] hover:text-[#16B8C9] border border-[#E3EAF0] shadow-xs transition"
+                className="p-1.5 rounded-full bg-[#E8EEF5] hover:bg-[#DCE5EE] text-[#64748B] hover:text-[#16B8C9] border border-[#DCE5EE] shadow-xs transition"
               >
                 <ArrowUpDown size={14} />
               </button>
@@ -238,7 +238,7 @@ export default function TripPlanner() {
 
             {/* Destination Location */}
             <div className="relative">
-              <label className="block text-[11px] font-bold text-[#718096] uppercase tracking-wider mb-1">
+              <label className="block text-[11px] font-bold text-[#64748B] uppercase tracking-wider mb-1">
                 Destination
               </label>
               <div className="relative flex items-center">
@@ -250,13 +250,13 @@ export default function TripPlanner() {
                   value={destLoc.address}
                   onChange={(e) => handleDestTyping(e.target.value)}
                   placeholder="e.g. Taj Mahal, Agra"
-                  className="w-full pl-9 pr-8 py-2.5 sm:py-3 rounded-xl border border-[#E3EAF0] bg-white text-xs sm:text-sm text-[#243447] placeholder-[#A0AEC0] font-medium focus:outline-none focus:ring-2 focus:ring-[#16B8C9] transition"
+                  className="w-full pl-9 pr-8 py-2.5 sm:py-3 rounded-xl border border-[#DCE5EE] bg-[#F8FAFC] text-xs sm:text-sm text-[#243447] placeholder-[#94A3B8] font-medium focus:outline-none focus:ring-2 focus:ring-[#16B8C9] transition"
                 />
                 {destLoc.lat && <span className="absolute right-3 text-[#26734D] font-bold text-xs">✓</span>}
               </div>
 
               {showDestDrop && destSuggestions.length > 0 && (
-                <div className="absolute z-50 mt-1 w-full bg-white border border-[#E3EAF0] rounded-xl shadow-modal max-h-44 overflow-y-auto">
+                <div className="absolute z-50 mt-1 w-full bg-[#F8FAFC] border border-[#DCE5EE] rounded-xl shadow-modal max-h-44 overflow-y-auto">
                   {destSuggestions.map((s, idx) => (
                     <button
                       key={idx}
@@ -269,10 +269,10 @@ export default function TripPlanner() {
                         });
                         setShowDestDrop(false);
                       }}
-                      className="w-full text-left px-3 py-2 text-xs text-[#243447] hover:bg-[#F4F7FA] border-b border-[#E3EAF0] last:border-0 transition"
+                      className="w-full text-left px-3 py-2 text-xs text-[#243447] hover:bg-[#E8EEF5] border-b border-[#DCE5EE] last:border-0 transition"
                     >
                       <span className="font-bold text-[#14283F]">{s.display_name.split(',')[0]}</span>
-                      <span className="text-[#718096] ml-1 truncate">
+                      <span className="text-[#64748B] ml-1 truncate">
                         {s.display_name.split(',').slice(1, 3).join(',')}
                       </span>
                     </button>
@@ -283,10 +283,10 @@ export default function TripPlanner() {
           </div>
 
           {/* Max Detour Slider */}
-          <div className="bg-[#F4F7FA] p-3.5 rounded-xl border border-[#E3EAF0]">
+          <div className="bg-[#E8EEF5] p-3.5 rounded-xl border border-[#DCE5EE]">
             <div className="flex items-center justify-between text-xs font-bold text-[#14283F] mb-1">
               <span>Max Highway Detour</span>
-              <span className="bg-white px-2 py-0.5 rounded-md border border-[#E3EAF0] text-[#14283F] font-black">
+              <span className="bg-[#F8FAFC] px-2 py-0.5 rounded-md border border-[#DCE5EE] text-[#14283F] font-black">
                 +{maxDetour} km
               </span>
             </div>
@@ -297,7 +297,7 @@ export default function TripPlanner() {
               step="1"
               value={maxDetour}
               onChange={(e) => setMaxDetour(Number(e.target.value))}
-              className="w-full accent-[#16B8C9] bg-[#E3EAF0] cursor-pointer"
+              className="w-full accent-[#16B8C9] bg-[#CBD5E1] cursor-pointer"
             />
           </div>
 
@@ -312,7 +312,7 @@ export default function TripPlanner() {
             type="button"
             onClick={handleFindBestStation}
             disabled={isSearching}
-            className="w-full py-3.5 px-5 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-extrabold text-xs sm:text-sm tracking-wide shadow-sm transition flex items-center justify-center gap-2 disabled:opacity-50"
+            className="w-full py-3.5 px-5 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-extrabold text-xs sm:text-sm tracking-wide shadow-xs transition flex items-center justify-center gap-2 disabled:opacity-50"
           >
             {isSearching ? (
               <>
@@ -329,11 +329,11 @@ export default function TripPlanner() {
         </div>
 
         {/* Right Map Preview: 7 cols */}
-        <div className="lg:col-span-7 bg-white rounded-[14px] p-3 sm:p-4 shadow-sm border border-[#E3EAF0]">
+        <div className="lg:col-span-7 bg-[#F8FAFC] rounded-[14px] p-3 sm:p-4 shadow-card border border-[#DCE5EE]">
           <div className="flex items-center justify-between mb-2.5 px-1">
             <div>
               <h3 className="font-bold text-xs sm:text-sm text-[#14283F]">Map Preview</h3>
-              <p className="text-[11px] text-[#718096]">Google Maps API with live station telemetry pins</p>
+              <p className="text-[11px] text-[#64748B]">Google Maps API with live station telemetry pins</p>
             </div>
           </div>
 

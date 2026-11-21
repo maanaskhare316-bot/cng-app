@@ -23,34 +23,33 @@ export const AlternativeComparisonTable: React.FC<AlternativeComparisonTableProp
   if (topThree.length === 0) return null;
 
   return (
-    <div className="bg-white rounded-[14px] border border-[#E3EAF0] p-4 sm:p-6 shadow-sm space-y-4 text-[#243447] overflow-hidden">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#E3EAF0] pb-3.5">
+    <div className="bg-[#F8FAFC] rounded-[14px] border border-[#DCE5EE] p-4 sm:p-6 shadow-card space-y-4 text-[#243447] overflow-hidden">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 border-b border-[#DCE5EE] pb-3.5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="p-1.5 bg-[#F4F7FA] text-[#14283F] border border-[#E3EAF0] rounded-xl text-sm">
+            <span className="p-1.5 bg-[#E8EEF5] text-[#14283F] border border-[#DCE5EE] rounded-xl text-sm">
               ⚖️
             </span>
             <h3 className="text-sm sm:text-base font-extrabold text-[#14283F] tracking-wide">
               Alternative Station Comparison
             </h3>
           </div>
-          <p className="text-xs text-[#718096] mt-0.5">
+          <p className="text-xs text-[#64748B] mt-0.5">
             Side-by-side telemetry, arrival forecasts, and detour trade-offs for top 3 corridor choices
           </p>
         </div>
         <div className="flex items-center gap-2 self-start sm:self-auto">
-          <span className="text-[10px] font-black uppercase tracking-wider text-[#14283F] bg-[#F4F7FA] border border-[#E3EAF0] px-2.5 py-1 rounded-full">
+          <span className="text-[10px] font-black uppercase tracking-wider text-[#14283F] bg-[#E8EEF5] border border-[#DCE5EE] px-2.5 py-1 rounded-full">
             Top 3 Ranked
           </span>
-          <span className="sm:hidden text-[10px] text-[#718096]">Swipe horizontally →</span>
+          <span className="sm:hidden text-[10px] text-[#64748B]">Swipe horizontally →</span>
         </div>
       </div>
 
-      {/* Responsive Matrix Table */}
       <div className="overflow-x-auto pb-1 scrollbar-thin">
         <table className="w-full text-left border-collapse min-w-[640px]">
           <thead>
-            <tr className="border-b border-[#E3EAF0] text-[10.5px] uppercase tracking-wider text-[#718096]">
+            <tr className="border-b border-[#DCE5EE] text-[10.5px] uppercase tracking-wider text-[#64748B]">
               <th className="py-3 px-3 font-extrabold w-[25%]">Evaluation Metric</th>
               {topThree.map((st, i) => {
                 const isBest = st.recommendationCategory === 'BEST_OVERALL';
@@ -58,7 +57,7 @@ export const AlternativeComparisonTable: React.FC<AlternativeComparisonTableProp
                 const isNearest = st.recommendationCategory === 'NEAREST_STATION';
 
                 let badgeLabel = `#${i + 1} Alternative`;
-                let badgeStyle = 'bg-[#F4F7FA] text-[#718096] border-[#E3EAF0]';
+                let badgeStyle = 'bg-[#E8EEF5] text-[#64748B] border-[#DCE5EE]';
 
                 if (isBest) {
                   badgeLabel = '★ Best Overall';
@@ -68,21 +67,21 @@ export const AlternativeComparisonTable: React.FC<AlternativeComparisonTableProp
                   badgeStyle = 'bg-[#EBF8FF] text-[#16B8C9] border-[#BEE3F8] font-black shadow-xs';
                 } else if (isNearest) {
                   badgeLabel = '📍 Nearest Station';
-                  badgeStyle = 'bg-[#F4F7FA] text-[#14283F] border-[#E3EAF0] font-black';
+                  badgeStyle = 'bg-[#E8EEF5] text-[#14283F] border-[#DCE5EE] font-black';
                 }
 
                 return (
                   <th
                     key={st.id}
                     className={`py-3 px-3 w-[25%] font-extrabold rounded-t-[12px] transition ${
-                      isBest ? 'bg-[#F4F7FA] border-t border-x border-[#E3EAF0]' : ''
+                      isBest ? 'bg-[#E8EEF5] border-t border-x border-[#DCE5EE]' : ''
                     }`}
                   >
                     <span className={`inline-block text-[9.5px] uppercase tracking-wider px-2 py-0.5 rounded-full border mb-1.5 ${badgeStyle}`}>
                       {badgeLabel}
                     </span>
                     <div className="text-xs sm:text-sm font-black text-[#14283F] truncate">{st.name}</div>
-                    <div className="text-[10.5px] text-[#718096] font-semibold truncate mt-0.5">
+                    <div className="text-[10.5px] text-[#64748B] font-semibold truncate mt-0.5">
                       {st.operator || 'CNG'} • {st.city}
                     </div>
                   </th>
@@ -91,9 +90,8 @@ export const AlternativeComparisonTable: React.FC<AlternativeComparisonTableProp
             </tr>
           </thead>
 
-          <tbody className="divide-y divide-[#E3EAF0] text-xs">
-            {/* 1. Recommendation Reason */}
-            <tr className="bg-[#F4F7FA]/50">
+          <tbody className="divide-y divide-[#DCE5EE] text-xs">
+            <tr className="bg-[#E8EEF5]/50">
               <td className="py-2.5 px-3 font-bold text-[#14283F]">Why Recommended</td>
               {topThree.map((st) => (
                 <td key={st.id} className="py-2.5 px-3 text-[11px] text-[#243447] leading-relaxed font-medium">
@@ -102,9 +100,8 @@ export const AlternativeComparisonTable: React.FC<AlternativeComparisonTableProp
               ))}
             </tr>
 
-            {/* 2. Current Gas Pressure */}
             <tr>
-              <td className="py-2.5 px-3 font-semibold text-[#718096] flex items-center gap-1.5">
+              <td className="py-2.5 px-3 font-semibold text-[#64748B] flex items-center gap-1.5">
                 <Gauge size={13} className="text-[#26734D]" /> Current Pressure
               </td>
               {topThree.map((st) => {
@@ -112,7 +109,7 @@ export const AlternativeComparisonTable: React.FC<AlternativeComparisonTableProp
                 return (
                   <td key={st.id} className="py-2.5 px-3 font-black">
                     <span className={p >= 195 ? 'text-[#26734D]' : 'text-[#98651C]'}>{p} Bar</span>
-                    <span className="text-[10px] text-[#718096] ml-1 font-semibold">
+                    <span className="text-[10px] text-[#64748B] ml-1 font-semibold">
                       {p >= 195 ? '(Fast Flow)' : '(Standard)'}
                     </span>
                   </td>
@@ -120,16 +117,15 @@ export const AlternativeComparisonTable: React.FC<AlternativeComparisonTableProp
               })}
             </tr>
 
-            {/* 3. Expected Pressure at Arrival */}
-            <tr className="bg-[#F4F7FA]/50">
-              <td className="py-2.5 px-3 font-semibold text-[#718096] flex items-center gap-1.5">
+            <tr className="bg-[#E8EEF5]/50">
+              <td className="py-2.5 px-3 font-semibold text-[#64748B] flex items-center gap-1.5">
                 <Gauge size={13} className="text-[#16B8C9]" /> Expected at Arrival
               </td>
               {topThree.map((st) => {
                 const pred = st.arrivalPrediction;
                 if (!pred || !pred.predictionAvailable) {
                   return (
-                    <td key={st.id} className="py-2.5 px-3 text-[11px] text-[#718096] italic">
+                    <td key={st.id} className="py-2.5 px-3 text-[11px] text-[#64748B] italic">
                       Unavailable
                     </td>
                   );
@@ -137,37 +133,35 @@ export const AlternativeComparisonTable: React.FC<AlternativeComparisonTableProp
                 return (
                   <td key={st.id} className="py-2.5 px-3 font-black text-[#14283F]">
                     ~{pred.predictedPressureBarAtArrival} Bar
-                    <span className="text-[10px] text-[#718096] ml-1 font-normal">(est.)</span>
+                    <span className="text-[10px] text-[#64748B] ml-1 font-normal">(est.)</span>
                   </td>
                 );
               })}
             </tr>
 
-            {/* 4. Current Queue & Wait */}
             <tr>
-              <td className="py-2.5 px-3 font-semibold text-[#718096] flex items-center gap-1.5">
+              <td className="py-2.5 px-3 font-semibold text-[#64748B] flex items-center gap-1.5">
                 <Users size={13} className="text-[#16B8C9]" /> Current Queue
               </td>
               {topThree.map((st) => (
                 <td key={st.id} className="py-2.5 px-3 font-bold text-[#14283F]">
                   {st.vehiclesWaiting ?? 0} Cars{' '}
-                  <span className="text-[10.5px] text-[#718096] font-normal">
+                  <span className="text-[10.5px] text-[#64748B] font-normal">
                     (~{st.estimatedWaitMinutes ?? 2}m wait)
                   </span>
                 </td>
               ))}
             </tr>
 
-            {/* 5. Expected Queue at Arrival */}
-            <tr className="bg-[#F4F7FA]/50">
-              <td className="py-2.5 px-3 font-semibold text-[#718096] flex items-center gap-1.5">
+            <tr className="bg-[#E8EEF5]/50">
+              <td className="py-2.5 px-3 font-semibold text-[#64748B] flex items-center gap-1.5">
                 <Users size={13} className="text-[#98651C]" /> Arrival Queue (ETA)
               </td>
               {topThree.map((st) => {
                 const pred = st.arrivalPrediction;
                 if (!pred || !pred.predictionAvailable) {
                   return (
-                    <td key={st.id} className="py-2.5 px-3 text-[11px] text-[#718096] italic">
+                    <td key={st.id} className="py-2.5 px-3 text-[11px] text-[#64748B] italic">
                       Unavailable
                     </td>
                   );
@@ -175,7 +169,7 @@ export const AlternativeComparisonTable: React.FC<AlternativeComparisonTableProp
                 return (
                   <td key={st.id} className="py-2.5 px-3 font-black text-[#98651C]">
                     {pred.predictedQueueAtArrival} Cars{' '}
-                    <span className="text-[10.5px] text-[#718096] font-medium">
+                    <span className="text-[10.5px] text-[#64748B] font-medium">
                       (~{pred.predictedWaitMinutesAtArrival}m wait)
                     </span>
                   </td>
@@ -183,24 +177,22 @@ export const AlternativeComparisonTable: React.FC<AlternativeComparisonTableProp
               })}
             </tr>
 
-            {/* 6. Detour Overhead */}
             <tr>
-              <td className="py-2.5 px-3 font-semibold text-[#718096] flex items-center gap-1.5">
+              <td className="py-2.5 px-3 font-semibold text-[#64748B] flex items-center gap-1.5">
                 <Navigation size={13} className="text-[#16B8C9]" /> Detour Overhead
               </td>
               {topThree.map((st) => (
                 <td key={st.id} className="py-2.5 px-3 font-bold text-[#14283F]">
                   +{st.extraDetourKm ?? 0.4} km{' '}
-                  <span className="text-[10.5px] text-[#718096] font-normal">
+                  <span className="text-[10.5px] text-[#64748B] font-normal">
                     (~{st.estimatedDetourMinutes ?? 1} min)
                   </span>
                 </td>
               ))}
             </tr>
 
-            {/* 7. Travel Distance & ETA */}
-            <tr className="bg-[#F4F7FA]/50">
-              <td className="py-2.5 px-3 font-semibold text-[#718096] flex items-center gap-1.5">
+            <tr className="bg-[#E8EEF5]/50">
+              <td className="py-2.5 px-3 font-semibold text-[#64748B] flex items-center gap-1.5">
                 <Clock size={13} className="text-[#16B8C9]" /> Distance &amp; ETA
               </td>
               {topThree.map((st) => {
@@ -214,9 +206,8 @@ export const AlternativeComparisonTable: React.FC<AlternativeComparisonTableProp
               })}
             </tr>
 
-            {/* 8. Data Freshness */}
             <tr>
-              <td className="py-2.5 px-3 font-semibold text-[#718096] flex items-center gap-1.5">
+              <td className="py-2.5 px-3 font-semibold text-[#64748B] flex items-center gap-1.5">
                 <ShieldCheck size={13} className="text-[#16B8C9]" /> Data Freshness
               </td>
               {topThree.map((st) => (
@@ -231,9 +222,8 @@ export const AlternativeComparisonTable: React.FC<AlternativeComparisonTableProp
               ))}
             </tr>
 
-            {/* 9. Prediction Confidence */}
-            <tr className="bg-[#F4F7FA]/50">
-              <td className="py-2.5 px-3 font-semibold text-[#718096]">Confidence Level</td>
+            <tr className="bg-[#E8EEF5]/50">
+              <td className="py-2.5 px-3 font-semibold text-[#64748B]">Confidence Level</td>
               {topThree.map((st) => {
                 const conf = st.arrivalPrediction?.confidenceLevel || 'MEDIUM';
                 const pct = st.arrivalPrediction?.confidencePercentage || st.dataConfidenceScore || 80;
@@ -255,9 +245,8 @@ export const AlternativeComparisonTable: React.FC<AlternativeComparisonTableProp
               })}
             </tr>
 
-            {/* Action Row */}
             <tr>
-              <td className="py-3.5 px-3 font-bold text-[#718096]">Navigation Action</td>
+              <td className="py-3.5 px-3 font-bold text-[#64748B]">Navigation Action</td>
               {topThree.map((st) => (
                 <td key={st.id} className="py-3.5 px-3">
                   <div className="flex items-center gap-2">
@@ -265,7 +254,7 @@ export const AlternativeComparisonTable: React.FC<AlternativeComparisonTableProp
                       href={`https://www.google.com/maps/dir/?api=1&destination=${st.latitude},${st.longitude}`}
                       target="_blank"
                       rel="noreferrer"
-                      className="py-1.5 px-3.5 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-bold text-[11px] transition flex items-center gap-1 shadow-sm"
+                      className="py-1.5 px-3.5 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-bold text-[11px] transition flex items-center gap-1 shadow-xs"
                     >
                       <span>Navigate ↗</span>
                     </a>
@@ -273,7 +262,7 @@ export const AlternativeComparisonTable: React.FC<AlternativeComparisonTableProp
                       <button
                         type="button"
                         onClick={() => onSelectStation(st)}
-                        className="py-1.5 px-2.5 rounded-xl bg-[#F4F7FA] hover:bg-[#E3EAF0] border border-[#E3EAF0] text-[#14283F] font-bold text-[11px] transition"
+                        className="py-1.5 px-2.5 rounded-xl bg-[#E8EEF5] hover:bg-[#DCE5EE] border border-[#DCE5EE] text-[#14283F] font-bold text-[11px] transition"
                       >
                         Inspect
                       </button>

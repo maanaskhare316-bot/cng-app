@@ -51,7 +51,6 @@ export default function RouteResults() {
   const [mobileView, setMobileView] = useState<'map' | 'list'>('map');
   const [activeTabCategory, setActiveTabCategory] = useState<RecommendationCategory>('BEST_OVERALL');
 
-  // Auto-initialize corridor route if user visits /results directly without planning first
   useEffect(() => {
     if (!activeRouteResult && !isLoading) {
       planSmartRoute({
@@ -95,7 +94,6 @@ export default function RouteResults() {
       ? { lat: routeGeometry[routeGeometry.length - 1][0], lng: routeGeometry[routeGeometry.length - 1][1] }
       : undefined;
 
-  // Active hero station based on selected category tab
   const heroStation =
     activeTabCategory === 'BEST_OVERALL'
       ? bestOverall || stations[0]
@@ -108,14 +106,13 @@ export default function RouteResults() {
 
   return (
     <div className="space-y-5 sm:space-y-6 max-w-7xl mx-auto pb-16 px-2 sm:px-4 text-[#243447]">
-      {/* 1. Header (Logo, Route Navigation, Profile/Menu) */}
+      {/* 1. Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-        {/* Left: Brand Identity & Back to Planner */}
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/plan')}
             aria-label="Back to Journey Planner"
-            className="p-2 sm:p-2.5 rounded-xl border border-[#E3EAF0] bg-white hover:bg-[#F4F7FA] text-[#718096] hover:text-[#14283F] transition shadow-xs"
+            className="p-2 sm:p-2.5 rounded-xl border border-[#DCE5EE] bg-[#F8FAFC] hover:bg-[#E8EEF5] text-[#64748B] hover:text-[#14283F] transition shadow-xs"
           >
             <ArrowLeft size={16} />
           </button>
@@ -128,22 +125,21 @@ export default function RouteResults() {
               <span className="text-xs sm:text-sm font-extrabold uppercase tracking-wider text-[#14283F]">
                 CNG Navigator
               </span>
-              <span className="hidden sm:inline-block text-[10px] uppercase font-bold text-[#14283F] bg-[#F4F7FA] border border-[#E3EAF0] px-2 py-0.5 rounded-full">
+              <span className="hidden sm:inline-block text-[10px] uppercase font-bold text-[#14283F] bg-[#E8EEF5] border border-[#DCE5EE] px-2 py-0.5 rounded-full">
                 Trip Intelligence
               </span>
             </div>
-            <p className="text-[11px] text-[#718096] font-semibold mt-0.5">
+            <p className="text-[11px] text-[#64748B] font-semibold mt-0.5">
               Corridor Telemetry &amp; Smart Refueling Guidance
             </p>
           </div>
         </div>
 
-        {/* Right: Driver Profile & Change Route Button */}
         <div className="flex items-center gap-2">
           {driverProfile && (
             <Link
               to="/settings"
-              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-[#E3EAF0] text-xs font-bold text-[#243447] hover:border-[#16B8C9] transition shadow-xs"
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-[#F8FAFC] border border-[#DCE5EE] text-xs font-bold text-[#243447] hover:border-[#16B8C9] transition shadow-xs"
               title="View Contributor Profile"
             >
               <UserCheck size={14} className="text-[#16B8C9]" />
@@ -154,7 +150,7 @@ export default function RouteResults() {
 
           <button
             onClick={() => navigate('/plan')}
-            className="px-3.5 py-2 text-xs font-bold text-[#14283F] bg-white border border-[#E3EAF0] rounded-xl hover:bg-[#F4F7FA] transition flex items-center gap-1.5 shadow-xs"
+            className="px-3.5 py-2 text-xs font-bold text-[#14283F] bg-[#F8FAFC] border border-[#DCE5EE] rounded-xl hover:bg-[#E8EEF5] transition flex items-center gap-1.5 shadow-xs"
           >
             <RotateCcw size={13} className="text-[#16B8C9]" />
             <span>Change Route</span>
@@ -162,10 +158,9 @@ export default function RouteResults() {
         </div>
       </div>
 
-      {/* 2. ROUTE SUMMARY HERO CARD (Deep Navy Theme) */}
+      {/* 2. ROUTE SUMMARY HERO CARD (Deep Navy Minimal) */}
       <div className="bg-[#14283F] rounded-[14px] p-5 sm:p-6 shadow-sm relative overflow-hidden text-white">
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-          {/* Source to Destination Track */}
           <div className="space-y-2.5 max-w-2xl">
             <div className="flex flex-wrap items-center gap-2">
               <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-white/10 text-[#16B8C9] border border-white/20">
@@ -196,7 +191,6 @@ export default function RouteResults() {
             </p>
           </div>
 
-          {/* 3 Telemetry Metrics */}
           <div className="grid grid-cols-3 gap-2 sm:gap-3 border-t lg:border-t-0 lg:border-l border-white/10 pt-4 lg:pt-0 lg:pl-6 flex-shrink-0">
             <div className="bg-white/10 p-3 rounded-xl border border-white/10 text-center min-w-[90px] sm:min-w-[110px]">
               <span className="text-[9.5px] font-bold uppercase tracking-wider text-slate-300 block">Distance</span>
@@ -218,7 +212,6 @@ export default function RouteResults() {
           </div>
         </div>
 
-        {/* Quiet Transparency Ribbon */}
         <div className="mt-4 pt-3 border-t border-white/10 flex flex-wrap items-center justify-between gap-2 text-[11px] text-slate-300">
           <div className="flex items-center gap-1.5">
             <Info size={13} className="text-[#16B8C9] flex-shrink-0" />
@@ -233,14 +226,14 @@ export default function RouteResults() {
       </div>
 
       {/* 3. 3-CATEGORY SELECTOR TABS */}
-      <div className="grid grid-cols-3 gap-2 sm:gap-3 bg-white p-1.5 rounded-[14px] border border-[#E3EAF0] shadow-sm">
+      <div className="grid grid-cols-3 gap-2 sm:gap-3 bg-[#F8FAFC] p-1.5 rounded-[14px] border border-[#DCE5EE] shadow-card">
         <button
           type="button"
           onClick={() => setActiveTabCategory('BEST_OVERALL')}
           className={`py-2.5 px-2 sm:px-4 rounded-xl text-xs font-extrabold transition flex items-center justify-center gap-1.5 text-center ${
             activeTabCategory === 'BEST_OVERALL'
-              ? 'bg-[#14283F] text-white shadow-sm'
-              : 'text-[#718096] hover:text-[#14283F] hover:bg-[#F4F7FA]'
+              ? 'bg-[#14283F] text-white shadow-xs'
+              : 'text-[#64748B] hover:text-[#14283F] hover:bg-[#E8EEF5]'
           }`}
         >
           <Star size={14} className={activeTabCategory === 'BEST_OVERALL' ? 'text-[#16B8C9]' : ''} />
@@ -252,8 +245,8 @@ export default function RouteResults() {
           onClick={() => setActiveTabCategory('FASTEST_REFUELING')}
           className={`py-2.5 px-2 sm:px-4 rounded-xl text-xs font-extrabold transition flex items-center justify-center gap-1.5 text-center ${
             activeTabCategory === 'FASTEST_REFUELING'
-              ? 'bg-[#14283F] text-white shadow-sm'
-              : 'text-[#718096] hover:text-[#14283F] hover:bg-[#F4F7FA]'
+              ? 'bg-[#14283F] text-white shadow-xs'
+              : 'text-[#64748B] hover:text-[#14283F] hover:bg-[#E8EEF5]'
           }`}
         >
           <Zap size={14} className={activeTabCategory === 'FASTEST_REFUELING' ? 'text-[#16B8C9]' : ''} />
@@ -265,8 +258,8 @@ export default function RouteResults() {
           onClick={() => setActiveTabCategory('NEAREST_STATION')}
           className={`py-2.5 px-2 sm:px-4 rounded-xl text-xs font-extrabold transition flex items-center justify-center gap-1.5 text-center ${
             activeTabCategory === 'NEAREST_STATION'
-              ? 'bg-[#14283F] text-white shadow-sm'
-              : 'text-[#718096] hover:text-[#14283F] hover:bg-[#F4F7FA]'
+              ? 'bg-[#14283F] text-white shadow-xs'
+              : 'text-[#64748B] hover:text-[#14283F] hover:bg-[#E8EEF5]'
           }`}
         >
           <Navigation size={14} className={activeTabCategory === 'NEAREST_STATION' ? 'text-[#16B8C9]' : ''} />
@@ -276,12 +269,12 @@ export default function RouteResults() {
 
       {/* 4. HERO RECOMMENDATION CARD */}
       {heroStation && (
-        <div className="bg-white rounded-[14px] p-5 sm:p-7 text-[#243447] shadow-sm relative overflow-hidden border border-[#E3EAF0] border-l-4 border-l-[#16B8C9] space-y-4">
+        <div className="bg-[#F8FAFC] rounded-[14px] p-5 sm:p-7 text-[#243447] shadow-card relative overflow-hidden border border-[#DCE5EE] border-l-4 border-l-[#16B8C9] space-y-4">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
             <div className="space-y-2.5 max-w-2xl">
               <div className="flex flex-wrap items-center gap-2">
                 <span
-                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10.5px] font-black uppercase tracking-wider bg-[#F4F7FA] text-[#14283F] border border-[#E3EAF0]"
+                  className="inline-flex items-center gap-1 px-3 py-1 rounded-full text-[10.5px] font-black uppercase tracking-wider bg-[#E8EEF5] text-[#14283F] border border-[#DCE5EE]"
                 >
                   <Star size={12} className="text-[#16B8C9] fill-[#16B8C9]" />
                   {activeTabCategory === 'BEST_OVERALL'
@@ -304,25 +297,23 @@ export default function RouteResults() {
                 <h2 className="text-xl sm:text-2xl font-black tracking-tight leading-tight text-[#14283F]">
                   {heroStation.name}
                 </h2>
-                <p className="text-[#718096] text-xs sm:text-sm font-semibold mt-0.5">
+                <p className="text-[#64748B] text-xs sm:text-sm font-semibold mt-0.5">
                   {heroStation.operator} • {heroStation.address}, {heroStation.city}
                 </p>
               </div>
 
-              {/* Reason for Recommendation */}
-              <div className="p-3.5 bg-[#F4F7FA] rounded-xl border border-[#E3EAF0] text-xs sm:text-sm leading-relaxed text-[#243447]">
+              <div className="p-3.5 bg-[#E8EEF5] rounded-xl border border-[#DCE5EE] text-xs sm:text-sm leading-relaxed text-[#243447]">
                 <span className="font-black text-[#14283F]">Why recommended: </span>
                 {heroStation.recommendationReason}
               </div>
             </div>
 
-            {/* Action Buttons */}
             <div className="w-full lg:w-64 space-y-2.5 flex-shrink-0">
               <a
                 href={`https://www.google.com/maps/dir/?api=1&destination=${heroStation.latitude},${heroStation.longitude}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full py-3.5 px-4 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-extrabold text-xs uppercase tracking-wider text-center shadow-sm transition flex items-center justify-center gap-1.5"
+                className="w-full py-3.5 px-4 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-extrabold text-xs uppercase tracking-wider text-center shadow-xs transition flex items-center justify-center gap-1.5"
               >
                 <Navigation size={16} /> Start Turn-by-Turn Nav ↗
               </a>
@@ -331,7 +322,7 @@ export default function RouteResults() {
                 <button
                   type="button"
                   onClick={() => setReportModalStation(heroStation)}
-                  className="py-2 px-3 rounded-xl bg-[#F4F7FA] hover:bg-[#E3EAF0] text-[#14283F] font-bold text-xs text-center border border-[#E3EAF0] transition flex items-center justify-center gap-1"
+                  className="py-2 px-3 rounded-xl bg-[#E8EEF5] hover:bg-[#DCE5EE] text-[#14283F] font-bold text-xs text-center border border-[#DCE5EE] transition flex items-center justify-center gap-1"
                 >
                   <Sparkles size={13} className="text-[#98651C]" />
                   <span>Report</span>
@@ -339,13 +330,12 @@ export default function RouteResults() {
 
                 <Link
                   to={`/stations/${heroStation.id}`}
-                  className="py-2 px-3 rounded-xl bg-[#F4F7FA] hover:bg-[#E3EAF0] text-[#14283F] font-bold text-xs text-center border border-[#E3EAF0] transition flex items-center justify-center gap-1"
+                  className="py-2 px-3 rounded-xl bg-[#E8EEF5] hover:bg-[#DCE5EE] text-[#14283F] font-bold text-xs text-center border border-[#DCE5EE] transition flex items-center justify-center gap-1"
                 >
                   <span>Details ↗</span>
                 </Link>
               </div>
 
-              {/* Mark as Visited */}
               <button
                 type="button"
                 onClick={() => setPostVisitStation(heroStation)}
@@ -357,7 +347,6 @@ export default function RouteResults() {
             </div>
           </div>
 
-          {/* Embedded Arrival Prediction */}
           {heroStation.arrivalPrediction && (
             <div className="pt-2">
               <ArrivalPredictionCard prediction={heroStation.arrivalPrediction} />
@@ -373,14 +362,14 @@ export default function RouteResults() {
       />
 
       {/* 6. Mobile View Switcher */}
-      <div className="flex lg:hidden bg-white p-1.5 rounded-xl border border-[#E3EAF0] shadow-sm text-xs font-bold">
+      <div className="flex lg:hidden bg-[#F8FAFC] p-1.5 rounded-xl border border-[#DCE5EE] shadow-card text-xs font-bold">
         <button
           type="button"
           onClick={() => setMobileView('map')}
           className={`flex-1 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition ${
             mobileView === 'map'
               ? 'bg-[#14283F] text-white shadow-xs'
-              : 'text-[#718096]'
+              : 'text-[#64748B]'
           }`}
         >
           <MapIcon size={14} /> <span>Interactive Map View</span>
@@ -391,7 +380,7 @@ export default function RouteResults() {
           className={`flex-1 py-2.5 rounded-lg flex items-center justify-center gap-1.5 transition ${
             mobileView === 'list'
               ? 'bg-[#14283F] text-white shadow-xs'
-              : 'text-[#718096]'
+              : 'text-[#64748B]'
           }`}
         >
           <List size={14} /> <span>Stations List ({stations.length})</span>
@@ -402,7 +391,7 @@ export default function RouteResults() {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Map Column */}
         <div
-          className={`lg:col-span-7 bg-white rounded-[14px] p-3.5 sm:p-4 shadow-sm border border-[#E3EAF0] space-y-3 ${
+          className={`lg:col-span-7 bg-[#F8FAFC] rounded-[14px] p-3.5 sm:p-4 shadow-card border border-[#DCE5EE] space-y-3 ${
             mobileView === 'list' ? 'hidden lg:block' : 'block'
           }`}
         >
@@ -412,11 +401,11 @@ export default function RouteResults() {
                 <Compass size={14} className="text-[#16B8C9]" />
                 <span>Live Highway Corridor Map</span>
               </h3>
-              <p className="text-[11px] text-[#718096]">
+              <p className="text-[11px] text-[#64748B]">
                 Turn-by-turn trajectory with live gas pressure &amp; queue pins
               </p>
             </div>
-            <div className="hidden sm:flex items-center gap-2 text-[10px] text-[#718096] font-semibold">
+            <div className="hidden sm:flex items-center gap-2 text-[10px] text-[#64748B] font-semibold">
               <span className="flex items-center gap-1">
                 <span className="w-2 h-2 rounded-full bg-[#26734D]" /> &gt;195 Bar
               </span>
@@ -447,7 +436,7 @@ export default function RouteResults() {
             <h3 className="font-extrabold text-xs sm:text-sm text-[#14283F]">
               All Stations on Route ({stations.length})
             </h3>
-            <span className="text-[10px] text-[#14283F] font-black bg-[#F4F7FA] border border-[#E3EAF0] px-2 py-0.5 rounded-md uppercase tracking-wider">
+            <span className="text-[10px] text-[#14283F] font-black bg-[#E8EEF5] border border-[#DCE5EE] px-2 py-0.5 rounded-md uppercase tracking-wider">
               Ranked by Score
             </span>
           </div>
@@ -463,15 +452,14 @@ export default function RouteResults() {
                 <div
                   key={st.id}
                   onClick={() => setSelectedStation(st)}
-                  className={`rounded-[14px] p-4 border transition cursor-pointer relative shadow-sm ${
+                  className={`rounded-[14px] p-4 border transition cursor-pointer relative shadow-card ${
                     isHero
-                      ? 'border-[#14283F] bg-white ring-2 ring-[#16B8C9]/30'
+                      ? 'border-[#14283F] bg-[#F8FAFC] ring-2 ring-[#16B8C9]/30'
                       : isSelected
-                      ? 'border-[#16B8C9] bg-[#F4F7FA]'
-                      : 'border-[#E3EAF0] bg-white hover:border-[#C8D6E5]'
+                      ? 'border-[#16B8C9] bg-[#E8EEF5]'
+                      : 'border-[#DCE5EE] bg-[#F8FAFC] hover:border-[#CBD5E1]'
                   }`}
                 >
-                  {/* Category Pill if assigned */}
                   {st.recommendationCategory && (
                     <span className="absolute -top-2.5 right-4 bg-[#14283F] text-white text-[9.5px] font-black px-2.5 py-0.5 rounded-full uppercase tracking-wider shadow-xs flex items-center gap-1">
                       <Star size={10} className="text-[#16B8C9] fill-[#16B8C9]" />
@@ -482,23 +470,22 @@ export default function RouteResults() {
                   <div className="flex items-start justify-between gap-2 mb-2">
                     <div className="min-w-0">
                       <div className="flex items-center gap-1.5">
-                        <span className="text-xs font-black text-[#718096]">#{index + 1}</span>
+                        <span className="text-xs font-black text-[#64748B]">#{index + 1}</span>
                         <h4 className="font-bold text-xs sm:text-sm text-[#14283F] truncate">{st.name}</h4>
                       </div>
-                      <p className="text-[11px] text-[#718096] mt-0.5 truncate font-medium">
+                      <p className="text-[11px] text-[#64748B] mt-0.5 truncate font-medium">
                         {st.operator || 'CNG'} • {st.city}
                       </p>
                     </div>
 
                     <div className="text-right flex-shrink-0">
                       <span className="text-xs font-black text-[#14283F]">+{st.extraDetourKm ?? 0.4} km</span>
-                      <span className="text-[10px] text-[#718096] block font-semibold">
+                      <span className="text-[10px] text-[#64748B] block font-semibold">
                         ~{st.estimatedDetourMinutes ?? 1}m detour
                       </span>
                     </div>
                   </div>
 
-                  {/* Verification Badge */}
                   <div className="mb-2.5">
                     <DataStatusBadge
                       status={st.verificationStatus}
@@ -509,10 +496,9 @@ export default function RouteResults() {
                     />
                   </div>
 
-                  {/* 2-box metric: Measured Pressure & Queue */}
-                  <div className="grid grid-cols-2 gap-2 bg-[#F4F7FA] rounded-xl p-2.5 border border-[#E3EAF0] my-2">
+                  <div className="grid grid-cols-2 gap-2 bg-[#E8EEF5] rounded-xl p-2.5 border border-[#DCE5EE] my-2">
                     <div>
-                      <span className="text-[9px] uppercase font-bold text-[#718096] block">
+                      <span className="text-[9px] uppercase font-bold text-[#64748B] block">
                         Measured Pressure
                       </span>
                       <div className="flex items-baseline gap-1 mt-0.5">
@@ -523,55 +509,51 @@ export default function RouteResults() {
                         >
                           {pressure ? `${pressure} Bar` : 'N/A'}
                         </span>
-                        <span className="text-[10px] text-[#718096]">
+                        <span className="text-[10px] text-[#64748B]">
                           {isHighPressure ? '(Fast Fill)' : '(Standard)'}
                         </span>
                       </div>
                     </div>
 
                     <div>
-                      <span className="text-[9px] uppercase font-bold text-[#718096] block">
+                      <span className="text-[9px] uppercase font-bold text-[#64748B] block">
                         Measured Queue
                       </span>
                       <div className="flex items-baseline gap-1 mt-0.5">
                         <span className="text-sm font-black text-[#14283F]">
                           {st.vehiclesWaiting ?? 0} Cars
                         </span>
-                        <span className="text-[10px] text-[#718096]">
+                        <span className="text-[10px] text-[#64748B]">
                           ~{st.estimatedWaitMinutes ?? 2}m wait
                         </span>
                       </div>
                     </div>
                   </div>
 
-                  {/* Compact Arrival Prediction */}
                   {st.arrivalPrediction && (
                     <div className="mb-2.5">
                       <ArrivalPredictionCard prediction={st.arrivalPrediction} compact={true} />
                     </div>
                   )}
 
-                  {/* Card Footer Actions */}
-                  <div className="flex items-center justify-between pt-2.5 border-t border-[#E3EAF0] text-xs">
+                  <div className="flex items-center justify-between pt-2.5 border-t border-[#DCE5EE] text-xs">
                     <span className="text-[11px] font-black text-[#14283F]">
                       ₹{st.verifiedPricePerKg ?? 82.5}/kg
                     </span>
 
                     <div className="flex items-center gap-1.5">
-                      {/* Flag Incorrect Info */}
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           setFlagModalStation(st);
                         }}
-                        className="p-1.5 rounded-lg border border-[#E3EAF0] text-[#718096] hover:text-[#B54747] hover:bg-[#FCEAEA] transition"
+                        className="p-1.5 rounded-lg border border-[#DCE5EE] text-[#64748B] hover:text-[#B54747] hover:bg-[#FCEAEA] transition"
                         title="Report incorrect information"
                       >
                         <AlertTriangle size={13} />
                       </button>
 
-                      {/* Mark as Visited */}
                       <button
                         type="button"
                         onClick={(e) => {
@@ -584,21 +566,19 @@ export default function RouteResults() {
                         <CheckCircle2 size={13} />
                       </button>
 
-                      {/* Community Report */}
                       <button
                         type="button"
                         onClick={(e) => {
                           e.stopPropagation();
                           setReportModalStation(st);
                         }}
-                        className="py-1 px-2 rounded-lg bg-[#F4F7FA] text-[#14283F] hover:bg-[#E3EAF0] border border-[#E3EAF0] text-[11px] font-bold transition flex items-center gap-1"
+                        className="py-1 px-2 rounded-lg bg-[#E8EEF5] text-[#14283F] hover:bg-[#DCE5EE] border border-[#DCE5EE] text-[11px] font-bold transition flex items-center gap-1"
                         title="Update Live Status"
                       >
                         <Sparkles size={12} className="text-[#98651C]" />
                         <span>Update</span>
                       </button>
 
-                      {/* Google Maps Deep-link */}
                       <a
                         href={`https://www.google.com/maps/dir/?api=1&destination=${st.latitude},${st.longitude}`}
                         target="_blank"
@@ -618,7 +598,6 @@ export default function RouteResults() {
         </div>
       </div>
 
-      {/* Interaction Modals */}
       <ReportStatusModal
         isOpen={!!reportModalStation}
         station={reportModalStation}

@@ -33,26 +33,26 @@ export const QueueVisualizer: React.FC<QueueVisualizerProps> = ({
   const badgeText = isLow ? 'Short Queue' : isMedium ? 'Moderate Queue' : 'Heavy Queue';
 
   return (
-    <div className="bg-white border border-[#E3EAF0] rounded-[14px] p-4 text-[#243447] shadow-sm">
+    <div className="bg-[#F8FAFC] border border-[#DCE5EE] rounded-[14px] p-4 text-[#243447] shadow-sm">
       {/* Top Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className="p-2 bg-[#F4F7FA] text-[#14283F] rounded-xl border border-[#E3EAF0]">
+          <div className="p-2 bg-[#E8EEF5] text-[#14283F] rounded-xl border border-[#DCE5EE]">
             <Users size={16} />
           </div>
           <div>
-            <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#718096]">
+            <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#64748B]">
               Live Queue Status
             </h4>
             <div className="flex items-baseline gap-1.5">
               <span className="text-xl font-black text-[#14283F]">{count}</span>
-              <span className="text-xs font-semibold text-[#718096]">Vehicles in line</span>
+              <span className="text-xs font-semibold text-[#64748B]">Vehicles in line</span>
             </div>
           </div>
         </div>
 
         <div className="text-right">
-          <div className="flex items-center justify-end gap-1 text-[#718096] text-xs">
+          <div className="flex items-center justify-end gap-1 text-[#64748B] text-xs">
             <Clock size={13} /> <span>Wait Time</span>
           </div>
           <span className="text-lg font-black text-[#98651C]">~{wait} min</span>
@@ -60,8 +60,8 @@ export const QueueVisualizer: React.FC<QueueVisualizerProps> = ({
       </div>
 
       {/* Visual Lane of Cars */}
-      <div className="bg-[#F4F7FA] rounded-xl p-3 border border-[#E3EAF0] mb-3">
-        <div className="flex items-center justify-between text-[10px] text-[#718096] font-bold mb-2 uppercase tracking-wider">
+      <div className="bg-[#E8EEF5] rounded-xl p-3 border border-[#DCE5EE] mb-3">
+        <div className="flex items-center justify-between text-[10px] text-[#64748B] font-bold mb-2 uppercase tracking-wider">
           <span>Vehicles Waiting</span>
           <span>Active Dispensers</span>
         </div>
@@ -85,7 +85,7 @@ export const QueueVisualizer: React.FC<QueueVisualizerProps> = ({
                   </span>
                 ))}
                 {count > 8 && (
-                  <span className="text-xs font-bold bg-white text-[#718096] px-2 py-0.5 rounded-md border border-[#E3EAF0]">
+                  <span className="text-xs font-bold bg-[#F8FAFC] text-[#64748B] px-2 py-0.5 rounded-md border border-[#DCE5EE]">
                     +{count - 8} more
                   </span>
                 )}
@@ -93,15 +93,15 @@ export const QueueVisualizer: React.FC<QueueVisualizerProps> = ({
             )}
           </div>
 
-          <span className="text-[#A0AEC0] font-bold px-2">➔</span>
+          <span className="text-[#64748B] font-bold px-2">➔</span>
 
           {/* Dispenser Nozzles Indicator */}
-          <div className="flex items-center gap-1 bg-white border border-[#E3EAF0] px-2 py-1.5 rounded-xl flex-shrink-0">
+          <div className="flex items-center gap-1 bg-[#F8FAFC] border border-[#DCE5EE] px-2 py-1.5 rounded-xl flex-shrink-0">
             <Fuel size={14} className="text-[#26734D]" />
             <span className="text-xs font-black text-[#14283F]">
               {active}/{total}
             </span>
-            <span className="text-[10px] text-[#718096] font-semibold">Active</span>
+            <span className="text-[10px] text-[#64748B] font-semibold">Active</span>
           </div>
         </div>
       </div>
@@ -111,7 +111,7 @@ export const QueueVisualizer: React.FC<QueueVisualizerProps> = ({
         <span className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] border ${badgeClass}`}>
           ● {badgeText}
         </span>
-        <span className="text-[11px] text-[#718096] font-semibold">
+        <span className="text-[11px] text-[#64748B] font-semibold">
           Avg. {Math.round(wait / Math.max(1, count))}m per car
         </span>
       </div>

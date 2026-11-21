@@ -40,11 +40,11 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) => {
 
   return (
     <nav
-      className="flex flex-col h-full bg-white select-none border-r border-[#E3EAF0]"
+      className="flex flex-col h-full bg-[#F8FAFC] select-none border-r border-[#DCE5EE]"
       style={{ width: 240 }}
     >
       {/* Brand */}
-      <div className="flex items-center justify-between px-5 py-4 border-b border-[#E3EAF0]">
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[#DCE5EE]">
         <div className="flex items-center gap-3">
           <div className="w-9 h-9 rounded-xl bg-[#14283F] flex items-center justify-center flex-shrink-0">
             <Fuel size={18} className="text-[#16B8C9]" />
@@ -63,7 +63,7 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) => {
           <button
             onClick={onClose}
             aria-label="Close sidebar"
-            className="p-1.5 rounded-lg text-[#718096] hover:text-[#14283F] hover:bg-[#F4F7FA] transition-colors"
+            className="p-1.5 rounded-lg text-[#64748B] hover:text-[#14283F] hover:bg-[#E8EEF5] transition-colors"
           >
             <X size={18} />
           </button>
@@ -83,14 +83,14 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) => {
                 'flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-xs font-semibold',
                 'transition-all duration-150 cursor-pointer',
                 active
-                  ? 'bg-[#14283F] text-white'
-                  : 'text-[#718096] hover:bg-[#F4F7FA] hover:text-[#243447]',
+                  ? 'bg-[#14283F] text-white shadow-xs'
+                  : 'text-[#64748B] hover:bg-[#E8EEF5] hover:text-[#243447]',
               ].join(' ')}
             >
               <Icon
                 size={16}
                 strokeWidth={active ? 2.5 : 2}
-                className={active ? 'text-[#16B8C9]' : 'text-[#A0AEC0]'}
+                className={active ? 'text-[#16B8C9]' : 'text-[#94A3B8]'}
               />
               <span>{label}</span>
             </NavLink>
@@ -99,8 +99,8 @@ const Sidebar: React.FC<SidebarProps> = ({ onClose, isMobile = false }) => {
       </div>
 
       {/* Footer */}
-      <div className="p-4 border-t border-[#E3EAF0]">
-        <p className="text-[10px] text-[#A0AEC0] font-mono text-center">
+      <div className="p-4 border-t border-[#DCE5EE]">
+        <p className="text-[10px] text-[#94A3B8] font-mono text-center">
           CNG Navigator v2.0
         </p>
       </div>

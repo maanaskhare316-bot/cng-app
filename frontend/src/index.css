@@ -2,19 +2,19 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ── Design System Tokens — Deep Navy + Electric Cyan (Light) ── */
+/* ── Muted Soft Slate Design Tokens (Minimal, Anti-Glare) ────── */
 :root {
-  --color-bg-main: #F4F7FA;
-  --color-bg-card: #FFFFFF;
-  --color-bg-elevated: #FFFFFF;
-  --color-border: #E3EAF0;
-  --color-border-hover: #C8D6E5;
+  --color-bg-main: #E8EEF5;
+  --color-bg-card: #F8FAFC;
+  --color-bg-elevated: #F8FAFC;
+  --color-border: #DCE5EE;
+  --color-border-hover: #CBD5E1;
   --color-navy: #14283F;
   --color-navy-secondary: #1D3854;
   --color-cyan: #16B8C9;
   --color-cyan-hover: #119EAD;
   --color-text-primary: #243447;
-  --color-text-secondary: #718096;
+  --color-text-secondary: #64748B;
   --color-success-bg: #E3F4EC;
   --color-success-text: #26734D;
   --color-warning-bg: #FFF2DB;
@@ -35,71 +35,71 @@ html {
 }
 
 body {
-  background-color: #F4F7FA;
+  background-color: #E8EEF5;
   color: #243447;
   margin: 0;
   padding: 0;
 }
 
-/* ── Light Scrollbar ──────────────────────────────────────── */
+/* ── Minimal Soft Scrollbar ───────────────────────────────── */
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #F4F7FA;
+  background: #E8EEF5;
 }
 ::-webkit-scrollbar-thumb {
-  background: #C8D6E5;
+  background: #CBD5E1;
   border-radius: 4px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #A0B2C6;
+  background: #94A3B8;
 }
 * {
   scrollbar-width: thin;
-  scrollbar-color: #C8D6E5 #F4F7FA;
+  scrollbar-color: #CBD5E1 #E8EEF5;
 }
 
-/* ── Leaflet Light Overrides ──────────────────────────────── */
+/* ── Leaflet Minimal Overrides ────────────────────────────── */
 .leaflet-container {
   font-family: inherit;
   border-radius: 14px;
-  background-color: #E8EEF4 !important;
+  background-color: #DEE6EF !important;
 }
 .leaflet-popup-content-wrapper {
-  background: #FFFFFF !important;
+  background: #F8FAFC !important;
   color: #243447 !important;
-  border: 1px solid #E3EAF0 !important;
+  border: 1px solid #DCE5EE !important;
   border-radius: 14px !important;
-  box-shadow: 0 8px 24px rgba(20, 40, 63, 0.12) !important;
+  box-shadow: 0 4px 16px rgba(20, 40, 63, 0.08) !important;
 }
 .leaflet-popup-tip {
-  background: #FFFFFF !important;
+  background: #F8FAFC !important;
 }
 .leaflet-control-zoom {
   border-radius: 10px !important;
   overflow: hidden;
-  border: 1px solid #E3EAF0 !important;
-  box-shadow: 0 2px 8px rgba(20, 40, 63, 0.08) !important;
-  background: #FFFFFF !important;
+  border: 1px solid #DCE5EE !important;
+  box-shadow: 0 2px 6px rgba(20, 40, 63, 0.06) !important;
+  background: #F8FAFC !important;
 }
 .leaflet-control-zoom a {
-  background-color: #FFFFFF !important;
+  background-color: #F8FAFC !important;
   color: #243447 !important;
-  border-bottom: 1px solid #E3EAF0 !important;
+  border-bottom: 1px solid #DCE5EE !important;
 }
 .leaflet-control-zoom a:hover {
-  background-color: #F4F7FA !important;
+  background-color: #E8EEF5 !important;
   color: #14283F !important;
 }
 
-/* ── Google Maps Light Overrides ──────────────────────────── */
+/* ── Google Maps Minimal Overrides ────────────────────────── */
 .gm-style .gm-style-iw-c {
-  background-color: #FFFFFF !important;
-  border: 1px solid #E3EAF0 !important;
+  background-color: #F8FAFC !important;
+  border: 1px solid #DCE5EE !important;
   border-radius: 14px !important;
-  box-shadow: 0 8px 24px rgba(20, 40, 63, 0.12) !important;
+  box-shadow: 0 4px 16px rgba(20, 40, 63, 0.08) !important;
   color: #243447 !important;
   padding: 12px !important;
 }
@@ -107,7 +107,7 @@ body {
   overflow: auto !important;
 }
 .gm-style .gm-style-iw-tc::after {
-  background: #FFFFFF !important;
+  background: #F8FAFC !important;
 }
 .gm-ui-hover-effect {
   filter: none !important;

@@ -37,11 +37,11 @@ export const ReportIncorrectModal: React.FC<ReportIncorrectModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in">
-      <div className="bg-white rounded-[14px] shadow-modal border border-[#E3EAF0] max-w-md w-full overflow-hidden text-[#243447]">
+      <div className="bg-[#F8FAFC] rounded-[14px] shadow-modal border border-[#DCE5EE] max-w-md w-full overflow-hidden text-[#243447]">
         {/* Header */}
         <div className="bg-[#FCEAEA] border-b border-[#F4BBBB] px-6 py-4 flex items-center justify-between text-[#B54747]">
           <div className="flex items-center gap-2">
-            <div className="p-2 bg-white text-[#B54747] rounded-xl border border-[#F4BBBB]">
+            <div className="p-2 bg-[#F8FAFC] text-[#B54747] rounded-xl border border-[#F4BBBB]">
               <AlertTriangle size={18} />
             </div>
             <div>
@@ -51,7 +51,7 @@ export const ReportIncorrectModal: React.FC<ReportIncorrectModalProps> = ({
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-[#718096] hover:text-[#B54747] hover:bg-white/40 transition"
+            className="p-1 rounded-lg text-[#64748B] hover:text-[#B54747] hover:bg-[#F8FAFC]/40 transition"
           >
             <X size={18} />
           </button>
@@ -59,12 +59,12 @@ export const ReportIncorrectModal: React.FC<ReportIncorrectModalProps> = ({
 
         {/* Body */}
         <form onSubmit={handleSubmit} className="p-6 space-y-4">
-          <p className="text-xs text-[#718096] leading-relaxed">
+          <p className="text-xs text-[#64748B] leading-relaxed">
             Help keep highway telemetry accurate. Flag discrepancies between the app and the actual station.
           </p>
 
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-[#718096] uppercase tracking-wider block">
+            <label className="text-xs font-bold text-[#64748B] uppercase tracking-wider block">
               What is incorrect?
             </label>
             <div className="space-y-1.5">
@@ -81,7 +81,7 @@ export const ReportIncorrectModal: React.FC<ReportIncorrectModalProps> = ({
                   className={`flex items-center gap-2.5 p-2.5 rounded-xl border text-xs cursor-pointer transition ${
                     issueType === opt.id
                       ? 'bg-[#FCEAEA] border-[#F4BBBB] text-[#B54747] font-bold'
-                      : 'bg-[#F4F7FA] border-[#E3EAF0] text-[#718096] hover:border-[#C8D6E5]'
+                      : 'bg-[#E8EEF5] border-[#DCE5EE] text-[#64748B] hover:border-[#CBD5E1]'
                   }`}
                 >
                   <input
@@ -98,7 +98,7 @@ export const ReportIncorrectModal: React.FC<ReportIncorrectModalProps> = ({
           </div>
 
           <div className="space-y-1">
-            <label className="text-xs font-bold text-[#718096] uppercase tracking-wider block">
+            <label className="text-xs font-bold text-[#64748B] uppercase tracking-wider block">
               Additional Details (Optional)
             </label>
             <textarea
@@ -106,15 +106,15 @@ export const ReportIncorrectModal: React.FC<ReportIncorrectModalProps> = ({
               value={comment}
               onChange={(e) => setComment(e.target.value)}
               placeholder="Provide any details to help verify..."
-              className="w-full px-3 py-2 rounded-xl bg-white border border-[#E3EAF0] text-xs text-[#243447] placeholder-[#A0AEC0] focus:outline-none focus:border-[#B54747]"
+              className="w-full px-3 py-2 rounded-xl bg-[#F8FAFC] border border-[#DCE5EE] text-xs text-[#243447] placeholder-[#64748B] focus:outline-none focus:border-[#B54747]"
             />
           </div>
 
-          <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-[#E3EAF0]">
+          <div className="flex items-center justify-end gap-2.5 pt-2 border-t border-[#DCE5EE]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-xl border border-[#E3EAF0] text-xs font-bold text-[#718096] hover:text-[#14283F] hover:bg-[#F4F7FA] transition"
+              className="px-4 py-2 rounded-xl border border-[#DCE5EE] text-xs font-bold text-[#64748B] hover:text-[#14283F] hover:bg-[#E8EEF5] transition"
             >
               Cancel
             </button>

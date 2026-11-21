@@ -4,7 +4,7 @@ import { useAppContext } from '../context/AppContext';
 import type { StationSummaryDto } from '../types';
 
 function pressureColor(bar: number | null | undefined) {
-  if (!bar) return '#718096';
+  if (!bar) return '#64748B';
   if (bar >= 195) return '#26734D';
   if (bar >= 175) return '#98651C';
   return '#B54747';
@@ -21,11 +21,11 @@ function MiniPressureBar({ value, max = 220 }: { value: number | null; max?: num
   const color = pressureColor(value);
   return (
     <div>
-      <div className="flex justify-between text-xs text-[#718096] mb-1">
+      <div className="flex justify-between text-xs text-[#64748B] mb-1">
         <span>Gas Pressure</span>
         <span style={{ color }} className="font-bold">{value ? `${Math.round(value)} Bar` : '—'}</span>
       </div>
-      <div className="h-2 bg-[#E3EAF0] rounded-full overflow-hidden">
+      <div className="h-2 bg-[#DCE5EE] rounded-full overflow-hidden">
         <div style={{ width: `${pct}%`, backgroundColor: color }} className="h-full rounded-full transition-all duration-700" />
       </div>
     </div>
@@ -36,27 +36,27 @@ function StationMonitorCard({ station }: { station: StationSummaryDto }) {
   const q = queueStatus(station.vehiclesWaiting ?? 0);
   const cars = Math.min(station.vehiclesWaiting ?? 0, 6);
   return (
-    <div className="bg-white rounded-[14px] border border-[#E3EAF0] p-5 shadow-sm text-[#243447]">
+    <div className="bg-[#F8FAFC] rounded-[14px] border border-[#DCE5EE] p-5 shadow-card text-[#243447]">
       <div className="flex items-start justify-between gap-2 mb-3">
         <div>
           <h3 className="font-bold text-[#14283F] text-sm leading-tight">{station.name}</h3>
-          <p className="text-xs text-[#718096]">{station.city}</p>
+          <p className="text-xs text-[#64748B]">{station.city}</p>
         </div>
         <span className={`text-[10.5px] font-bold rounded-full px-2.5 py-0.5 border flex-shrink-0 ${q.cls}`}>{q.text}</span>
       </div>
       {/* Vehicle queue row */}
-      <div className="flex items-center gap-1 mb-3 bg-[#F4F7FA] p-2 rounded-xl border border-[#E3EAF0]">
+      <div className="flex items-center gap-1 mb-3 bg-[#E8EEF5] p-2 rounded-xl border border-[#DCE5EE]">
         {Array.from({ length: cars }).map((_, i) => <span key={i} className="text-lg">🚗</span>)}
-        {(station.vehiclesWaiting ?? 0) > 6 && <span className="text-xs text-[#718096] ml-1 font-bold">+{(station.vehiclesWaiting ?? 0) - 6} more</span>}
+        {(station.vehiclesWaiting ?? 0) > 6 && <span className="text-xs text-[#64748B] ml-1 font-bold">+{(station.vehiclesWaiting ?? 0) - 6} more</span>}
         {(station.vehiclesWaiting ?? 0) === 0 && <span className="text-xs text-[#26734D] font-semibold italic">No queue</span>}
         <span className="ml-auto text-lg">⛽</span>
       </div>
       <MiniPressureBar value={station.currentPressureBar ?? null} />
-      <div className="flex justify-between mt-3 text-xs text-[#718096]">
+      <div className="flex justify-between mt-3 text-xs text-[#64748B]">
         <span>⏱️ ~{station.estimatedWaitMinutes ?? 0} min wait</span>
         <span>🔧 {station.activeDispensers ?? 0} active nozzles</span>
       </div>
-      <p className="text-[10px] text-[#A0AEC0] mt-2 italic">Telemetry simulation active</p>
+      <p className="text-[10px] text-[#94A3B8] mt-2 italic">Telemetry simulation active</p>
     </div>
   );
 }
@@ -111,23 +111,23 @@ export default function LiveMonitoring() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto pb-16 text-[#243447]">
       {/* Demo banner */}
-      <div className="flex items-center gap-3 bg-white border border-[#E3EAF0] rounded-[14px] px-4 py-3 shadow-sm">
+      <div className="flex items-center gap-3 bg-[#F8FAFC] border border-[#DCE5EE] rounded-[14px] px-4 py-3 shadow-card">
         <Activity size={18} className="text-[#16B8C9]" />
         <div>
           <span className="font-extrabold text-[#14283F] text-sm">LIVE SIMULATION TICKER</span>
-          <span className="text-[#718096] text-xs ml-2">— Telemetry cycles simulate real car arrivals and compressor pressures.</span>
+          <span className="text-[#64748B] text-xs ml-2">— Telemetry cycles simulate real car arrivals and compressor pressures.</span>
         </div>
         <div className="ml-auto flex gap-2">
           <button
             onClick={() => setIsPaused(!isPaused)}
-            className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-xl border border-[#E3EAF0] bg-white hover:bg-[#F4F7FA] text-[#14283F] transition font-bold shadow-xs"
+            className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-xl border border-[#DCE5EE] bg-[#F8FAFC] hover:bg-[#E8EEF5] text-[#14283F] transition font-bold shadow-xs"
           >
             {isPaused ? <Play size={12} className="text-[#26734D]" /> : <Pause size={12} className="text-[#98651C]" />}
             {isPaused ? 'Resume' : 'Pause'}
           </button>
           <button
             onClick={reset}
-            className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-xl border border-[#E3EAF0] bg-white hover:bg-[#F4F7FA] text-[#718096] hover:text-[#14283F] transition font-bold shadow-xs"
+            className="flex items-center gap-1 text-xs px-3 py-1.5 rounded-xl border border-[#DCE5EE] bg-[#F8FAFC] hover:bg-[#E8EEF5] text-[#64748B] hover:text-[#14283F] transition font-bold shadow-xs"
           >
             <RefreshCw size={12} /> Reset
           </button>
@@ -137,10 +137,10 @@ export default function LiveMonitoring() {
       {/* Summary metrics row */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         {summaryCards.map((c) => (
-          <div key={c.label} className="bg-white rounded-[14px] border border-[#E3EAF0] p-4 shadow-sm">
+          <div key={c.label} className="bg-[#F8FAFC] rounded-[14px] border border-[#DCE5EE] p-4 shadow-card">
             <span className="text-2xl mb-1 block">{c.icon}</span>
             <div className={`text-2xl font-black ${c.color}`}>{c.value}</div>
-            <div className="text-xs text-[#718096] font-bold uppercase tracking-wider mt-0.5">{c.label}</div>
+            <div className="text-xs text-[#64748B] font-bold uppercase tracking-wider mt-0.5">{c.label}</div>
           </div>
         ))}
       </div>

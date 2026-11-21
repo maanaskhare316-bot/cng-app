@@ -23,7 +23,7 @@ export const PressureGauge: React.FC<PressureGaugeProps> = ({
   const isHigh = v >= 195;
   const isMedium = v >= 175 && v < 195;
 
-  const color = isHigh ? '#26734D' : isMedium ? '#98651C' : v > 0 ? '#B54747' : '#718096';
+  const color = isHigh ? '#26734D' : isMedium ? '#98651C' : v > 0 ? '#B54747' : '#64748B';
   const psi = Math.round(v * 14.5038);
 
   const statusTitle = isHigh
@@ -65,7 +65,7 @@ export const PressureGauge: React.FC<PressureGaugeProps> = ({
           <path
             d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
             fill="none"
-            stroke="#E3EAF0"
+            stroke="#DCE5EE"
             strokeWidth={stroke}
             strokeLinecap="round"
           />
@@ -100,7 +100,7 @@ export const PressureGauge: React.FC<PressureGaugeProps> = ({
           <span className="text-2xl font-black leading-none block" style={{ color }}>
             {v > 0 ? `${Math.round(v)} Bar` : '—'}
           </span>
-          <span className="text-[11px] font-semibold text-[#718096] mt-0.5 block">
+          <span className="text-[11px] font-semibold text-[#64748B] mt-0.5 block">
             {v > 0 ? `${psi} PSI` : 'No reading'}
           </span>
         </div>
@@ -108,7 +108,7 @@ export const PressureGauge: React.FC<PressureGaugeProps> = ({
 
       {showDetails && (
         <div className="text-center mt-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#F4F7FA] border border-[#E3EAF0]">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#E8EEF5] border border-[#DCE5EE]">
             {isHigh ? (
               <CheckCircle2 size={13} className="text-[#26734D]" />
             ) : isMedium ? (
@@ -118,7 +118,7 @@ export const PressureGauge: React.FC<PressureGaugeProps> = ({
             )}
             <span style={{ color }}>{statusTitle}</span>
           </div>
-          <p className="text-[11px] text-[#718096] mt-1 max-w-[220px] leading-tight">{statusDesc}</p>
+          <p className="text-[11px] text-[#64748B] mt-1 max-w-[220px] leading-tight">{statusDesc}</p>
         </div>
       )}
     </div>

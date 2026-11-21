@@ -14,12 +14,12 @@ function best(values: (number | null | undefined)[], higher: boolean): number {
 function Cell({ value, isBest, label }: { value: string; isBest: boolean; label?: string }) {
   return (
     <td
-      className={`px-4 py-3 text-center text-sm border-b border-[#E3EAF0] ${
+      className={`px-4 py-3 text-center text-sm border-b border-[#DCE5EE] ${
         isBest ? 'font-black text-[#26734D] bg-[#E3F4EC]' : 'text-[#243447]'
       }`}
     >
       {value}
-      {label && <span className="text-xs text-[#718096] ml-0.5">{label}</span>}
+      {label && <span className="text-xs text-[#64748B] ml-0.5">{label}</span>}
       {isBest && <span className="ml-1 text-[#26734D]">✓</span>}
     </td>
   );
@@ -34,19 +34,19 @@ export default function CompareStations() {
 
   if (selected.length < 2) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 p-8 text-center bg-white rounded-[14px] border border-[#E3EAF0] text-[#243447] max-w-xl mx-auto my-12 shadow-sm">
+      <div className="flex flex-col items-center justify-center min-h-[400px] gap-4 p-8 text-center bg-[#F8FAFC] rounded-[14px] border border-[#DCE5EE] text-[#243447] max-w-xl mx-auto my-12 shadow-card">
         <p className="text-5xl">⚖️</p>
         <h2 className="text-xl font-bold text-[#14283F]">Select 2–3 Stations to Compare</h2>
-        <p className="text-[#718096] text-sm">
+        <p className="text-[#64748B] text-sm">
           Currently selected: <strong className="text-[#14283F]">{selected.length}</strong> station
           {selected.length !== 1 ? 's' : ''}
         </p>
-        <p className="text-xs text-[#718096] max-w-md">
+        <p className="text-xs text-[#64748B] max-w-md">
           Go to the Stations list and click <strong>+ Compare</strong> on each station you want to evaluate side-by-side.
         </p>
         <Link
           to="/stations"
-          className="bg-[#14283F] hover:bg-[#1D3854] text-white px-6 py-2.5 rounded-xl font-bold text-xs transition mt-2 shadow-sm"
+          className="bg-[#14283F] hover:bg-[#1D3854] text-white px-6 py-2.5 rounded-xl font-bold text-xs transition mt-2 shadow-xs"
         >
           Browse Stations
         </Link>
@@ -99,22 +99,22 @@ export default function CompareStations() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-[#14283F]">Station Comparison</h1>
-          <p className="text-xs text-[#718096] mt-0.5">Comparing {selected.length} stations</p>
+          <p className="text-xs text-[#64748B] mt-0.5">Comparing {selected.length} stations</p>
         </div>
         <button
           onClick={clearSelection}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[#E3EAF0] bg-white hover:bg-[#F4F7FA] text-[#718096] hover:text-[#14283F] text-xs font-bold transition shadow-xs"
+          className="flex items-center gap-1.5 px-3 py-2 rounded-xl border border-[#DCE5EE] bg-[#F8FAFC] hover:bg-[#E8EEF5] text-[#64748B] hover:text-[#14283F] text-xs font-bold transition shadow-xs"
         >
           <X size={14} /> Clear All
         </button>
       </div>
 
       {/* Comparison Table */}
-      <div className="bg-white rounded-[14px] border border-[#E3EAF0] shadow-sm overflow-x-auto">
+      <div className="bg-[#F8FAFC] rounded-[14px] border border-[#DCE5EE] shadow-card overflow-x-auto">
         <table className="w-full min-w-[600px]">
           <thead>
-            <tr className="bg-[#F4F7FA] border-b border-[#E3EAF0]">
-              <th className="px-4 py-4 text-left text-xs font-bold text-[#718096] uppercase tracking-wide">
+            <tr className="bg-[#E8EEF5] border-b border-[#DCE5EE]">
+              <th className="px-4 py-4 text-left text-xs font-bold text-[#64748B] uppercase tracking-wide">
                 Parameter
               </th>
               {selected.map((s, i) => (
@@ -123,11 +123,11 @@ export default function CompareStations() {
                     <span className="w-3 h-3 rounded-full flex-shrink-0" style={{ backgroundColor: COLORS[i] }} />
                     <div>
                       <p className="font-bold text-[#14283F] text-sm">{s.name}</p>
-                      <p className="text-xs text-[#718096]">{s.city}</p>
+                      <p className="text-xs text-[#64748B]">{s.city}</p>
                     </div>
                     <button
                       onClick={() => toggleStationSelection(Number(s.id))}
-                      className="text-[#718096] hover:text-[#B54747] transition ml-1"
+                      className="text-[#64748B] hover:text-[#B54747] transition ml-1"
                     >
                       <X size={12} />
                     </button>
@@ -203,8 +203,8 @@ export default function CompareStations() {
                 isBest: (v: any) => v.raw === true,
               },
             ].map((row, idx) => (
-              <tr key={idx} className="border-b border-[#E3EAF0] hover:bg-[#F4F7FA] transition">
-                <td className="px-4 py-3 text-xs font-bold text-[#718096] uppercase tracking-wider">{row.label}</td>
+              <tr key={idx} className="border-b border-[#DCE5EE] hover:bg-[#E8EEF5] transition">
+                <td className="px-4 py-3 text-xs font-bold text-[#64748B] uppercase tracking-wider">{row.label}</td>
                 {row.values.map((v, i) => (
                   <Cell key={i} value={v.disp} isBest={row.isBest(v)} />
                 ))}
@@ -215,14 +215,14 @@ export default function CompareStations() {
       </div>
 
       {/* Radar Chart */}
-      <div className="bg-white rounded-[14px] border border-[#E3EAF0] p-6 shadow-sm">
+      <div className="bg-[#F8FAFC] rounded-[14px] border border-[#DCE5EE] p-6 shadow-card">
         <h3 className="font-extrabold text-sm text-[#14283F] mb-4 uppercase tracking-wider">
           Multi-Metric Performance Radar
         </h3>
         <ResponsiveContainer width="100%" height={260}>
           <RadarChart data={radarData}>
-            <PolarGrid stroke="#E3EAF0" />
-            <PolarAngleAxis dataKey="metric" tick={{ fill: '#718096', fontSize: 11 }} />
+            <PolarGrid stroke="#DCE5EE" />
+            <PolarAngleAxis dataKey="metric" tick={{ fill: '#64748B', fontSize: 11 }} />
             {selected.map((s, i) => (
               <Radar
                 key={s.id}
@@ -233,9 +233,9 @@ export default function CompareStations() {
                 fillOpacity={0.2}
               />
             ))}
-            <Legend wrapperStyle={{ color: '#718096', fontSize: 11 }} />
+            <Legend wrapperStyle={{ color: '#64748B', fontSize: 11 }} />
             <Tooltip
-              contentStyle={{ backgroundColor: '#FFFFFF', borderColor: '#E3EAF0', borderRadius: '12px', color: '#243447' }}
+              contentStyle={{ backgroundColor: '#F8FAFC', borderColor: '#DCE5EE', borderRadius: '12px', color: '#243447' }}
             />
           </RadarChart>
         </ResponsiveContainer>

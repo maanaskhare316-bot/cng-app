@@ -1,17 +1,9 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Save,
   RotateCcw,
-  Info,
-  Key,
   ShieldCheck,
   CheckCircle2,
-  MapPin,
-  Bell,
-  Award,
-  TrendingUp,
-  AlertTriangle,
   UserCheck,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
@@ -22,7 +14,7 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
     <button
       type="button"
       onClick={() => onChange(!checked)}
-      className={`relative w-11 h-6 rounded-full transition-colors ${checked ? 'bg-[#16B8C9]' : 'bg-[#E3EAF0]'}`}
+      className={`relative w-11 h-6 rounded-full transition-colors ${checked ? 'bg-[#16B8C9]' : 'bg-[#CBD5E1]'}`}
     >
       <span
         className={`absolute top-1 w-4 h-4 bg-white rounded-full shadow transition-transform ${
@@ -35,8 +27,8 @@ function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
   return (
-    <div className="bg-white rounded-[14px] border border-[#E3EAF0] shadow-sm overflow-hidden">
-      <div className="bg-[#F4F7FA] border-b border-[#E3EAF0] px-6 py-3.5">
+    <div className="bg-[#F8FAFC] rounded-[14px] border border-[#DCE5EE] shadow-card overflow-hidden">
+      <div className="bg-[#E8EEF5] border-b border-[#DCE5EE] px-6 py-3.5">
         <h2 className="font-extrabold text-[#14283F] text-xs uppercase tracking-wider">{title}</h2>
       </div>
       <div className="p-6 space-y-5">{children}</div>
@@ -57,7 +49,7 @@ function SettingRow({
     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <div>
         <p className="text-sm font-bold text-[#243447]">{label}</p>
-        {description && <p className="text-xs text-[#718096] mt-0.5">{description}</p>}
+        {description && <p className="text-xs text-[#64748B] mt-0.5">{description}</p>}
       </div>
       <div className="flex-shrink-0">{children}</div>
     </div>
@@ -115,7 +107,7 @@ export default function Settings() {
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-black text-[#14283F]">Settings &amp; Driver Profile</h1>
-          <p className="text-xs text-[#718096] mt-0.5">Configure maps, smart corridor alerts, and trust credentials</p>
+          <p className="text-xs text-[#64748B] mt-0.5">Configure maps, smart corridor alerts, and trust credentials</p>
         </div>
         {saved && (
           <div className="flex items-center gap-1.5 bg-[#E3F4EC] border border-[#C0E4D0] rounded-xl px-3 py-1.5 text-xs font-bold text-[#26734D] animate-in fade-in">
@@ -124,12 +116,12 @@ export default function Settings() {
         )}
       </div>
 
-      {/* 🛡️ SECTION: DRIVER TRUST AND REPORT VERIFICATION */}
+      {/* Driver Trust Profile */}
       <Section title="🏅 Driver Trust &amp; Contributor Profile">
         <div className="space-y-4">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-[#F4F7FA] rounded-2xl border border-[#E3EAF0]">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-4 bg-[#E8EEF5] rounded-2xl border border-[#DCE5EE]">
             <div className="flex items-center gap-3">
-              <div className="w-12 h-12 rounded-2xl bg-[#14283F] flex items-center justify-center text-white text-xl shadow-sm">
+              <div className="w-12 h-12 rounded-2xl bg-[#14283F] flex items-center justify-center text-white text-xl shadow-xs">
                 <UserCheck size={24} />
               </div>
               <div>
@@ -141,28 +133,27 @@ export default function Settings() {
                     {driverProfile.trustBadge.replace('_', ' ')}
                   </span>
                 </div>
-                <p className="text-[11px] text-[#718096] mt-0.5">
+                <p className="text-[11px] text-[#64748B] mt-0.5">
                   Verified Mobility Contributor • {visitedStations.length} Stations Verified
                 </p>
               </div>
             </div>
 
             <div className="text-left sm:text-right">
-              <span className="text-[10px] uppercase font-bold text-[#718096] block">Trust Reliability</span>
+              <span className="text-[10px] uppercase font-bold text-[#64748B] block">Trust Reliability</span>
               <div className="flex items-baseline gap-1">
                 <span className="text-2xl font-black text-[#16B8C9]">{driverProfile.trustScore}%</span>
-                <span className="text-[11px] text-[#718096]">score</span>
+                <span className="text-[11px] text-[#64748B]">score</span>
               </div>
             </div>
           </div>
 
-          {/* Trust Score Progress Bar */}
           <div>
-            <div className="flex items-center justify-between text-[11px] mb-1 font-bold text-[#718096]">
+            <div className="flex items-center justify-between text-[11px] mb-1 font-bold text-[#64748B]">
               <span>Contributor Reliability Index</span>
               <span className="text-[#16B8C9]">{accuracyRate}% Accuracy Rate</span>
             </div>
-            <div className="w-full h-2.5 bg-[#E3EAF0] rounded-full overflow-hidden">
+            <div className="w-full h-2.5 bg-[#CBD5E1] rounded-full overflow-hidden">
               <div
                 className="h-full bg-[#16B8C9] transition-all duration-500"
                 style={{ width: `${driverProfile.trustScore}%` }}
@@ -170,42 +161,41 @@ export default function Settings() {
             </div>
           </div>
 
-          {/* Stats 4-box */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-            <div className="bg-[#F4F7FA] p-3 rounded-xl border border-[#E3EAF0] text-center">
-              <span className="text-[10px] text-[#718096] font-bold uppercase block">Total Reports</span>
+            <div className="bg-[#E8EEF5] p-3 rounded-xl border border-[#DCE5EE] text-center">
+              <span className="text-[10px] text-[#64748B] font-bold uppercase block">Total Reports</span>
               <span className="text-base font-extrabold text-[#243447] mt-0.5 block">
                 {driverProfile.totalReportsSubmitted}
               </span>
             </div>
-            <div className="bg-[#F4F7FA] p-3 rounded-xl border border-[#E3EAF0] text-center">
-              <span className="text-[10px] text-[#718096] font-bold uppercase block">Accepted</span>
+            <div className="bg-[#E8EEF5] p-3 rounded-xl border border-[#DCE5EE] text-center">
+              <span className="text-[10px] text-[#64748B] font-bold uppercase block">Accepted</span>
               <span className="text-base font-extrabold text-[#26734D] mt-0.5 block">
                 {driverProfile.acceptedReports}
               </span>
             </div>
-            <div className="bg-[#F4F7FA] p-3 rounded-xl border border-[#E3EAF0] text-center">
-              <span className="text-[10px] text-[#718096] font-bold uppercase block">Rejected / Outliers</span>
+            <div className="bg-[#E8EEF5] p-3 rounded-xl border border-[#DCE5EE] text-center">
+              <span className="text-[10px] text-[#64748B] font-bold uppercase block">Rejected / Outliers</span>
               <span className="text-base font-extrabold text-[#B54747] mt-0.5 block">
                 {driverProfile.rejectedReports}
               </span>
             </div>
-            <div className="bg-[#F4F7FA] p-3 rounded-xl border border-[#E3EAF0] text-center">
-              <span className="text-[10px] text-[#718096] font-bold uppercase block">Visited Verified</span>
+            <div className="bg-[#E8EEF5] p-3 rounded-xl border border-[#DCE5EE] text-center">
+              <span className="text-[10px] text-[#64748B] font-bold uppercase block">Visited Verified</span>
               <span className="text-base font-extrabold text-[#16B8C9] mt-0.5 block">
                 {visitedStations.length}
               </span>
             </div>
           </div>
 
-          <div className="p-3 bg-[#F4F7FA] rounded-xl border border-[#E3EAF0] text-[11px] text-[#718096] leading-relaxed">
+          <div className="p-3 bg-[#E8EEF5] rounded-xl border border-[#DCE5EE] text-[11px] text-[#64748B] leading-relaxed">
             <strong className="text-[#243447]">Abuse Prevention Policy: </strong>
             Trust score is earned through verified telemetry agreement and post-visit confirmations. Spammed reports, duplicate submissions within 10 minutes, or values outside physical safety limits (120–245 Bar) are rejected automatically.
           </div>
         </div>
       </Section>
 
-      {/* 🔔 SECTION: SMART ALERT SYSTEM PREFERENCES */}
+      {/* Alert Preferences */}
       <Section title="🔔 Smart Highway Alert Preferences">
         <div className="space-y-4">
           <SettingRow
@@ -253,12 +243,12 @@ export default function Settings() {
       {/* Google Maps Configuration */}
       <Section title="🗺️ Google Maps JavaScript API">
         <div className="space-y-4">
-          <p className="text-xs text-[#718096] leading-relaxed">
+          <p className="text-xs text-[#64748B] leading-relaxed">
             Enter your Google Cloud Maps API key to activate full Google Vector Maps, Live Road Traffic Layer, and Directions Services.
           </p>
 
           <div>
-            <label className="block text-xs font-bold text-[#718096] uppercase tracking-wider mb-1.5">
+            <label className="block text-xs font-bold text-[#64748B] uppercase tracking-wider mb-1.5">
               API Key (Places &amp; Directions Enabled)
             </label>
             <div className="flex gap-2">
@@ -267,12 +257,12 @@ export default function Settings() {
                 value={apiKey}
                 onChange={(e) => setApiKey(e.target.value)}
                 placeholder="AIzaSy..."
-                className="flex-1 px-3.5 py-2.5 text-xs sm:text-sm font-mono border border-[#E3EAF0] bg-white text-[#243447] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#16B8C9] transition"
+                className="flex-1 px-3.5 py-2.5 text-xs sm:text-sm font-mono border border-[#DCE5EE] bg-[#F8FAFC] text-[#243447] rounded-xl focus:outline-none focus:ring-2 focus:ring-[#16B8C9] transition"
               />
               <button
                 type="button"
                 onClick={handleSaveApiKey}
-                className="px-5 py-2.5 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-bold text-xs transition shadow-sm"
+                className="px-5 py-2.5 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-bold text-xs transition shadow-xs"
               >
                 Save Key
               </button>
@@ -280,7 +270,7 @@ export default function Settings() {
                 <button
                   type="button"
                   onClick={handleClearApiKey}
-                  className="px-3 py-2.5 rounded-xl border border-[#E3EAF0] bg-white text-[#718096] hover:text-[#243447] font-bold text-xs transition"
+                  className="px-3 py-2.5 rounded-xl border border-[#DCE5EE] bg-[#F8FAFC] text-[#64748B] hover:text-[#243447] font-bold text-xs transition"
                 >
                   Clear
                 </button>
@@ -288,12 +278,12 @@ export default function Settings() {
             </div>
           </div>
 
-          <div className="bg-[#F4F7FA] border border-[#E3EAF0] rounded-2xl p-4 text-xs text-[#718096] space-y-1.5">
+          <div className="bg-[#E8EEF5] border border-[#DCE5EE] rounded-2xl p-4 text-xs text-[#64748B] space-y-1.5">
             <div className="flex items-center gap-1.5 font-bold text-[#16B8C9]">
               <ShieldCheck size={16} />
               <span>Need a Google Maps Key?</span>
             </div>
-            <p className="text-[11px] text-[#718096] leading-relaxed">
+            <p className="text-[11px] text-[#64748B] leading-relaxed">
               Enable <strong>Maps JavaScript API</strong>, <strong>Directions API</strong>, and <strong>Places API</strong> on Google Cloud Console and paste the generated key above. Without a key, the app continues working on the high-tech OpenStreetMap engine.
             </p>
           </div>
@@ -316,13 +306,13 @@ export default function Settings() {
           label="Max Highway Detour Limit"
           description="Default maximum kilometer detour when filtering highway stations"
         >
-          <span className="font-extrabold text-[#16B8C9] bg-[#F4F7FA] px-3 py-1 rounded-xl border border-[#E3EAF0] text-xs">
+          <span className="font-extrabold text-[#16B8C9] bg-[#E8EEF5] px-3 py-1 rounded-xl border border-[#DCE5EE] text-xs">
             {settings.maxDetourKm ?? 5} km
           </span>
         </SettingRow>
       </Section>
 
-      {/* Danger Zone */}
+      {/* App Reset */}
       <Section title="⚠️ App Reset">
         <SettingRow
           label="Reset Local Application Cache"
@@ -331,7 +321,7 @@ export default function Settings() {
           <button
             type="button"
             onClick={resetAll}
-            className="px-4 py-2 rounded-xl bg-[#FCEAEA] hover:bg-[#f8d5d5] text-[#B54747] border border-[#f0c0c0] text-xs font-bold transition flex items-center gap-1.5 shadow-sm"
+            className="px-4 py-2 rounded-xl bg-[#FCEAEA] hover:bg-[#f8d5d5] text-[#B54747] border border-[#f0c0c0] text-xs font-bold transition flex items-center gap-1.5 shadow-xs"
           >
             <RotateCcw size={13} />
             <span>Reset All Data</span>

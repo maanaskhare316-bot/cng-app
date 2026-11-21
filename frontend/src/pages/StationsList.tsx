@@ -88,14 +88,14 @@ export default function StationsList() {
           <h1 className="text-xl sm:text-2xl font-black text-[#14283F] leading-tight">
             Indian Highway CNG Stations Directory
           </h1>
-          <p className="text-xs text-[#718096] mt-0.5">
+          <p className="text-xs text-[#64748B] mt-0.5">
             Verified station telemetry, SCADA pressure, and live driver community updates
           </p>
         </div>
 
         <button
           onClick={() => navigate('/plan')}
-          className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5"
+          className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-bold text-xs shadow-xs transition flex items-center gap-1.5"
         >
           <Navigation size={13} />
           <span>Plan Trip on Corridor</span>
@@ -103,16 +103,16 @@ export default function StationsList() {
       </div>
 
       {/* Search & Verification Status Filters Bar */}
-      <div className="bg-white rounded-[14px] p-3.5 sm:p-4 shadow-sm border border-[#E3EAF0] space-y-3">
+      <div className="bg-[#F8FAFC] rounded-[14px] p-3.5 sm:p-4 shadow-card border border-[#DCE5EE] space-y-3">
         <div className="flex flex-col sm:flex-row gap-2.5">
           <div className="relative flex-1">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#718096]" />
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#64748B]" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by station name, city, highway, or gas operator..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#E3EAF0] text-xs sm:text-sm text-[#243447] placeholder-[#A0AEC0] focus:outline-none focus:ring-2 focus:ring-[#16B8C9]"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#F8FAFC] border border-[#DCE5EE] text-xs sm:text-sm text-[#243447] placeholder-[#94A3B8] focus:outline-none focus:ring-2 focus:ring-[#16B8C9]"
             />
           </div>
 
@@ -121,7 +121,7 @@ export default function StationsList() {
               value={sort}
               onChange={(e) => setSort(e.target.value as SortKey)}
               aria-label="Sort stations"
-              className="px-3 py-2.5 rounded-xl bg-white border border-[#E3EAF0] text-xs font-bold text-[#14283F] focus:outline-none focus:ring-2 focus:ring-[#16B8C9] cursor-pointer"
+              className="px-3 py-2.5 rounded-xl bg-[#F8FAFC] border border-[#DCE5EE] text-xs font-bold text-[#14283F] focus:outline-none focus:ring-2 focus:ring-[#16B8C9] cursor-pointer"
             >
               <option value="recommendation">Sort: Best Recommended</option>
               <option value="reliability">Sort: Highest Reliability</option>
@@ -135,7 +135,7 @@ export default function StationsList() {
 
         {/* Verification Status Pill Filter Chips */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 text-xs">
-          <span className="text-[11px] font-bold text-[#718096] uppercase tracking-wider flex-shrink-0 flex items-center gap-1">
+          <span className="text-[11px] font-bold text-[#64748B] uppercase tracking-wider flex-shrink-0 flex items-center gap-1">
             <Filter size={12} /> Status:
           </span>
 
@@ -154,14 +154,14 @@ export default function StationsList() {
               className={`px-3 py-1.5 rounded-xl text-[11px] font-bold flex-shrink-0 transition border ${
                 verificationFilter === chip.id
                   ? 'bg-[#14283F] text-white border-[#14283F] shadow-xs'
-                  : 'bg-[#F4F7FA] text-[#718096] border-[#E3EAF0] hover:bg-[#E3EAF0]'
+                  : 'bg-[#E8EEF5] text-[#64748B] border-[#DCE5EE] hover:bg-[#DCE5EE]'
               }`}
             >
               {chip.label}
             </button>
           ))}
 
-          <label className="flex items-center gap-1.5 text-[11px] font-bold text-[#14283F] ml-auto flex-shrink-0 cursor-pointer bg-[#F4F7FA] px-3 py-1.5 rounded-xl border border-[#E3EAF0]">
+          <label className="flex items-center gap-1.5 text-[11px] font-bold text-[#14283F] ml-auto flex-shrink-0 cursor-pointer bg-[#E8EEF5] px-3 py-1.5 rounded-xl border border-[#DCE5EE]">
             <input
               type="checkbox"
               checked={onlyAvailable}
@@ -184,14 +184,13 @@ export default function StationsList() {
           return (
             <div
               key={station.id}
-              className={`rounded-[14px] p-5 border shadow-sm transition flex flex-col justify-between relative bg-white ${
+              className={`rounded-[14px] p-5 border shadow-card transition flex flex-col justify-between relative bg-[#F8FAFC] ${
                 station.recommendationCategory === 'BEST_OVERALL'
                   ? 'border-[#14283F] border-l-4 border-l-[#16B8C9]'
-                  : 'border-[#E3EAF0] hover:border-[#C8D6E5]'
+                  : 'border-[#DCE5EE] hover:border-[#CBD5E1]'
               }`}
             >
               <div>
-                {/* Verification Badge */}
                 <div className="mb-2.5">
                   <DataStatusBadge
                     status={station.verificationStatus}
@@ -202,7 +201,6 @@ export default function StationsList() {
                   />
                 </div>
 
-                {/* Station Name & City */}
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div>
                     <h3 className="font-extrabold text-sm sm:text-base text-[#14283F] leading-tight">
@@ -224,14 +222,13 @@ export default function StationsList() {
                   </span>
                 </div>
 
-                <p className="text-[11px] text-[#718096] line-clamp-1 mb-3">
+                <p className="text-[11px] text-[#64748B] line-clamp-1 mb-3">
                   📍 {station.address}
                 </p>
 
-                {/* Measured Telemetry: Pressure & Queue */}
-                <div className="grid grid-cols-2 gap-2 bg-[#F4F7FA] rounded-xl p-2.5 border border-[#E3EAF0] mb-3">
+                <div className="grid grid-cols-2 gap-2 bg-[#E8EEF5] rounded-xl p-2.5 border border-[#DCE5EE] mb-3">
                   <div>
-                    <span className="text-[9px] uppercase font-bold text-[#718096] block">
+                    <span className="text-[9px] uppercase font-bold text-[#64748B] block">
                       Measured Pressure
                     </span>
                     <div className="flex items-baseline gap-1 mt-0.5">
@@ -242,21 +239,21 @@ export default function StationsList() {
                       >
                         {pressure ? `${pressure} Bar` : 'N/A'}
                       </span>
-                      <span className="text-[10px] text-[#718096]">
+                      <span className="text-[10px] text-[#64748B]">
                         {isHighPressure ? '(Fast Fill)' : '(Standard)'}
                       </span>
                     </div>
                   </div>
 
                   <div>
-                    <span className="text-[9px] uppercase font-bold text-[#718096] block">
+                    <span className="text-[9px] uppercase font-bold text-[#64748B] block">
                       Measured Queue
                     </span>
                     <div className="flex items-baseline gap-1 mt-0.5">
                       <span className="text-sm font-black text-[#14283F]">
                         {station.vehiclesWaiting ?? 0} Cars
                       </span>
-                      <span className="text-[10px] text-[#718096]">
+                      <span className="text-[10px] text-[#64748B]">
                         ~{station.estimatedWaitMinutes ?? 2}m wait
                       </span>
                     </div>
@@ -265,24 +262,22 @@ export default function StationsList() {
               </div>
 
               {/* Bottom Actions */}
-              <div className="pt-3 border-t border-[#E3EAF0] space-y-2.5">
+              <div className="pt-3 border-t border-[#DCE5EE] space-y-2.5">
                 <div className="flex items-center justify-between text-xs">
                   <span className="font-extrabold text-[#14283F]">
                     ₹{station.verifiedPricePerKg ?? 82.5}/kg
                   </span>
 
                   <div className="flex items-center gap-1.5">
-                    {/* Flag Issue */}
                     <button
                       type="button"
                       onClick={() => setFlagModalStation(station)}
-                      className="p-1.5 rounded-lg border border-[#E3EAF0] text-[#718096] hover:text-[#B54747] hover:bg-[#FCEAEA] transition"
+                      className="p-1.5 rounded-lg border border-[#DCE5EE] text-[#64748B] hover:text-[#B54747] hover:bg-[#FCEAEA] transition"
                       title="Report incorrect info"
                     >
                       <AlertTriangle size={13} />
                     </button>
 
-                    {/* Community Report */}
                     <button
                       type="button"
                       onClick={() => setReportModalStation(station)}
@@ -292,14 +287,13 @@ export default function StationsList() {
                       <span>Report</span>
                     </button>
 
-                    {/* Compare */}
                     <button
                       type="button"
                       onClick={() => toggleStationSelection(Number(station.id))}
                       className={`py-1 px-2 rounded-lg text-[11px] font-bold border transition ${
                         isSelected
                           ? 'bg-[#14283F] text-white border-[#14283F]'
-                          : 'bg-[#F4F7FA] text-[#718096] border-[#E3EAF0] hover:bg-[#E3EAF0]'
+                          : 'bg-[#E8EEF5] text-[#64748B] border-[#DCE5EE] hover:bg-[#DCE5EE]'
                       }`}
                     >
                       {isSelected ? '✓ In Compare' : '+ Compare'}
@@ -310,7 +304,7 @@ export default function StationsList() {
                 <div className="grid grid-cols-2 gap-2">
                   <Link
                     to={`/stations/${station.id}`}
-                    className="py-2 text-center rounded-xl bg-[#F4F7FA] hover:bg-[#E3EAF0] border border-[#E3EAF0] text-xs font-bold text-[#14283F] transition"
+                    className="py-2 text-center rounded-xl bg-[#E8EEF5] hover:bg-[#DCE5EE] border border-[#DCE5EE] text-xs font-bold text-[#14283F] transition"
                   >
                     View Details
                   </Link>
@@ -331,7 +325,6 @@ export default function StationsList() {
         })}
       </div>
 
-      {/* Community Report Modal */}
       <ReportStatusModal
         isOpen={!!reportModalStation}
         station={reportModalStation}
@@ -339,7 +332,6 @@ export default function StationsList() {
         onSubmit={(payload) => submitCommunityReport(payload)}
       />
 
-      {/* Flag Incorrect Info Modal */}
       <ReportIncorrectModal
         isOpen={!!flagModalStation}
         station={flagModalStation}

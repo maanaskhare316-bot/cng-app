@@ -44,13 +44,13 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
 
   return (
     <>
-      <div className="h-[58px] flex items-center justify-between px-3 sm:px-6 gap-2 sm:gap-3 bg-white border-b border-[#E3EAF0] sticky top-0 z-40 shadow-sm">
+      <div className="h-[58px] flex items-center justify-between px-3 sm:px-6 gap-2 sm:gap-3 bg-[#F8FAFC] border-b border-[#DCE5EE] sticky top-0 z-40">
         {/* Left: Mobile Menu + Brand */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             onClick={onMenuClick}
             aria-label="Toggle navigation menu"
-            className="lg:hidden p-2 rounded-xl text-[#718096] hover:bg-[#F4F7FA] hover:text-[#14283F] transition-colors flex-shrink-0"
+            className="lg:hidden p-2 rounded-xl text-[#64748B] hover:bg-[#E8EEF5] hover:text-[#14283F] transition-colors flex-shrink-0"
           >
             <Menu size={20} />
           </button>
@@ -65,14 +65,14 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
             </div>
           </div>
 
-          <div className="hidden md:block w-px h-5 bg-[#E3EAF0]" />
-          <span className="hidden md:block text-sm font-medium text-[#718096]">{pageTitle}</span>
+          <div className="hidden md:block w-px h-5 bg-[#DCE5EE]" />
+          <span className="hidden md:block text-sm font-medium text-[#64748B]">{pageTitle}</span>
         </div>
 
         {/* Right Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
           {/* Station count pill */}
-          <span className="hidden lg:inline-flex items-center gap-1.5 text-xs font-semibold text-[#14283F] bg-[#F4F7FA] border border-[#E3EAF0] px-3 py-1.5 rounded-xl">
+          <span className="hidden lg:inline-flex items-center gap-1.5 text-xs font-semibold text-[#14283F] bg-[#E8EEF5] border border-[#DCE5EE] px-3 py-1.5 rounded-xl">
             ⛽ {stations.length} stations
           </span>
 
@@ -81,11 +81,11 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
             type="button"
             onClick={() => setIsAlertDrawerOpen(true)}
             aria-label="Smart Corridor Alerts"
-            className="relative p-2 rounded-xl bg-[#F4F7FA] hover:bg-[#E3EAF0] text-[#718096] hover:text-[#14283F] border border-[#E3EAF0] transition"
+            className="relative p-2 rounded-xl bg-[#E8EEF5] hover:bg-[#DCE5EE] text-[#64748B] hover:text-[#14283F] border border-[#DCE5EE] transition"
           >
             <Bell size={16} />
             {unreadAlertsCount > 0 && (
-              <span className="absolute -top-1 -right-1 px-1.5 bg-[#B54747] text-[10px] font-black text-white rounded-full ring-2 ring-white animate-pulse">
+              <span className="absolute -top-1 -right-1 px-1.5 bg-[#B54747] text-[10px] font-black text-white rounded-full ring-2 ring-[#F8FAFC] animate-pulse">
                 {unreadAlertsCount > 9 ? '9+' : unreadAlertsCount}
               </span>
             )}

@@ -13,7 +13,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
   const toggleSidebar = useCallback(() => setIsSidebarOpen((prev) => !prev), []);
 
   return (
-    <div className="flex h-screen overflow-hidden bg-[#F4F7FA] text-[#243447]">
+    <div className="flex h-screen overflow-hidden bg-[#E8EEF5] text-[#243447]">
       {/* Desktop Sidebar */}
       <aside className="hidden lg:flex flex-col w-[240px] flex-shrink-0">
         <Sidebar onClose={closeSidebar} />
@@ -23,7 +23,7 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
       {isSidebarOpen && (
         <>
           <div
-            className="fixed inset-0 z-40 bg-black/30 backdrop-blur-sm lg:hidden"
+            className="fixed inset-0 z-40 bg-black/25 backdrop-blur-xs lg:hidden"
             onClick={closeSidebar}
             aria-hidden="true"
           />
@@ -35,11 +35,11 @@ const MainLayout: React.FC<MainLayoutProps> = ({ children }) => {
 
       {/* Right column: Navbar + content */}
       <div className="flex flex-col flex-1 min-w-0 overflow-hidden">
-        {/* Sticky navbar — rendered by Navbar itself which is sticky */}
+        {/* Sticky navbar */}
         <Navbar onMenuClick={toggleSidebar} />
 
         {/* Scrollable main content */}
-        <main className="flex-1 overflow-y-auto p-3.5 sm:p-5 md:p-6 bg-[#F4F7FA]">
+        <main className="flex-1 overflow-y-auto p-3.5 sm:p-5 md:p-6 bg-[#E8EEF5]">
           {children}
         </main>
       </div>

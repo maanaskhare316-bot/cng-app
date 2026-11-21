@@ -73,7 +73,7 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4 animate-in fade-in">
-      <div className="bg-white rounded-[14px] shadow-modal border border-[#E3EAF0] max-w-lg w-full overflow-hidden text-[#243447] max-h-[92vh] flex flex-col">
+      <div className="bg-[#F8FAFC] rounded-[14px] shadow-modal border border-[#DCE5EE] max-w-lg w-full overflow-hidden text-[#243447] max-h-[92vh] flex flex-col">
         {/* Header */}
         <div className="bg-[#14283F] px-6 py-4 text-white flex items-center justify-between border-b border-[#1D3854] flex-shrink-0">
           <div className="flex items-center gap-2.5">
@@ -102,7 +102,7 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
 
           {/* 1. Station Operating Status */}
           <div className="space-y-1.5">
-            <label className="text-xs font-bold text-[#718096] uppercase tracking-wider block">
+            <label className="text-xs font-bold text-[#64748B] uppercase tracking-wider block">
               Station Operating Status
             </label>
             <div className="grid grid-cols-2 gap-2">
@@ -112,7 +112,7 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
                 className={`py-2 px-3 rounded-xl text-xs font-extrabold border transition ${
                   operationalStatus === 'OPERATIONAL'
                     ? 'bg-[#E3F4EC] text-[#26734D] border-[#C0E4D0] shadow-sm'
-                    : 'bg-[#F4F7FA] text-[#718096] border-[#E3EAF0] hover:text-[#14283F]'
+                    : 'bg-[#E8EEF5] text-[#64748B] border-[#DCE5EE] hover:text-[#14283F]'
                 }`}
               >
                 ● Open &amp; Operating
@@ -123,7 +123,7 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
                 className={`py-2 px-3 rounded-xl text-xs font-extrabold border transition ${
                   operationalStatus === 'TEMPORARILY_CLOSED'
                     ? 'bg-[#FCEAEA] text-[#B54747] border-[#F4BBBB] shadow-sm'
-                    : 'bg-[#F4F7FA] text-[#718096] border-[#E3EAF0] hover:text-[#14283F]'
+                    : 'bg-[#E8EEF5] text-[#64748B] border-[#DCE5EE] hover:text-[#14283F]'
                 }`}
               >
                 ● Temporarily Closed
@@ -134,7 +134,7 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
           {/* 2. CNG Gas Availability */}
           {operationalStatus === 'OPERATIONAL' && (
             <div className="space-y-1.5">
-              <label className="text-xs font-bold text-[#718096] uppercase tracking-wider block">
+              <label className="text-xs font-bold text-[#64748B] uppercase tracking-wider block">
                 CNG Gas Availability
               </label>
               <div className="grid grid-cols-3 gap-2">
@@ -150,7 +150,7 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
                     className={`py-2 px-2 text-[11px] font-bold rounded-xl border transition text-center ${
                       cngAvailability === item.id
                         ? 'bg-[#14283F] text-white border-[#14283F] shadow-sm'
-                        : 'bg-[#F4F7FA] text-[#718096] border-[#E3EAF0] hover:text-[#14283F]'
+                        : 'bg-[#E8EEF5] text-[#64748B] border-[#DCE5EE] hover:text-[#14283F]'
                     }`}
                   >
                     {item.label}
@@ -165,10 +165,10 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
             <div className="space-y-3 pt-1">
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-bold text-[#718096] uppercase tracking-wider flex items-center gap-1.5">
+                  <label className="text-xs font-bold text-[#64748B] uppercase tracking-wider flex items-center gap-1.5">
                     <Users size={14} className="text-[#16B8C9]" /> Current Vehicles Waiting
                   </label>
-                  <span className="text-sm font-extrabold text-[#14283F] bg-[#F4F7FA] px-2.5 py-0.5 rounded-lg border border-[#E3EAF0]">
+                  <span className="text-sm font-extrabold text-[#14283F] bg-[#E8EEF5] px-2.5 py-0.5 rounded-lg border border-[#DCE5EE]">
                     {vehicles} Cars
                   </span>
                 </div>
@@ -178,9 +178,9 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
                   max="20"
                   value={vehicles}
                   onChange={(e) => setVehicles(Number(e.target.value))}
-                  className="w-full accent-[#16B8C9] bg-[#E3EAF0] cursor-pointer h-2 rounded-lg"
+                  className="w-full accent-[#16B8C9] bg-[#CBD5E1] cursor-pointer h-2 rounded-lg"
                 />
-                <div className="flex justify-between text-[10px] text-[#718096] mt-1">
+                <div className="flex justify-between text-[10px] text-[#64748B] mt-1">
                   <span>0 (No Queue)</span>
                   <span>10 Cars</span>
                   <span>20+ (Congested)</span>
@@ -188,8 +188,8 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
               </div>
 
               {/* Calculated Wait Estimate Display */}
-              <div className="bg-[#F4F7FA] p-2.5 rounded-xl border border-[#E3EAF0] flex items-center justify-between text-xs">
-                <span className="text-[#718096] flex items-center gap-1.5">
+              <div className="bg-[#E8EEF5] p-2.5 rounded-xl border border-[#DCE5EE] flex items-center justify-between text-xs">
+                <span className="text-[#64748B] flex items-center gap-1.5">
                   <Clock size={13} className="text-[#98651C]" /> Estimated Wait Time:
                 </span>
                 <span className="font-extrabold text-[#98651C]">
@@ -198,12 +198,12 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
               </div>
 
               {/* 4. Pressure Telemetry */}
-              <div className="space-y-2 pt-2 border-t border-[#E3EAF0]">
+              <div className="space-y-2 pt-2 border-t border-[#DCE5EE]">
                 <div className="flex items-center justify-between">
-                  <label className="text-xs font-bold text-[#718096] uppercase tracking-wider flex items-center gap-1.5">
+                  <label className="text-xs font-bold text-[#64748B] uppercase tracking-wider flex items-center gap-1.5">
                     <Gauge size={14} className="text-[#26734D]" /> Gas Pressure Reading
                   </label>
-                  <label className="text-[11px] text-[#718096] flex items-center gap-1.5 cursor-pointer">
+                  <label className="text-[11px] text-[#64748B] flex items-center gap-1.5 cursor-pointer">
                     <input
                       type="checkbox"
                       checked={hasPressure}
@@ -217,7 +217,7 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
                 {hasPressure && (
                   <div>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-xs text-[#718096]">Reported Dispenser Reading:</span>
+                      <span className="text-xs text-[#64748B]">Reported Dispenser Reading:</span>
                       <span className="text-sm font-extrabold text-[#26734D] bg-[#E3F4EC] px-2.5 py-0.5 rounded-lg border border-[#C0E4D0]">
                         {pressure} Bar
                       </span>
@@ -229,9 +229,9 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
                       step="5"
                       value={pressure}
                       onChange={(e) => setPressure(Number(e.target.value))}
-                      className="w-full accent-[#16B8C9] bg-[#E3EAF0] cursor-pointer h-2 rounded-lg"
+                      className="w-full accent-[#16B8C9] bg-[#CBD5E1] cursor-pointer h-2 rounded-lg"
                     />
-                    <div className="flex justify-between text-[10px] text-[#718096] mt-1">
+                    <div className="flex justify-between text-[10px] text-[#64748B] mt-1">
                       <span>140 Bar (Low)</span>
                       <span>190 Bar (Normal)</span>
                       <span className="text-[#26734D] font-bold">215+ Bar (Full Tank)</span>
@@ -244,7 +244,7 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
 
           {/* Driver Notes */}
           <div className="space-y-1 pt-1">
-            <label className="text-xs font-bold text-[#718096] uppercase tracking-wider block">
+            <label className="text-xs font-bold text-[#64748B] uppercase tracking-wider block">
               Driver Notes (Optional)
             </label>
             <input
@@ -252,16 +252,16 @@ export const ReportStatusModal: React.FC<ReportStatusModalProps> = ({
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               placeholder="e.g., FASTag working, 6 nozzles online, quick flow..."
-              className="w-full px-3 py-2 rounded-xl bg-white border border-[#E3EAF0] text-xs text-[#243447] placeholder-[#A0AEC0] focus:outline-none focus:border-[#16B8C9]"
+              className="w-full px-3 py-2 rounded-xl bg-[#F8FAFC] border border-[#DCE5EE] text-xs text-[#243447] placeholder-[#64748B] focus:outline-none focus:border-[#16B8C9]"
             />
           </div>
 
           {/* Buttons */}
-          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#E3EAF0]">
+          <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-[#DCE5EE]">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2.5 rounded-xl border border-[#E3EAF0] text-xs font-bold text-[#718096] hover:text-[#14283F] hover:bg-[#F4F7FA] transition"
+              className="px-4 py-2.5 rounded-xl border border-[#DCE5EE] text-xs font-bold text-[#64748B] hover:text-[#14283F] hover:bg-[#E8EEF5] transition"
             >
               Cancel
             </button>

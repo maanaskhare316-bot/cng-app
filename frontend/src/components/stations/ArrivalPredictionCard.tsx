@@ -19,18 +19,17 @@ export const ArrivalPredictionCard: React.FC<ArrivalPredictionCardProps> = ({
 }) => {
   if (!prediction) return null;
 
-  // If prediction could not be reliably calculated
   if (!prediction.predictionAvailable) {
     return (
-      <div className="bg-white border border-[#E3EAF0] rounded-[14px] p-3.5 sm:p-4 text-[#243447] space-y-2 shadow-sm">
+      <div className="bg-[#F8FAFC] border border-[#DCE5EE] rounded-[14px] p-3.5 sm:p-4 text-[#243447] space-y-2 shadow-xs">
         <div className="flex items-center gap-2 text-[#98651C] font-extrabold text-xs uppercase tracking-wider">
           <AlertCircle size={15} />
           <span>Smart Arrival Intelligence</span>
         </div>
-        <p className="text-xs text-[#718096] font-medium">
+        <p className="text-xs text-[#64748B] font-medium">
           {prediction.unavailabilityReason || 'Prediction unavailable — insufficient telemetry.'}
         </p>
-        <div className="text-[10px] text-[#A0AEC0] italic">
+        <div className="text-[10px] text-[#94A3B8] italic">
           Reliable IoT sensor readings or recent driver telemetry are required to forecast queue and gas pressure upon arrival.
         </div>
       </div>
@@ -64,7 +63,7 @@ export const ArrivalPredictionCard: React.FC<ArrivalPredictionCardProps> = ({
 
   if (compact) {
     return (
-      <div className="bg-white border border-[#E3EAF0] hover:border-[#16B8C9] rounded-[14px] p-2.5 text-xs space-y-2 transition shadow-sm">
+      <div className="bg-[#F8FAFC] border border-[#DCE5EE] hover:border-[#16B8C9] rounded-[14px] p-2.5 text-xs space-y-2 transition shadow-xs">
         <div className="flex items-center justify-between text-[11px]">
           <span className="font-extrabold text-[#14283F] flex items-center gap-1.5">
             <span className="w-1.5 h-1.5 rounded-full bg-[#16B8C9]" />
@@ -75,16 +74,16 @@ export const ArrivalPredictionCard: React.FC<ArrivalPredictionCardProps> = ({
           </span>
         </div>
 
-        <div className="grid grid-cols-2 gap-2 text-[11px] pt-1.5 border-t border-[#E3EAF0]">
+        <div className="grid grid-cols-2 gap-2 text-[11px] pt-1.5 border-t border-[#DCE5EE]">
           <div>
-            <span className="text-[9px] uppercase font-bold text-[#718096] block">Queue at Arrival</span>
+            <span className="text-[9px] uppercase font-bold text-[#64748B] block">Queue at Arrival</span>
             <span className="font-black text-[#14283F]">{predictedQueueAtArrival ?? 0} Cars</span>
-            <span className="text-[10px] text-[#718096] ml-1">(~{predictedWaitMinutesAtArrival ?? 1}m)</span>
+            <span className="text-[10px] text-[#64748B] ml-1">(~{predictedWaitMinutesAtArrival ?? 1}m)</span>
           </div>
           <div>
-            <span className="text-[9px] uppercase font-bold text-[#718096] block">Pressure at Arrival</span>
+            <span className="text-[9px] uppercase font-bold text-[#64748B] block">Pressure at Arrival</span>
             <span className="font-black text-[#26734D]">{predictedPressureBarAtArrival ?? 200} Bar</span>
-            <span className="text-[10px] text-[#718096] ml-1">est.</span>
+            <span className="text-[10px] text-[#64748B] ml-1">est.</span>
           </div>
         </div>
       </div>
@@ -92,9 +91,8 @@ export const ArrivalPredictionCard: React.FC<ArrivalPredictionCardProps> = ({
   }
 
   return (
-    <div className="bg-white border border-[#E3EAF0] rounded-[14px] p-4 sm:p-5 shadow-sm text-[#243447] space-y-4">
-      {/* Engine Header */}
-      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#E3EAF0] pb-3">
+    <div className="bg-[#F8FAFC] border border-[#DCE5EE] rounded-[14px] p-4 sm:p-5 shadow-card text-[#243447] space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-[#DCE5EE] pb-3">
         <div className="flex items-center gap-2.5">
           <div className="p-2 bg-[#EBF8FF] border border-[#16B8C9]/30 rounded-xl text-[#16B8C9]">
             <Sparkles size={16} />
@@ -104,48 +102,46 @@ export const ArrivalPredictionCard: React.FC<ArrivalPredictionCardProps> = ({
               <h4 className="font-extrabold text-xs sm:text-sm text-[#14283F] tracking-wide">
                 Smart Arrival Prediction
               </h4>
-              <span className="text-[9.5px] font-black text-[#14283F] bg-[#F4F7FA] px-2 py-0.5 rounded-full border border-[#E3EAF0] uppercase tracking-wider">
+              <span className="text-[9.5px] font-black text-[#14283F] bg-[#E8EEF5] px-2 py-0.5 rounded-full border border-[#DCE5EE] uppercase tracking-wider">
                 ETA {etaMinutes} Mins • {distanceKm} KM
               </span>
             </div>
-            <p className="text-[11px] text-[#718096] mt-0.5">
+            <p className="text-[11px] text-[#64748B] mt-0.5">
               Estimated arrival at <strong className="text-[#14283F]">{etaClockTime}</strong> factoring road traffic &amp; pumping velocity
             </p>
           </div>
         </div>
 
-        {/* Confidence Badge */}
         <div className={`text-[10px] sm:text-xs font-black px-2.5 py-1 rounded-[10px] border flex items-center gap-1.5 uppercase tracking-wider ${confStyle}`}>
           <span>Reliability:</span>
           <span>{confidenceLevel} ({confidencePercentage}%)</span>
         </div>
       </div>
 
-      {/* Side-by-Side Comparison: Measured (Now) vs Predicted (At Arrival) */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         {/* Column 1: Current Measured */}
-        <div className="bg-[#F4F7FA] rounded-xl p-3.5 border border-[#E3EAF0] space-y-2.5">
+        <div className="bg-[#E8EEF5] rounded-xl p-3.5 border border-[#DCE5EE] space-y-2.5">
           <div className="flex items-center justify-between">
-            <span className="text-[10px] font-black uppercase tracking-wider text-[#718096] flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-[#718096]" />
+            <span className="text-[10px] font-black uppercase tracking-wider text-[#64748B] flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-[#64748B]" />
               Measured Now (Current)
             </span>
-            <span className="text-[9.5px] text-[#718096] font-bold tracking-wider">TELEMETRY</span>
+            <span className="text-[9.5px] text-[#64748B] font-bold tracking-wider">TELEMETRY</span>
           </div>
 
           <div className="space-y-2 pt-1">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-[#718096] flex items-center gap-1.5">
+              <span className="text-xs text-[#64748B] flex items-center gap-1.5">
                 <Users size={13} className="text-[#16B8C9]" /> Measured Queue:
               </span>
               <span className="font-black text-sm text-[#14283F]">
                 {currentQueue ?? 0} Cars{' '}
-                <span className="text-[11px] text-[#718096] font-semibold">(~{currentWaitMinutes ?? 2}m wait)</span>
+                <span className="text-[11px] text-[#64748B] font-semibold">(~{currentWaitMinutes ?? 2}m wait)</span>
               </span>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-xs text-[#718096] flex items-center gap-1.5">
+              <span className="text-xs text-[#64748B] flex items-center gap-1.5">
                 <Gauge size={13} className="text-[#26734D]" /> Gas Pressure:
               </span>
               <span className="font-black text-sm text-[#26734D]">
@@ -156,7 +152,7 @@ export const ArrivalPredictionCard: React.FC<ArrivalPredictionCardProps> = ({
         </div>
 
         {/* Column 2: Predicted at Arrival */}
-        <div className="bg-[#F4F7FA] rounded-xl p-3.5 border border-[#16B8C9]/40 space-y-2.5 relative overflow-hidden">
+        <div className="bg-[#E8EEF5] rounded-xl p-3.5 border border-[#16B8C9]/40 space-y-2.5 relative overflow-hidden">
           <div className="flex items-center justify-between">
             <span className="text-[10px] font-black uppercase tracking-wider text-[#14283F] flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-[#16B8C9] animate-pulse" />
@@ -169,29 +165,29 @@ export const ArrivalPredictionCard: React.FC<ArrivalPredictionCardProps> = ({
 
           <div className="space-y-2 pt-1">
             <div className="flex items-center justify-between">
-              <span className="text-xs text-[#718096] flex items-center gap-1.5">
+              <span className="text-xs text-[#64748B] flex items-center gap-1.5">
                 <Users size={13} className="text-[#16B8C9]" /> Arrival Queue:
               </span>
               <div className="text-right">
                 <span className="font-black text-sm text-[#98651C]">
                   {predictedQueueAtArrival ?? 0} Cars{' '}
-                  <span className="text-[11px] text-[#718096] font-semibold">(~{predictedWaitMinutesAtArrival ?? 1}m wait)</span>
+                  <span className="text-[11px] text-[#64748B] font-semibold">(~{predictedWaitMinutesAtArrival ?? 1}m wait)</span>
                 </span>
-                <span className="text-[9.5px] text-[#718096] block">
+                <span className="text-[9.5px] text-[#64748B] block">
                   {queueDiff > 0 ? `+${queueDiff} cars expected` : queueDiff < 0 ? `${queueDiff} cars clearing` : 'Queue stable'}
                 </span>
               </div>
             </div>
 
             <div className="flex items-center justify-between">
-              <span className="text-xs text-[#718096] flex items-center gap-1.5">
+              <span className="text-xs text-[#64748B] flex items-center gap-1.5">
                 <Gauge size={13} className="text-[#26734D]" /> Arrival Pressure:
               </span>
               <div className="text-right">
                 <span className="font-black text-sm text-[#26734D]">
                   ~{predictedPressureBarAtArrival ?? 200} Bar
                 </span>
-                <span className="text-[9.5px] text-[#718096] block">
+                <span className="text-[9.5px] text-[#64748B] block">
                   {pressureDiff < 0 ? `${pressureDiff} Bar cyclic draw` : pressureDiff > 0 ? `+${pressureDiff} Bar recharge` : 'Stable cascade'}
                 </span>
               </div>
@@ -200,8 +196,7 @@ export const ArrivalPredictionCard: React.FC<ArrivalPredictionCardProps> = ({
         </div>
       </div>
 
-      {/* Disclaimer Section */}
-      <div className="text-[10.5px] text-[#718096] bg-[#F4F7FA] rounded-xl p-2.5 border border-[#E3EAF0] leading-relaxed flex items-start gap-2">
+      <div className="text-[10.5px] text-[#64748B] bg-[#E8EEF5] rounded-xl p-2.5 border border-[#DCE5EE] leading-relaxed flex items-start gap-2">
         <Info size={13} className="text-[#16B8C9] flex-shrink-0 mt-0.5" />
         <div>
           <span className="font-bold text-[#14283F]">Notice: </span>
