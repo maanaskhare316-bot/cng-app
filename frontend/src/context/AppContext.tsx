@@ -37,6 +37,7 @@ const SETTINGS_KEY = 'cng-navigator-settings';
 const COMMUNITY_REPORTS_KEY = 'cng-navigator-community-reports';
 const VISITED_STATIONS_KEY = 'cng-navigator-visited-stations';
 const ALERTS_STORAGE_KEY = 'cng-navigator-active-alerts';
+const ACTIVE_ROUTE_STORAGE_KEY = 'cng_active_route_result';
 const MAX_SELECTION = 3;
 
 const DEFAULT_SETTINGS: AppSettings = {
@@ -151,7 +152,21 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedStations, setSelectedStations] = useState<number[]>([]);
-  const [activeRouteResult, setActiveRouteResult] = useState<RouteSearchResultDto | null>(null);
+  const [activeRouteResult, setActiveRouteResultState] = useState<RouteSearchResultDto | null>(() => {
+    try {
+      const stored = localStorage.getItem(ACTIVE_ROUTE_STORAGE_KEY);
+      if (stored) return JSON.parse(stored);
+    } catch {}
+    return null;
+  });
+
+  const setActiveRouteResult = useCallback((res: RouteSearchResultDto | null) => {
+    setActiveRouteResultState(res);
+    try {
+      if (res) localStorage.setItem(ACTIVE_ROUTE_STORAGE_KEY, JSON.stringify(res));
+      else localStorage.removeItem(ACTIVE_ROUTE_STORAGE_KEY);
+    } catch {}
+  }, []);
 
   // Alerts state
   const [alerts, setAlerts] = useState<StationAlertNotification[]>(() => {
@@ -523,6 +538,8 @@ export function AppProvider({ children }: { children: React.ReactNode }) {
       const rankingResult = rankStationsForRoute(enrichedCandidates, totalDist);
 
       const result: RouteSearchResultDto = {
+        startAddress: req.startAddress,
+        destAddress: req.destAddress,
         totalDistanceKm: totalDist,
         totalDurationMinutes: totalDur,
         routeGeometry,

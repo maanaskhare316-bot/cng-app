@@ -215,6 +215,8 @@ export interface RouteAlternativeDto {
 }
 
 export interface RouteSearchResultDto {
+  startAddress?: string;
+  destAddress?: string;
   totalDistanceKm: number;
   totalDurationMinutes: number;
   /** Array of [lat, lng] pairs describing the route polyline */

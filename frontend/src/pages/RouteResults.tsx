@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import {
   ArrowLeft,
@@ -20,6 +20,9 @@ import {
   ChevronRight,
   ArrowRight,
   Compass,
+  UserCheck,
+  Fuel,
+  SlidersHorizontal,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { StationMap } from '../components/map/StationMap';
@@ -30,6 +33,7 @@ import { ArrivalPredictionCard } from '../components/stations/ArrivalPredictionC
 import { AlternativeComparisonTable } from '../components/stations/AlternativeComparisonTable';
 import { PostVisitModal } from '../components/stations/PostVisitModal';
 import { RouteResultsSkeleton } from '../components/ui/SkeletonCard';
+import { DEFAULT_CORRIDOR } from '../data/corridors';
 import type {
   StationSummaryDto,
   CommunityReportPayload,
@@ -42,9 +46,11 @@ export default function RouteResults() {
   const {
     activeRouteResult,
     isLoading,
+    planSmartRoute,
     submitCommunityReport,
     submitIncorrectFlag,
     markStationVisited,
+    driverProfile,
   } = useAppContext();
 
   const [selectedStation, setSelectedStation] = useState<StationSummaryDto | null>(null);
@@ -54,35 +60,32 @@ export default function RouteResults() {
   const [mobileView, setMobileView] = useState<'map' | 'list'>('map');
   const [activeTabCategory, setActiveTabCategory] = useState<RecommendationCategory>('BEST_OVERALL');
 
-  if (isLoading) {
+  // Auto-initialize corridor route if user visits /results directly without planning first
+  useEffect(() => {
+    if (!activeRouteResult && !isLoading) {
+      planSmartRoute({
+        startLat: DEFAULT_CORRIDOR.startLat,
+        startLng: DEFAULT_CORRIDOR.startLng,
+        startAddress: DEFAULT_CORRIDOR.startAddress,
+        destLat: DEFAULT_CORRIDOR.destLat,
+        destLng: DEFAULT_CORRIDOR.destLng,
+        destAddress: DEFAULT_CORRIDOR.destAddress,
+        maxDetourKm: 5,
+      }).catch(() => {});
+    }
+  }, [activeRouteResult, isLoading, planSmartRoute]);
+
+  if (isLoading || !activeRouteResult || !activeRouteResult.stations || activeRouteResult.stations.length === 0) {
     return (
-      <div className="max-w-7xl mx-auto py-8 px-3">
+      <div className="max-w-7xl mx-auto py-8 px-2 sm:px-4">
         <RouteResultsSkeleton />
       </div>
     );
   }
 
-  if (!activeRouteResult || !activeRouteResult.stations || activeRouteResult.stations.length === 0) {
-    return (
-      <div className="max-w-xl mx-auto my-16 text-center bg-[#101B2D] p-8 sm:p-10 rounded-[18px] border border-[#17263A] shadow-2xl text-slate-100">
-        <div className="w-16 h-16 bg-[#17263A] text-[#16C7B2] rounded-[16px] flex items-center justify-center mx-auto mb-4 text-2xl border border-[#16C7B2]/30">
-          <Compass size={32} />
-        </div>
-        <h2 className="text-xl sm:text-2xl font-black text-white mb-2">No Corridor Active</h2>
-        <p className="text-[#758397] text-xs sm:text-sm mb-6 leading-relaxed">
-          Select your origin and destination in the Trip Planner to compute arrival predictions, detour dynamics, and live telemetry recommendations.
-        </p>
-        <button
-          onClick={() => navigate('/plan')}
-          className="bg-[#16C7B2] hover:bg-[#13b3a0] text-[#101B2D] font-black text-xs uppercase tracking-wider px-6 py-3 rounded-xl transition shadow-lg"
-        >
-          Plan New Journey
-        </button>
-      </div>
-    );
-  }
-
   const {
+    startAddress,
+    destAddress,
     totalDistanceKm,
     totalDurationMinutes,
     routeGeometry,
@@ -109,17 +112,18 @@ export default function RouteResults() {
       ? fastestRefueling || stations[0]
       : nearestStation || stations[0];
 
-  // Derive origin & destination labels from station cities or corridor
-  const firstCity = stations[0]?.city || 'Origin Corridor';
-  const lastCity = stations[stations.length - 1]?.city || 'Destination';
+  // Derive source and destination display labels
+  const originDisplay = startAddress || stations[0]?.city || 'Origin Corridor';
+  const destDisplay = destAddress || stations[stations.length - 1]?.city || 'Destination';
 
   return (
     <div className="space-y-5 sm:space-y-6 max-w-7xl mx-auto pb-16 px-2 sm:px-4 text-slate-100">
       {/* ─────────────────────────────────────────────────────────────────────────────
-          1. COMPACT MOBILITY HEADER & BREADCRUMBS
+          1. HEADER (Logo, Route Navigation, Profile/Menu)
       ───────────────────────────────────────────────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-3 pt-1">
-        <div className="flex items-center gap-2.5">
+        {/* Left: Brand Identity & Back to Planner */}
+        <div className="flex items-center gap-3">
           <button
             onClick={() => navigate('/plan')}
             aria-label="Back to Journey Planner"
@@ -127,93 +131,116 @@ export default function RouteResults() {
           >
             <ArrowLeft size={16} />
           </button>
+
           <div>
-            <div className="flex items-center gap-1.5 text-[10.5px] uppercase tracking-wider font-extrabold text-[#16C7B2]">
-              <span>CNG Navigator</span>
-              <span>•</span>
-              <span className="text-[#758397]">Route Intelligence</span>
+            <div className="flex items-center gap-2">
+              <span className="p-1 bg-[#16C7B2]/15 text-[#16C7B2] rounded-[8px] border border-[#16C7B2]/30">
+                <Fuel size={14} />
+              </span>
+              <span className="text-xs sm:text-sm font-black uppercase tracking-wider text-white">
+                CNG Navigator
+              </span>
+              <span className="hidden sm:inline-block text-[10px] uppercase font-bold text-[#16C7B2] bg-[#16C7B2]/10 border border-[#16C7B2]/30 px-2 py-0.5 rounded-full">
+                Trip Intelligence
+              </span>
             </div>
-            <h1 className="text-lg sm:text-2xl font-black text-white leading-tight">
-              Route Recommendations &amp; Arrival Predictions
-            </h1>
+            <p className="text-[11px] text-[#758397] font-semibold mt-0.5">
+              Corridor Telemetry &amp; Smart Refueling Guidance
+            </p>
           </div>
         </div>
 
-        <button
-          onClick={() => navigate('/plan')}
-          className="px-3.5 py-2 text-xs font-bold text-slate-200 bg-[#17263A] border border-slate-700/60 rounded-[12px] hover:bg-[#20344f] transition flex items-center gap-1.5 shadow-sm"
-        >
-          <RotateCcw size={13} className="text-[#16C7B2]" /> <span>Change Corridor</span>
-        </button>
+        {/* Right: Driver Profile & Change Route Button */}
+        <div className="flex items-center gap-2">
+          {driverProfile && (
+            <Link
+              to="/settings"
+              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-[12px] bg-[#17263A] border border-slate-700/60 text-xs font-bold text-slate-200 hover:border-[#16C7B2]/40 transition"
+              title="View Contributor Profile"
+            >
+              <UserCheck size={14} className="text-[#16C7B2]" />
+              <span className="text-[11px]">{driverProfile.driverId}</span>
+              <span className="text-[10px] text-[#B8E65A] font-black">({driverProfile.trustScore}%)</span>
+            </Link>
+          )}
+
+          <button
+            onClick={() => navigate('/plan')}
+            className="px-3.5 py-2 text-xs font-bold text-slate-200 bg-[#17263A] border border-slate-700/60 rounded-[12px] hover:bg-[#20344f] transition flex items-center gap-1.5 shadow-sm"
+          >
+            <RotateCcw size={13} className="text-[#16C7B2]" />
+            <span>Change Route</span>
+          </button>
+        </div>
       </div>
 
       {/* ─────────────────────────────────────────────────────────────────────────────
-          2. ROUTE SUMMARY HERO CARD (Section 2 Requirement)
+          2. ROUTE SUMMARY HERO CARD (Deep Navy with Subtle Teal Highlights)
       ───────────────────────────────────────────────────────────────────────────── */}
       <div className="bg-[#101B2D] rounded-[18px] border border-[#17263A] p-5 sm:p-6 shadow-xl relative overflow-hidden">
         {/* Subtle Electric Teal top accent line */}
         <div className="absolute top-0 left-0 right-0 h-[3px] bg-gradient-to-r from-[#16C7B2] via-[#B8E65A] to-transparent opacity-80" />
 
         <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-5">
-          {/* Left: Origin to Destination Visual Track */}
-          <div className="space-y-2">
-            <div className="flex items-center gap-2">
-              <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#B8E65A]/15 text-[#B8E65A] border border-[#B8E65A]/40">
+          {/* Source to Destination Track */}
+          <div className="space-y-2.5 max-w-2xl">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider bg-[#B8E65A]/15 text-[#B8E65A] border border-[#B8E65A]/40">
                 <span className="w-1.5 h-1.5 rounded-full bg-[#B8E65A] animate-pulse" />
                 Live Corridor Optimized
               </span>
-              <span className="text-[10px] font-bold text-[#758397] uppercase tracking-wider">
-                Highway Telemetry Active
+              <span className="text-[10.5px] font-bold text-[#758397] uppercase tracking-wider">
+                Multi-Factor Score Active
               </span>
             </div>
 
             <div className="flex items-center gap-2 sm:gap-3 text-sm sm:text-lg font-black text-white">
-              <span className="truncate max-w-[160px] sm:max-w-[240px] text-white">
-                {firstCity}
+              <span className="truncate max-w-[150px] sm:max-w-[220px] text-white">
+                {originDisplay}
               </span>
               <div className="flex items-center gap-1.5 text-[#16C7B2] flex-shrink-0">
                 <span className="h-[2px] w-6 sm:w-10 bg-[#16C7B2]/40 rounded-full" />
                 <ArrowRight size={14} className="text-[#16C7B2]" />
                 <span className="h-[2px] w-6 sm:w-10 bg-[#16C7B2]/40 rounded-full" />
               </div>
-              <span className="truncate max-w-[160px] sm:max-w-[240px] text-white">
-                {lastCity}
+              <span className="truncate max-w-[150px] sm:max-w-[220px] text-white">
+                {destDisplay}
               </span>
             </div>
 
-            <p className="text-[11.5px] text-[#758397]">
-              Multi-factor evaluation prioritized by gas pressure (&gt;200 Bar), vehicle queue, and minimal detour.
+            <p className="text-[11.5px] text-[#758397] leading-relaxed">
+              Highway trajectory scanned across <strong>{stations.length} CNG stations</strong>. Recommendations prioritize high compression pressure (&gt;200 Bar), vehicle queue length, and minimal detour overhead.
             </p>
           </div>
 
-          {/* Right: 3 Key Corridor Metrics */}
-          <div className="grid grid-cols-3 gap-2.5 sm:gap-4 border-t lg:border-t-0 lg:border-l border-[#17263A] pt-4 lg:pt-0 lg:pl-6 flex-shrink-0">
+          {/* 4 Telemetry Metrics */}
+          <div className="grid grid-cols-3 gap-2 sm:gap-3 border-t lg:border-t-0 lg:border-l border-[#17263A] pt-4 lg:pt-0 lg:pl-6 flex-shrink-0">
             <div className="bg-[#17263A] p-3 rounded-[14px] border border-slate-700/40 text-center min-w-[90px] sm:min-w-[110px]">
               <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#758397] block">Distance</span>
               <span className="text-base sm:text-xl font-black text-white mt-0.5 block">{totalDistanceKm} km</span>
-              <span className="text-[9.5px] text-[#758397] block">highway length</span>
+              <span className="text-[9.5px] text-[#758397] block font-medium">total route</span>
             </div>
 
             <div className="bg-[#17263A] p-3 rounded-[14px] border border-slate-700/40 text-center min-w-[90px] sm:min-w-[110px]">
-              <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#758397] block">Est. Drive</span>
+              <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#758397] block">Travel Time</span>
               <span className="text-base sm:text-xl font-black text-[#16C7B2] mt-0.5 block">~{totalDurationMinutes}m</span>
-              <span className="text-[9.5px] text-[#758397] block">non-stop drive</span>
+              <span className="text-[9.5px] text-[#758397] block font-medium">highway drive</span>
             </div>
 
             <div className="bg-[#17263A] p-3 rounded-[14px] border border-slate-700/40 text-center min-w-[90px] sm:min-w-[110px]">
-              <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#758397] block">CNG Pumps</span>
+              <span className="text-[9.5px] font-bold uppercase tracking-wider text-[#758397] block">CNG Stations</span>
               <span className="text-base sm:text-xl font-black text-[#B8E65A] mt-0.5 block">{stations.length}</span>
-              <span className="text-[9.5px] text-[#758397] block">evaluated</span>
+              <span className="text-[9.5px] text-[#758397] block font-medium">evaluated</span>
             </div>
           </div>
         </div>
 
-        {/* Transparency Demo Ribbon */}
+        {/* Quiet Transparency Ribbon */}
         <div className="mt-4 pt-3 border-t border-[#17263A] flex flex-wrap items-center justify-between gap-2 text-[11px] text-[#758397]">
           <div className="flex items-center gap-1.5">
             <Info size={13} className="text-[#16C7B2] flex-shrink-0" />
             <span>
-              <strong className="text-slate-300">Transparency Notice:</strong> Telemetry runs on simulated baseline SCADA data for testing. Crowdsourced reports and forecasts update live.
+              <strong className="text-slate-300">Transparency Notice:</strong> Telemetry runs on simulated baseline SCADA data for evaluation. Community driver reports and forecasts update live.
             </span>
           </div>
           <span className="text-[9px] font-black uppercase tracking-wider bg-[#17263A] text-slate-300 border border-slate-700 px-2 py-0.5 rounded-md">
@@ -267,10 +294,10 @@ export default function RouteResults() {
       </div>
 
       {/* ─────────────────────────────────────────────────────────────────────────────
-          4. HERO RECOMMENDATION CARD (Electric Teal Highlighted)
+          4. HERO RECOMMENDATION CARD (Subtle Teal Border Highlight)
       ───────────────────────────────────────────────────────────────────────────── */}
       {heroStation && (
-        <div className="bg-[#101B2D] rounded-[18px] p-5 sm:p-7 text-white shadow-xl relative overflow-hidden border-2 border-[#16C7B2]/60 space-y-4">
+        <div className="bg-[#101B2D] rounded-[18px] p-5 sm:p-7 text-white shadow-xl relative overflow-hidden border-2 border-[#16C7B2]/70 space-y-4">
           <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-5">
             <div className="space-y-2.5 max-w-2xl">
               <div className="flex flex-wrap items-center gap-2">
@@ -322,7 +349,7 @@ export default function RouteResults() {
                 href={`https://www.google.com/maps/dir/?api=1&destination=${heroStation.latitude},${heroStation.longitude}`}
                 target="_blank"
                 rel="noreferrer"
-                className="w-full py-3.5 px-4 rounded-xl bg-[#16C7B2] hover:bg-[#13b3a0] text-[#101B2D] font-black text-xs uppercase tracking-wider text-center shadow-lg transition flex items-center justify-center gap-1.5"
+                className="w-full py-3.5 px-4 rounded-[12px] bg-[#16C7B2] hover:bg-[#13b3a0] text-[#101B2D] font-black text-xs uppercase tracking-wider text-center shadow-lg transition flex items-center justify-center gap-1.5"
               >
                 <Navigation size={16} /> Start Turn-by-Turn Nav ↗
               </a>
@@ -331,7 +358,7 @@ export default function RouteResults() {
                 <button
                   type="button"
                   onClick={() => setReportModalStation(heroStation)}
-                  className="py-2 px-3 rounded-xl bg-[#17263A] hover:bg-[#20344f] text-white font-bold text-xs text-center border border-slate-700 transition flex items-center justify-center gap-1"
+                  className="py-2 px-3 rounded-[12px] bg-[#17263A] hover:bg-[#20344f] text-white font-bold text-xs text-center border border-slate-700 transition flex items-center justify-center gap-1"
                 >
                   <Sparkles size={13} className="text-[#F4B740]" />
                   <span>Report</span>
@@ -339,7 +366,7 @@ export default function RouteResults() {
 
                 <Link
                   to={`/stations/${heroStation.id}`}
-                  className="py-2 px-3 rounded-xl bg-[#17263A] hover:bg-[#20344f] text-white font-bold text-xs text-center border border-slate-700 transition flex items-center justify-center gap-1"
+                  className="py-2 px-3 rounded-[12px] bg-[#17263A] hover:bg-[#20344f] text-white font-bold text-xs text-center border border-slate-700 transition flex items-center justify-center gap-1"
                 >
                   <span>Details ↗</span>
                 </Link>
@@ -349,7 +376,7 @@ export default function RouteResults() {
               <button
                 type="button"
                 onClick={() => setPostVisitStation(heroStation)}
-                className="w-full py-2.5 px-3 rounded-xl bg-[#B8E65A]/15 hover:bg-[#B8E65A]/25 text-[#B8E65A] font-bold text-xs text-center border border-[#B8E65A]/30 transition flex items-center justify-center gap-1.5 shadow-sm"
+                className="w-full py-2.5 px-3 rounded-[12px] bg-[#B8E65A]/15 hover:bg-[#B8E65A]/25 text-[#B8E65A] font-bold text-xs text-center border border-[#B8E65A]/40 transition flex items-center justify-center gap-1.5 shadow-sm"
               >
                 <CheckCircle2 size={14} className="text-[#B8E65A]" />
                 <span>Mark as Visited &amp; Verify</span>
@@ -375,7 +402,7 @@ export default function RouteResults() {
       />
 
       {/* ─────────────────────────────────────────────────────────────────────────────
-          6. MOBILE VIEW SWITCHER (Map vs List)
+          6. MOBILE VIEW SWITCHER (Interactive Map vs Stations List)
       ───────────────────────────────────────────────────────────────────────────── */}
       <div className="flex lg:hidden bg-[#101B2D] p-1.5 rounded-[14px] border border-[#17263A] shadow-md text-xs font-bold">
         <button
