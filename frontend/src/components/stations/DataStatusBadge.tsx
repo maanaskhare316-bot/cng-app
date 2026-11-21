@@ -5,11 +5,9 @@ import {
   Users,
   AlertTriangle,
   XCircle,
-  Radio,
   ShieldCheck,
-  Info,
 } from 'lucide-react';
-import type { DataVerificationStatus, PredictionConfidence } from '../../types';
+import type { DataVerificationStatus } from '../../types';
 
 interface DataStatusBadgeProps {
   status: DataVerificationStatus;
@@ -26,7 +24,6 @@ function getTimeAgo(timestamp?: string): string {
   if (!timestamp) return 'Time unknown';
   const diffMs = Date.now() - new Date(timestamp).getTime();
   const diffMins = Math.max(1, Math.round(diffMs / (60 * 1000)));
-
   if (diffMins < 60) return `${diffMins}m ago`;
   const diffHours = Math.round(diffMins / 60);
   if (diffHours < 24) return `${diffHours}h ago`;
@@ -45,12 +42,22 @@ export const DataStatusBadge: React.FC<DataStatusBadgeProps> = ({
 }) => {
   const timeAgo = getTimeAgo(lastUpdatedTimestamp);
 
-  let badgeConfig = {
+  type BadgeConfig = {
+    label: string;
+    bg: string;
+    border: string;
+    text: string;
+    dot: string;
+    pulse: boolean;
+    icon: React.ElementType;
+  };
+
+  let badgeConfig: BadgeConfig = {
     label: 'LIVE VERIFIED',
-    bg: 'bg-[#B8E65A]/15',
-    border: 'border-[#B8E65A]/40',
-    text: 'text-[#B8E65A]',
-    dot: 'bg-[#B8E65A]',
+    bg: 'bg-[#E3F4EC]',
+    border: 'border-[#C0E4D0]',
+    text: 'text-[#26734D]',
+    dot: 'bg-[#26734D]',
     pulse: true,
     icon: ShieldCheck,
   };
@@ -59,58 +66,54 @@ export const DataStatusBadge: React.FC<DataStatusBadgeProps> = ({
     case 'LIVE_VERIFIED':
       badgeConfig = {
         label: 'LIVE VERIFIED',
-        bg: 'bg-[#B8E65A]/15',
-        border: 'border-[#B8E65A]/40',
-        text: 'text-[#B8E65A]',
-        dot: 'bg-[#B8E65A]',
+        bg: 'bg-[#E3F4EC]',
+        border: 'border-[#C0E4D0]',
+        text: 'text-[#26734D]',
+        dot: 'bg-[#26734D]',
         pulse: true,
         icon: ShieldCheck,
       };
       break;
-
     case 'RECENTLY_UPDATED':
       badgeConfig = {
         label: 'RECENTLY UPDATED',
-        bg: 'bg-[#16C7B2]/15',
-        border: 'border-[#16C7B2]/40',
-        text: 'text-[#16C7B2]',
-        dot: 'bg-[#16C7B2]',
+        bg: 'bg-[#EBF8FF]',
+        border: 'border-[#BEE3F8]',
+        text: 'text-[#1A6BC4]',
+        dot: 'bg-[#16B8C9]',
         pulse: false,
         icon: CheckCircle2,
       };
       break;
-
     case 'COMMUNITY_REPORTED':
       badgeConfig = {
         label: 'COMMUNITY REPORTED',
-        bg: 'bg-[#F4B740]/15',
-        border: 'border-[#F4B740]/40',
-        text: 'text-[#F4B740]',
-        dot: 'bg-[#F4B740]',
+        bg: 'bg-[#FFF2DB]',
+        border: 'border-[#FFD88A]',
+        text: 'text-[#98651C]',
+        dot: 'bg-[#98651C]',
         pulse: false,
         icon: Users,
       };
       break;
-
     case 'STALE_DATA':
       badgeConfig = {
         label: 'STALE DATA',
-        bg: 'bg-[#17263A]',
-        border: 'border-slate-700',
-        text: 'text-[#758397]',
-        dot: 'bg-[#758397]',
+        bg: 'bg-[#F4F7FA]',
+        border: 'border-[#E3EAF0]',
+        text: 'text-[#718096]',
+        dot: 'bg-[#A0AEC0]',
         pulse: false,
         icon: Clock,
       };
       break;
-
     case 'UNAVAILABLE':
       badgeConfig = {
         label: 'UNAVAILABLE',
-        bg: 'bg-[#EF6464]/15',
-        border: 'border-[#EF6464]/40',
-        text: 'text-[#EF6464]',
-        dot: 'bg-[#EF6464]',
+        bg: 'bg-[#FCEAEA]',
+        border: 'border-[#F4BBBB]',
+        text: 'text-[#B54747]',
+        dot: 'bg-[#B54747]',
         pulse: false,
         icon: XCircle,
       };
@@ -122,9 +125,9 @@ export const DataStatusBadge: React.FC<DataStatusBadgeProps> = ({
 
   return (
     <div className="flex flex-wrap items-center gap-1.5">
-      {/* Primary Verification Badge */}
+      {/* Primary Badge */}
       <span
-        className={`inline-flex items-center gap-1.5 font-black uppercase tracking-wider rounded-lg border ${
+        className={`inline-flex items-center gap-1.5 font-bold uppercase tracking-wider rounded-lg border ${
           badgeConfig.bg
         } ${badgeConfig.border} ${badgeConfig.text} ${
           isSmall ? 'text-[9.5px] px-2 py-0.5' : 'text-[10.5px] px-2.5 py-1'
@@ -142,42 +145,42 @@ export const DataStatusBadge: React.FC<DataStatusBadgeProps> = ({
         <span>{badgeConfig.label}</span>
       </span>
 
-      {/* Demo Data Tag if applicable */}
+      {/* Demo Data Tag */}
       {isDemoData && (
         <span
-          title="This station runs on simulated telemetry for demonstration."
-          className={`inline-flex items-center gap-1 bg-purple-950/50 border border-purple-500/30 text-purple-300 font-bold uppercase tracking-wider rounded-lg ${
+          title="Simulated telemetry for demonstration."
+          className={`inline-flex items-center gap-1 bg-[#F0EEFF] border border-[#D4C5FF] text-[#6B4EFF] font-bold uppercase tracking-wider rounded-lg ${
             isSmall ? 'text-[9px] px-1.5 py-0.5' : 'text-[10px] px-2 py-0.5'
           }`}
         >
-          <span>DEMO DATA</span>
+          DEMO DATA
         </span>
       )}
 
       {/* Time Ago */}
       {showTimeAgo && lastUpdatedTimestamp && (
-        <span className="text-[10.5px] text-slate-400 flex items-center gap-1">
-          <Clock size={11} className="text-slate-500" />
+        <span className="text-[10.5px] text-[#718096] flex items-center gap-1">
+          <Clock size={11} className="text-[#A0AEC0]" />
           <span>{timeAgo}</span>
         </span>
       )}
 
-      {/* Source Tag */}
+      {/* Source */}
       {showSource && dataSourceLabel && (
-        <span className="text-[10.5px] text-slate-500 font-medium hidden sm:inline-flex items-center gap-1">
+        <span className="text-[10.5px] text-[#A0AEC0] font-medium hidden sm:inline-flex items-center gap-1">
           • <span>{dataSourceLabel}</span>
         </span>
       )}
 
-      {/* Confidence Score */}
+      {/* Confidence */}
       {confidenceScore !== undefined && confidenceScore > 0 && (
         <span
-          className={`text-[9.5px] font-black px-1.5 py-0.5 rounded-md border uppercase tracking-wider ${
+          className={`text-[9.5px] font-bold px-1.5 py-0.5 rounded-md border uppercase tracking-wider ${
             confidenceScore >= 85
-              ? 'bg-[#B8E65A]/10 text-[#B8E65A] border-[#B8E65A]/30'
+              ? 'bg-[#E3F4EC] text-[#26734D] border-[#C0E4D0]'
               : confidenceScore >= 70
-              ? 'bg-[#16C7B2]/10 text-[#16C7B2] border-[#16C7B2]/30'
-              : 'bg-[#17263A] text-[#758397] border-slate-700'
+              ? 'bg-[#EBF8FF] text-[#1A6BC4] border-[#BEE3F8]'
+              : 'bg-[#F4F7FA] text-[#718096] border-[#E3EAF0]'
           }`}
         >
           {confidenceScore}% Reliability

@@ -8,17 +8,12 @@ import {
   ArrowRight,
   Zap,
   Star,
-  Users,
-  Navigation,
   Locate,
-  Filter,
-  Sparkles,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { StationMap } from '../components/map/StationMap';
 import { ReportStatusModal } from '../components/stations/ReportStatusModal';
 import { CngCalculator } from '../components/stations/CngCalculator';
-import { formatPressure, formatDuration } from '../utils/formatters';
 import type { StationSummaryDto } from '../types';
 
 interface StatCardProps {
@@ -31,12 +26,12 @@ interface StatCardProps {
 
 function StatCard({ icon, value, label, sublabel, iconBg }: StatCardProps) {
   return (
-    <div className="rounded-2xl p-4 sm:p-5 shadow-lg border border-slate-800/80 bg-[#111827] flex items-center gap-3 sm:gap-4 hover:border-slate-700 transition">
-      <div className={`${iconBg} rounded-2xl p-2.5 sm:p-3 flex-shrink-0 shadow-md`}>{icon}</div>
+    <div className="rounded-[14px] p-4 sm:p-5 shadow-sm border border-[#E3EAF0] bg-white flex items-center gap-3 sm:gap-4 hover:border-[#16B8C9]/40 transition">
+      <div className={`${iconBg} rounded-xl p-2.5 sm:p-3 flex-shrink-0`}>{icon}</div>
       <div className="min-w-0">
-        <p className="text-xl sm:text-2xl font-black text-white leading-tight truncate">{value}</p>
-        <p className="text-xs font-bold text-slate-300 mt-0.5 truncate">{label}</p>
-        <p className="text-[10px] text-slate-400 truncate">{sublabel}</p>
+        <p className="text-xl sm:text-2xl font-black text-[#14283F] leading-tight truncate">{value}</p>
+        <p className="text-xs font-semibold text-[#243447] mt-0.5 truncate">{label}</p>
+        <p className="text-[10px] text-[#718096] truncate">{sublabel}</p>
       </div>
     </div>
   );
@@ -148,7 +143,7 @@ export default function Dashboard() {
           distanceKm: Number(minD.toFixed(1)),
         });
       },
-      (err) => {
+      () => {
         setIsLocating(false);
         const d = 3.4;
         setNearestStation({
@@ -161,25 +156,25 @@ export default function Dashboard() {
   };
 
   return (
-    <div className="space-y-5 sm:space-y-6 max-w-7xl mx-auto pb-16 px-1 sm:px-0 text-slate-100">
+    <div className="space-y-5 sm:space-y-6 max-w-7xl mx-auto pb-16 px-1 sm:px-0 text-[#243447]">
       {/* Hero Welcome Banner */}
-      <div className="bg-gradient-to-r from-[#0d1627] via-[#091a1d] to-[#0d1627] rounded-2xl sm:rounded-3xl p-5 sm:p-9 text-white shadow-xl relative overflow-hidden border border-emerald-900/40">
+      <div className="bg-white rounded-[14px] p-5 sm:p-8 border border-[#E3EAF0] shadow-sm relative overflow-hidden border-l-4 border-l-[#16B8C9]">
         <div className="relative z-10 max-w-3xl">
-          <div className="inline-flex items-center gap-2 bg-emerald-950/60 text-emerald-300 border border-emerald-500/40 px-3 py-0.5 sm:px-3.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-2.5">
-            <Zap size={13} className="text-amber-400" />
+          <div className="inline-flex items-center gap-2 bg-[#F4F7FA] text-[#14283F] border border-[#E3EAF0] px-3 py-0.5 sm:px-3.5 sm:py-1 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider mb-2.5">
+            <Zap size={13} className="text-[#16B8C9]" />
             Live CNG Telemetry & Google Maps Highway Recommender
           </div>
-          <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight mb-2 text-white">
+          <h1 className="text-2xl sm:text-4xl font-black tracking-tight leading-tight mb-2 text-[#14283F]">
             CNG Navigator
           </h1>
-          <p className="text-slate-300 text-xs sm:text-base leading-relaxed mb-5">
+          <p className="text-[#718096] text-xs sm:text-base leading-relaxed mb-5">
             Smart CNG Station Finder integrated with Google Maps. Real-time gas pressure (&gt;200 Bar), vehicle queue line count & estimated waiting time along major highway corridors.
           </p>
 
           <div className="flex flex-wrap gap-2.5 sm:gap-3">
             <button
               onClick={() => navigate('/plan')}
-              className="px-5 py-3 rounded-xl sm:rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs sm:text-sm tracking-wide shadow-lg shadow-emerald-900/30 transition flex items-center gap-2"
+              className="px-5 py-3 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-bold text-xs sm:text-sm tracking-wide shadow-sm transition flex items-center gap-2"
             >
               <Fuel size={17} />
               <span>Find Best Station on Route</span>
@@ -190,15 +185,15 @@ export default function Dashboard() {
               type="button"
               onClick={handleFindNearest}
               disabled={isLocating}
-              className="px-4 py-3 rounded-xl sm:rounded-2xl bg-[#162032] hover:bg-[#1d2b44] text-slate-200 font-bold text-xs sm:text-sm border border-slate-700 transition flex items-center gap-2 shadow-sm"
+              className="px-4 py-3 rounded-xl bg-[#F4F7FA] hover:bg-[#E3EAF0] text-[#243447] font-bold text-xs sm:text-sm border border-[#E3EAF0] transition flex items-center gap-2 shadow-xs"
             >
-              <Locate size={16} className={isLocating ? 'animate-spin text-cyan-400' : 'text-cyan-400'} />
+              <Locate size={16} className={isLocating ? 'animate-spin text-[#16B8C9]' : 'text-[#16B8C9]'} />
               <span>{isLocating ? 'Locating...' : 'Nearest CNG Station'}</span>
             </button>
 
             <button
               onClick={() => navigate('/stations')}
-              className="px-4 py-3 rounded-xl sm:rounded-2xl bg-[#162032]/60 hover:bg-[#162032] text-slate-300 hover:text-white font-bold text-xs sm:text-sm border border-slate-800 transition flex items-center gap-1.5"
+              className="px-4 py-3 rounded-xl bg-[#F4F7FA] hover:bg-[#E3EAF0] text-[#718096] hover:text-[#14283F] font-bold text-xs sm:text-sm border border-[#E3EAF0] transition flex items-center gap-1.5"
             >
               <span>All Stations ({stations.length})</span>
             </button>
@@ -206,26 +201,26 @@ export default function Dashboard() {
         </div>
       </div>
 
-      {/* Nearest Station Alert (When Geolocation triggered) */}
+      {/* Nearest Station Alert */}
       {nearestStation && (
-        <div className="bg-emerald-950/40 border border-emerald-500/50 rounded-2xl p-4 shadow-lg flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-300">
+        <div className="bg-[#E3F4EC] border border-[#C0E4D0] rounded-[14px] p-4 shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 animate-in fade-in duration-300">
           <div className="flex items-center gap-3">
-            <div className="p-3 bg-emerald-600 text-white rounded-2xl shadow-md">
+            <div className="p-3 bg-[#26734D] text-white rounded-xl shadow-xs">
               <Locate size={20} />
             </div>
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-xs font-black text-emerald-400 uppercase tracking-wider">
+                <span className="text-xs font-black text-[#26734D] uppercase tracking-wider">
                   📍 Closest CNG Station ({nearestStation.distanceKm} km away)
                 </span>
-                <span className="text-[10px] bg-emerald-900/60 text-emerald-300 font-bold px-2 py-0.5 rounded-full border border-emerald-700/60">
+                <span className="text-[10px] bg-white text-[#26734D] font-bold px-2 py-0.5 rounded-full border border-[#C0E4D0]">
                   Verified Open
                 </span>
               </div>
-              <h4 className="text-base font-extrabold text-white">{nearestStation.station.name}</h4>
-              <p className="text-xs text-slate-300">
-                <strong className="text-emerald-400">Pressure:</strong> {nearestStation.station.currentPressureBar} Bar •{' '}
-                <strong className="text-amber-400">Queue:</strong> {nearestStation.station.vehiclesWaiting} Vehicles (~
+              <h4 className="text-base font-extrabold text-[#14283F]">{nearestStation.station.name}</h4>
+              <p className="text-xs text-[#718096]">
+                <strong className="text-[#26734D]">Pressure:</strong> {nearestStation.station.currentPressureBar} Bar •{' '}
+                <strong className="text-[#98651C]">Queue:</strong> {nearestStation.station.vehiclesWaiting} Vehicles (~
                 {nearestStation.station.estimatedWaitMinutes} min wait)
               </p>
             </div>
@@ -234,7 +229,7 @@ export default function Dashboard() {
           <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
               onClick={() => navigate(`/stations/${nearestStation.station.id}`)}
-              className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs transition"
+              className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl bg-white hover:bg-[#F4F7FA] text-[#14283F] border border-[#E3EAF0] font-bold text-xs transition"
             >
               View Telemetry
             </button>
@@ -242,9 +237,8 @@ export default function Dashboard() {
               href={`https://www.google.com/maps/dir/?api=1&destination=${nearestStation.station.latitude},${nearestStation.station.longitude}`}
               target="_blank"
               rel="noreferrer"
-              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-md"
+              className="flex-1 sm:flex-initial px-4 py-2 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-bold text-xs transition flex items-center justify-center gap-1.5 shadow-xs"
             >
-              <Navigation size={14} />
               <span>Google Maps ↗</span>
             </a>
           </div>
@@ -254,45 +248,45 @@ export default function Dashboard() {
       {/* 4 Stat Cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
         <StatCard
-          icon={<Fuel size={20} className="text-blue-400" />}
+          icon={<Fuel size={20} className="text-[#16B8C9]" />}
           value={stats.total}
           label="Total Stations"
           sublabel="Active Highway Pumps"
-          iconBg="bg-blue-950/60 border border-blue-500/20"
+          iconBg="bg-[#EBF8FF]"
         />
         <StatCard
-          icon={<CheckCircle size={20} className="text-emerald-400" />}
+          icon={<CheckCircle size={20} className="text-[#26734D]" />}
           value={stats.available}
           label="Open Stations"
           sublabel="24x7 Available"
-          iconBg="bg-emerald-950/60 border border-emerald-500/20"
+          iconBg="bg-[#E3F4EC]"
         />
         <StatCard
-          icon={<Clock size={20} className="text-amber-400" />}
+          icon={<Clock size={20} className="text-[#98651C]" />}
           value={`~${stats.avgWait}m`}
           label="Avg Wait Time"
           sublabel="Fast Turnaround"
-          iconBg="bg-amber-950/60 border border-amber-500/20"
+          iconBg="bg-[#FFF2DB]"
         />
         <StatCard
-          icon={<Gauge size={20} className="text-purple-400" />}
+          icon={<Gauge size={20} className="text-[#14283F]" />}
           value={`${stats.bestPressure} Bar`}
           label="Max Gas Pressure"
           sublabel="Fast 100% Fill"
-          iconBg="bg-purple-950/60 border border-purple-500/20"
+          iconBg="bg-[#F4F7FA]"
         />
       </div>
 
       {/* Map & Right Insights Column */}
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
         {/* Left Map: 8 cols */}
-        <div className="lg:col-span-8 bg-[#111827] rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-lg border border-slate-800 space-y-3">
+        <div className="lg:col-span-8 bg-white rounded-[14px] p-3.5 sm:p-4 shadow-sm border border-[#E3EAF0] space-y-3">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">
             <div>
-              <h3 className="font-extrabold text-xs sm:text-sm text-white">
+              <h3 className="font-extrabold text-xs sm:text-sm text-[#14283F]">
                 Live Stations Map (Google Maps API)
               </h3>
-              <p className="text-[11px] text-slate-400">
+              <p className="text-[11px] text-[#718096]">
                 Live pressure (Bar), vehicle queues & wait times displayed directly on pins.
               </p>
             </div>
@@ -304,8 +298,8 @@ export default function Dashboard() {
                 onClick={() => setFilterMode('all')}
                 className={`px-3 py-1 rounded-xl text-[11px] font-bold transition border ${
                   filterMode === 'all'
-                    ? 'bg-emerald-600 text-white border-emerald-500'
-                    : 'bg-[#162032] text-slate-300 border-slate-800 hover:bg-[#1d2a42]'
+                    ? 'bg-[#14283F] text-white border-[#14283F]'
+                    : 'bg-[#F4F7FA] text-[#718096] border-[#E3EAF0] hover:bg-[#E3EAF0]'
                 }`}
               >
                 All ({stations.length})
@@ -315,8 +309,8 @@ export default function Dashboard() {
                 onClick={() => setFilterMode('highPressure')}
                 className={`px-3 py-1 rounded-xl text-[11px] font-bold transition flex items-center gap-1 border ${
                   filterMode === 'highPressure'
-                    ? 'bg-emerald-600 text-white border-emerald-500'
-                    : 'bg-emerald-950/40 text-emerald-300 border-emerald-800/60 hover:bg-emerald-900/40'
+                    ? 'bg-[#14283F] text-white border-[#14283F]'
+                    : 'bg-[#E3F4EC] text-[#26734D] border-[#C0E4D0] hover:bg-[#D4EFE1]'
                 }`}
               >
                 <span>⚡ 200+ Bar</span>
@@ -326,8 +320,8 @@ export default function Dashboard() {
                 onClick={() => setFilterMode('lowQueue')}
                 className={`px-3 py-1 rounded-xl text-[11px] font-bold transition flex items-center gap-1 border ${
                   filterMode === 'lowQueue'
-                    ? 'bg-blue-600 text-white border-blue-500'
-                    : 'bg-blue-950/40 text-blue-300 border-blue-800/60 hover:bg-blue-900/40'
+                    ? 'bg-[#14283F] text-white border-[#14283F]'
+                    : 'bg-[#EBF8FF] text-[#16B8C9] border-[#BEE3F8] hover:bg-[#D7EFFF]'
                 }`}
               >
                 <span>🚗 ≤3 Cars</span>
@@ -337,8 +331,8 @@ export default function Dashboard() {
                 onClick={() => setFilterMode('fastTurnaround')}
                 className={`px-3 py-1 rounded-xl text-[11px] font-bold transition flex items-center gap-1 border ${
                   filterMode === 'fastTurnaround'
-                    ? 'bg-amber-600 text-white border-amber-500'
-                    : 'bg-amber-950/40 text-amber-300 border-amber-800/60 hover:bg-amber-900/40'
+                    ? 'bg-[#14283F] text-white border-[#14283F]'
+                    : 'bg-[#FFF2DB] text-[#98651C] border-[#FFE2A4] hover:bg-[#FFE9C0]'
                 }`}
               >
                 <span>⏱️ &lt;8 min</span>
@@ -358,32 +352,32 @@ export default function Dashboard() {
         <div className="lg:col-span-4 space-y-4">
           {/* Top Recommendation Pick Card */}
           {topStation && (
-            <div className="bg-gradient-to-br from-[#0a2323] via-[#0d1c2c] to-[#0c1626] rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-emerald-500/40 shadow-lg relative">
-              <div className="flex items-center gap-1.5 text-xs font-black text-amber-400 uppercase tracking-wider mb-2">
-                <Star size={13} className="text-amber-400 fill-amber-400" />
+            <div className="bg-white rounded-[14px] p-4 sm:p-5 border border-[#E3EAF0] shadow-sm border-l-4 border-l-[#16B8C9] relative">
+              <div className="flex items-center gap-1.5 text-xs font-bold text-[#98651C] uppercase tracking-wider mb-2">
+                <Star size={13} className="text-[#98651C] fill-[#98651C]" />
                 <span>Top Pick (Low Queue + High Bar)</span>
               </div>
-              <h4 className="font-bold text-sm sm:text-base text-white leading-tight">
+              <h4 className="font-bold text-sm sm:text-base text-[#14283F] leading-tight">
                 {topStation.name}
               </h4>
-              <p className="text-xs text-slate-400 mt-0.5">
+              <p className="text-xs text-[#718096] mt-0.5">
                 {topStation.address}, {topStation.city}
               </p>
 
-              <div className="grid grid-cols-2 gap-2 my-3 p-3 bg-[#0b121e] rounded-xl sm:rounded-2xl border border-slate-800">
+              <div className="grid grid-cols-2 gap-2 my-3 p-3 bg-[#F4F7FA] rounded-xl border border-[#E3EAF0]">
                 <div>
-                  <span className="text-[9.5px] uppercase font-bold text-slate-400">Gas Pressure</span>
-                  <div className="text-base sm:text-lg font-black text-emerald-400">
+                  <span className="text-[9.5px] uppercase font-bold text-[#718096]">Gas Pressure</span>
+                  <div className="text-base sm:text-lg font-black text-[#26734D]">
                     {topStation.currentPressureBar ? `${Math.round(topStation.currentPressureBar)} Bar` : '216 Bar'}
                   </div>
-                  <span className="text-[10px] text-emerald-300 font-semibold">100% Full Tank Fill</span>
+                  <span className="text-[10px] text-[#26734D] font-semibold">100% Full Tank</span>
                 </div>
                 <div>
-                  <span className="text-[9.5px] uppercase font-bold text-slate-400">Queue Line</span>
-                  <div className="text-base sm:text-lg font-black text-slate-100">
+                  <span className="text-[9.5px] uppercase font-bold text-[#718096]">Queue Line</span>
+                  <div className="text-base sm:text-lg font-black text-[#14283F]">
                     {topStation.vehiclesWaiting ?? 2} Vehicles
                   </div>
-                  <span className="text-[10px] text-slate-400 font-semibold">
+                  <span className="text-[10px] text-[#718096] font-semibold">
                     ~{topStation.estimatedWaitMinutes ?? 4} min wait
                   </span>
                 </div>
@@ -393,7 +387,7 @@ export default function Dashboard() {
                 <button
                   type="button"
                   onClick={() => navigate(`/stations/${topStation.id}`)}
-                  className="flex-1 py-2 px-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition text-center shadow-md"
+                  className="flex-1 py-2 px-3 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-bold text-xs transition text-center shadow-xs"
                 >
                   View Details
                 </button>
@@ -401,7 +395,7 @@ export default function Dashboard() {
                   href={`https://www.google.com/maps/dir/?api=1&destination=${topStation.latitude},${topStation.longitude}`}
                   target="_blank"
                   rel="noreferrer"
-                  className="py-2 px-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 font-bold text-xs transition text-center"
+                  className="py-2 px-3 rounded-xl bg-[#F4F7FA] hover:bg-[#E3EAF0] text-[#14283F] border border-[#E3EAF0] font-bold text-xs transition text-center"
                 >
                   Navigate ↗
                 </a>
@@ -410,17 +404,17 @@ export default function Dashboard() {
           )}
 
           {/* Queue Distribution */}
-          <div className="bg-[#111827] rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-slate-800 shadow-md space-y-3">
-            <h4 className="font-bold text-xs sm:text-sm text-white">Live Station Telemetry Summary</h4>
+          <div className="bg-white rounded-[14px] p-4 sm:p-5 border border-[#E3EAF0] shadow-sm space-y-3">
+            <h4 className="font-bold text-xs sm:text-sm text-[#14283F]">Live Station Telemetry Summary</h4>
             <div className="space-y-2.5 text-xs">
               <div>
                 <div className="flex justify-between mb-1">
-                  <span className="font-semibold text-emerald-400">Short Queue (0-3 Cars):</span>
-                  <span className="font-bold text-slate-200">{queueDist.low} stations</span>
+                  <span className="font-semibold text-[#26734D]">Short Queue (0-3 Cars):</span>
+                  <span className="font-bold text-[#14283F]">{queueDist.low} stations</span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                <div className="w-full h-2 rounded-full bg-[#E3EAF0] overflow-hidden">
                   <div
-                    className="h-full bg-emerald-500 rounded-full"
+                    className="h-full bg-[#26734D] rounded-full"
                     style={{ width: `${(queueDist.low / (queueDist.total || 1)) * 100}%` }}
                   />
                 </div>
@@ -428,12 +422,12 @@ export default function Dashboard() {
 
               <div>
                 <div className="flex justify-between mb-1">
-                  <span className="font-semibold text-amber-400">Moderate Queue (4-8 Cars):</span>
-                  <span className="font-bold text-slate-200">{queueDist.moderate} stations</span>
+                  <span className="font-semibold text-[#98651C]">Moderate Queue (4-8 Cars):</span>
+                  <span className="font-bold text-[#14283F]">{queueDist.moderate} stations</span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                <div className="w-full h-2 rounded-full bg-[#E3EAF0] overflow-hidden">
                   <div
-                    className="h-full bg-amber-500 rounded-full"
+                    className="h-full bg-[#98651C] rounded-full"
                     style={{ width: `${(queueDist.moderate / (queueDist.total || 1)) * 100}%` }}
                   />
                 </div>
@@ -441,12 +435,12 @@ export default function Dashboard() {
 
               <div>
                 <div className="flex justify-between mb-1">
-                  <span className="font-semibold text-rose-400">Busy Queue (&gt;8 Cars):</span>
-                  <span className="font-bold text-slate-200">{queueDist.high} stations</span>
+                  <span className="font-semibold text-[#B54747]">Busy Queue (&gt;8 Cars):</span>
+                  <span className="font-bold text-[#14283F]">{queueDist.high} stations</span>
                 </div>
-                <div className="w-full h-2 rounded-full bg-slate-800 overflow-hidden">
+                <div className="w-full h-2 rounded-full bg-[#E3EAF0] overflow-hidden">
                   <div
-                    className="h-full bg-rose-500 rounded-full"
+                    className="h-full bg-[#B54747] rounded-full"
                     style={{ width: `${(queueDist.high / (queueDist.total || 1)) * 100}%` }}
                   />
                 </div>
@@ -454,36 +448,36 @@ export default function Dashboard() {
             </div>
           </div>
 
-          {/* Data Verification & Transparency Health */}
-          <div className="bg-[#111827] rounded-2xl sm:rounded-3xl p-4 sm:p-5 border border-slate-800 shadow-md space-y-2.5">
+          {/* Data Verification Health */}
+          <div className="bg-white rounded-[14px] p-4 sm:p-5 border border-[#E3EAF0] shadow-sm space-y-2.5">
             <div className="flex items-center justify-between">
-              <h4 className="font-bold text-xs sm:text-sm text-white flex items-center gap-1.5">
+              <h4 className="font-bold text-xs sm:text-sm text-[#14283F] flex items-center gap-1.5">
                 <span>Data Verification Health</span>
               </h4>
-              <span className="text-[9.5px] uppercase font-black bg-purple-950/70 text-purple-300 border border-purple-500/30 px-1.5 py-0.5 rounded">
+              <span className="text-[9.5px] uppercase font-black bg-[#F4F7FA] text-[#718096] border border-[#E3EAF0] px-1.5 py-0.5 rounded">
                 DEMO DATA
               </span>
             </div>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-[#718096]">
               Transparency verification across all {stations.length} network stations:
             </p>
 
             <div className="grid grid-cols-2 gap-2 pt-1 text-[11px]">
-              <div className="bg-[#0c1220] p-2 rounded-xl border border-slate-800">
-                <span className="text-[10px] text-emerald-400 font-bold block">● Live Verified</span>
-                <span className="text-sm font-extrabold text-white">{verificationCounts.live} Stations</span>
+              <div className="bg-[#E3F4EC] p-2 rounded-xl border border-[#C0E4D0]">
+                <span className="text-[10px] text-[#26734D] font-bold block">● Live Verified</span>
+                <span className="text-sm font-extrabold text-[#14283F]">{verificationCounts.live} Stations</span>
               </div>
-              <div className="bg-[#0c1220] p-2 rounded-xl border border-slate-800">
-                <span className="text-[10px] text-sky-400 font-bold block">● Recent Updates</span>
-                <span className="text-sm font-extrabold text-white">{verificationCounts.recent} Stations</span>
+              <div className="bg-[#EBF8FF] p-2 rounded-xl border border-[#BEE3F8]">
+                <span className="text-[10px] text-[#16B8C9] font-bold block">● Recent Updates</span>
+                <span className="text-sm font-extrabold text-[#14283F]">{verificationCounts.recent} Stations</span>
               </div>
-              <div className="bg-[#0c1220] p-2 rounded-xl border border-slate-800">
-                <span className="text-[10px] text-amber-400 font-bold block">● Community</span>
-                <span className="text-sm font-extrabold text-white">{verificationCounts.community} Stations</span>
+              <div className="bg-[#FFF2DB] p-2 rounded-xl border border-[#FFE2A4]">
+                <span className="text-[10px] text-[#98651C] font-bold block">● Community</span>
+                <span className="text-sm font-extrabold text-[#14283F]">{verificationCounts.community} Stations</span>
               </div>
-              <div className="bg-[#0c1220] p-2 rounded-xl border border-slate-800">
-                <span className="text-[10px] text-slate-500 font-bold block">● Stale / Offline</span>
-                <span className="text-sm font-extrabold text-white">{verificationCounts.stale} Stations</span>
+              <div className="bg-[#F4F7FA] p-2 rounded-xl border border-[#E3EAF0]">
+                <span className="text-[10px] text-[#718096] font-bold block">● Stale / Offline</span>
+                <span className="text-sm font-extrabold text-[#14283F]">{verificationCounts.stale} Stations</span>
               </div>
             </div>
           </div>

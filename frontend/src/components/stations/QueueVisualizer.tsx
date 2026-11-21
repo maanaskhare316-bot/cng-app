@@ -25,43 +25,43 @@ export const QueueVisualizer: React.FC<QueueVisualizerProps> = ({
   const isMedium = count > 3 && count <= 8;
 
   const badgeClass = isLow
-    ? 'bg-emerald-950/60 text-emerald-300 border-emerald-500/40'
+    ? 'bg-[#E3F4EC] text-[#26734D] border-[#C0E4D0]'
     : isMedium
-    ? 'bg-amber-950/60 text-amber-300 border-amber-500/40'
-    : 'bg-rose-950/60 text-rose-300 border-rose-500/40';
+    ? 'bg-[#FFF2DB] text-[#98651C] border-[#FFE2A4]'
+    : 'bg-[#FCEAEA] text-[#B54747] border-[#F4BBBB]';
 
   const badgeText = isLow ? 'Short Queue' : isMedium ? 'Moderate Queue' : 'Heavy Queue';
 
   return (
-    <div className="bg-[#111827] border border-slate-800 rounded-2xl p-4 text-slate-100">
+    <div className="bg-white border border-[#E3EAF0] rounded-[14px] p-4 text-[#243447] shadow-sm">
       {/* Top Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
-          <div className="p-2 bg-blue-950/60 text-blue-400 rounded-xl border border-blue-500/30">
+          <div className="p-2 bg-[#F4F7FA] text-[#14283F] rounded-xl border border-[#E3EAF0]">
             <Users size={16} />
           </div>
           <div>
-            <h4 className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <h4 className="text-[10px] font-bold uppercase tracking-wider text-[#718096]">
               Live Queue Status
             </h4>
             <div className="flex items-baseline gap-1.5">
-              <span className="text-xl font-black text-white">{count}</span>
-              <span className="text-xs font-semibold text-slate-400">Vehicles in line</span>
+              <span className="text-xl font-black text-[#14283F]">{count}</span>
+              <span className="text-xs font-semibold text-[#718096]">Vehicles in line</span>
             </div>
           </div>
         </div>
 
         <div className="text-right">
-          <div className="flex items-center justify-end gap-1 text-slate-400 text-xs">
+          <div className="flex items-center justify-end gap-1 text-[#718096] text-xs">
             <Clock size={13} /> <span>Wait Time</span>
           </div>
-          <span className="text-lg font-black text-amber-400">~{wait} min</span>
+          <span className="text-lg font-black text-[#98651C]">~{wait} min</span>
         </div>
       </div>
 
       {/* Visual Lane of Cars */}
-      <div className="bg-[#090d16] rounded-xl p-3 border border-slate-800 mb-3 shadow-inner">
-        <div className="flex items-center justify-between text-[10px] text-slate-500 font-bold mb-2 uppercase tracking-wider">
+      <div className="bg-[#F4F7FA] rounded-xl p-3 border border-[#E3EAF0] mb-3">
+        <div className="flex items-center justify-between text-[10px] text-[#718096] font-bold mb-2 uppercase tracking-wider">
           <span>Vehicles Waiting</span>
           <span>Active Dispensers</span>
         </div>
@@ -69,7 +69,7 @@ export const QueueVisualizer: React.FC<QueueVisualizerProps> = ({
         <div className="flex items-center justify-between gap-1 overflow-x-auto py-1">
           <div className="flex items-center gap-1.5 flex-wrap flex-1">
             {count === 0 ? (
-              <span className="text-xs font-semibold text-emerald-400 flex items-center gap-1">
+              <span className="text-xs font-semibold text-[#26734D] flex items-center gap-1">
                 <CheckCircle size={14} /> No queue! Zero wait time
               </span>
             ) : (
@@ -85,7 +85,7 @@ export const QueueVisualizer: React.FC<QueueVisualizerProps> = ({
                   </span>
                 ))}
                 {count > 8 && (
-                  <span className="text-xs font-bold bg-slate-800 text-slate-300 px-2 py-0.5 rounded-md border border-slate-700">
+                  <span className="text-xs font-bold bg-white text-[#718096] px-2 py-0.5 rounded-md border border-[#E3EAF0]">
                     +{count - 8} more
                   </span>
                 )}
@@ -93,15 +93,15 @@ export const QueueVisualizer: React.FC<QueueVisualizerProps> = ({
             )}
           </div>
 
-          <span className="text-slate-600 font-bold px-2">➔</span>
+          <span className="text-[#A0AEC0] font-bold px-2">➔</span>
 
           {/* Dispenser Nozzles Indicator */}
-          <div className="flex items-center gap-1 bg-[#162032] border border-slate-800 px-2 py-1.5 rounded-xl flex-shrink-0">
-            <Fuel size={14} className="text-emerald-400" />
-            <span className="text-xs font-black text-slate-200">
+          <div className="flex items-center gap-1 bg-white border border-[#E3EAF0] px-2 py-1.5 rounded-xl flex-shrink-0">
+            <Fuel size={14} className="text-[#26734D]" />
+            <span className="text-xs font-black text-[#14283F]">
               {active}/{total}
             </span>
-            <span className="text-[10px] text-slate-400 font-semibold">Active</span>
+            <span className="text-[10px] text-[#718096] font-semibold">Active</span>
           </div>
         </div>
       </div>
@@ -111,7 +111,7 @@ export const QueueVisualizer: React.FC<QueueVisualizerProps> = ({
         <span className={`px-2.5 py-0.5 rounded-full font-bold text-[11px] border ${badgeClass}`}>
           ● {badgeText}
         </span>
-        <span className="text-[11px] text-slate-400 font-semibold">
+        <span className="text-[11px] text-[#718096] font-semibold">
           Avg. {Math.round(wait / Math.max(1, count))}m per car
         </span>
       </div>

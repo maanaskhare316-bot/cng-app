@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Fuel, Zap, Calculator, DollarSign, Gauge, ArrowRight } from 'lucide-react';
+import { Calculator, Zap } from 'lucide-react';
 
 interface VehicleProfile {
   name: string;
@@ -26,7 +26,7 @@ export const CngCalculator: React.FC<CngCalculatorProps> = ({
 }) => {
   const [selectedVehicle, setSelectedVehicle] = useState<VehicleProfile>(VEHICLES[0]);
   const [pressureBar, setPressureBar] = useState<number>(initialPressure);
-  const [cngPrice, setCngPrice] = useState<number>(initialPricePerKg);
+  const [cngPrice] = useState<number>(initialPricePerKg);
   const [petrolPrice] = useState<number>(98.5);
 
   const filledKg = Number(((selectedVehicle.tankLitres / 1000) * (pressureBar * 0.75)).toFixed(1));
@@ -42,17 +42,17 @@ export const CngCalculator: React.FC<CngCalculatorProps> = ({
   const moneySaved = Math.max(0, equivalentPetrolCost - totalCngCost);
 
   return (
-    <div className="bg-[#111827] rounded-3xl border border-slate-800 p-5 sm:p-6 shadow-lg space-y-5 text-slate-100">
+    <div className="bg-white rounded-[14px] border border-[#E3EAF0] p-5 sm:p-6 shadow-sm space-y-5 text-[#243447]">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
-          <div className="p-2.5 bg-emerald-950/60 border border-emerald-500/30 text-emerald-400 rounded-2xl">
+          <div className="p-2.5 bg-[#F4F7FA] border border-[#E3EAF0] text-[#14283F] rounded-xl">
             <Calculator size={20} />
           </div>
           <div>
-            <h3 className="font-extrabold text-white text-sm sm:text-base">
+            <h3 className="font-extrabold text-[#14283F] text-sm sm:text-base">
               CNG Pressure & Highway Range Calculator
             </h3>
-            <p className="text-[11px] text-slate-400">
+            <p className="text-[11px] text-[#718096]">
               Calculate cylinder filling capacity and range gains at 200+ Bar pressure
             </p>
           </div>
@@ -61,7 +61,7 @@ export const CngCalculator: React.FC<CngCalculatorProps> = ({
 
       {/* Vehicle Type Selector */}
       <div>
-        <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">
+        <label className="block text-[11px] font-bold text-[#718096] uppercase tracking-wider mb-2">
           Select Vehicle Type
         </label>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
@@ -70,34 +70,38 @@ export const CngCalculator: React.FC<CngCalculatorProps> = ({
               key={v.name}
               type="button"
               onClick={() => setSelectedVehicle(v)}
-              className={`p-3 rounded-2xl border text-left transition ${
+              className={`p-3 rounded-xl border text-left transition ${
                 selectedVehicle.name === v.name
-                  ? 'bg-emerald-950/60 border-emerald-500 text-emerald-300 ring-2 ring-emerald-500/30'
-                  : 'bg-[#162032] border-slate-800 text-slate-300 hover:bg-[#1a263c] hover:border-slate-700'
+                  ? 'bg-[#14283F] border-[#14283F] text-white'
+                  : 'bg-[#F4F7FA] border-[#E3EAF0] text-[#243447] hover:bg-[#E3EAF0]'
               }`}
             >
               <div className="text-xl mb-1">{v.emoji}</div>
-              <p className="text-xs font-bold leading-tight truncate text-white">{v.name.split(' (')[0]}</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">{v.avgMileageKmPerKg} km/kg avg</p>
+              <p className={`text-xs font-bold leading-tight truncate ${selectedVehicle.name === v.name ? 'text-white' : 'text-[#14283F]'}`}>
+                {v.name.split(' (')[0]}
+              </p>
+              <p className={`text-[10px] mt-0.5 ${selectedVehicle.name === v.name ? 'text-slate-300' : 'text-[#718096]'}`}>
+                {v.avgMileageKmPerKg} km/kg avg
+              </p>
             </button>
           ))}
         </div>
       </div>
 
       {/* Pressure Slider */}
-      <div className="bg-[#090d16] p-4 rounded-2xl border border-slate-800 space-y-2">
+      <div className="bg-[#F4F7FA] p-4 rounded-xl border border-[#E3EAF0] space-y-2">
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-1.5 text-xs font-bold text-slate-300">
-            <Zap size={14} className="text-emerald-400" />
+          <div className="flex items-center gap-1.5 text-xs font-bold text-[#14283F]">
+            <Zap size={14} className="text-[#16B8C9]" />
             <span>Station Pump Pressure</span>
           </div>
           <span
             className={`text-sm font-black px-2.5 py-0.5 rounded-full border ${
               pressureBar >= 195
-                ? 'bg-emerald-950/70 text-emerald-300 border-emerald-500/40'
+                ? 'bg-[#E3F4EC] text-[#26734D] border-[#C0E4D0]'
                 : pressureBar >= 175
-                ? 'bg-amber-950/70 text-amber-300 border-amber-500/40'
-                : 'bg-rose-950/70 text-rose-300 border-rose-500/40'
+                ? 'bg-[#FFF2DB] text-[#98651C] border-[#FFE2A4]'
+                : 'bg-[#FCEAEA] text-[#B54747] border-[#F4BBBB]'
             }`}
           >
             {pressureBar} Bar ({Math.round(pressureBar * 14.5038)} PSI)
@@ -111,38 +115,38 @@ export const CngCalculator: React.FC<CngCalculatorProps> = ({
           step={5}
           value={pressureBar}
           onChange={(e) => setPressureBar(Number(e.target.value))}
-          className="w-full accent-emerald-500 h-2 bg-slate-800 rounded-lg cursor-pointer"
+          className="w-full accent-[#16B8C9] h-2 bg-[#E3EAF0] rounded-lg cursor-pointer"
         />
 
-        <div className="flex justify-between text-[10px] font-bold text-slate-500">
+        <div className="flex justify-between text-[10px] font-bold text-[#718096]">
           <span>140 Bar (Low Pressure)</span>
           <span>185 Bar (Standard)</span>
-          <span className="text-emerald-400 font-extrabold">220 Bar (Peak Fast Fill)</span>
+          <span className="text-[#26734D] font-extrabold">220 Bar (Peak Fast Fill)</span>
         </div>
       </div>
 
       {/* Calculation Results Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="bg-emerald-950/30 p-4 rounded-2xl border border-emerald-500/30">
-          <span className="text-[10px] font-bold text-emerald-400 uppercase tracking-wider">Gas Capacity Filled</span>
-          <p className="text-2xl font-black text-emerald-300 mt-1">{filledKg} kg</p>
-          <p className="text-[10px] text-emerald-400/90 font-semibold mt-0.5">
+        <div className="bg-[#E3F4EC] p-4 rounded-xl border border-[#C0E4D0]">
+          <span className="text-[10px] font-bold text-[#26734D] uppercase tracking-wider">Gas Capacity Filled</span>
+          <p className="text-2xl font-black text-[#26734D] mt-1">{filledKg} kg</p>
+          <p className="text-[10px] text-[#26734D] font-semibold mt-0.5">
             {pressureBar >= 195 ? '⚡ 100% Full Tank Capacity' : '⚠️ Partial Fill (~70-80%)'}
           </p>
         </div>
 
-        <div className="bg-cyan-950/30 p-4 rounded-2xl border border-cyan-500/30">
-          <span className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider">Estimated Driving Range</span>
-          <p className="text-2xl font-black text-cyan-300 mt-1">~{fullTankRangeKm} km</p>
-          <p className="text-[10px] text-cyan-400/90 font-semibold mt-0.5">
+        <div className="bg-[#EBF8FF] p-4 rounded-xl border border-[#BEE3F8]">
+          <span className="text-[10px] font-bold text-[#16B8C9] uppercase tracking-wider">Estimated Driving Range</span>
+          <p className="text-2xl font-black text-[#14283F] mt-1">~{fullTankRangeKm} km</p>
+          <p className="text-[10px] text-[#16B8C9] font-semibold mt-0.5">
             +{extraRangeGained} km extra vs low pressure!
           </p>
         </div>
 
-        <div className="bg-purple-950/30 p-4 rounded-2xl border border-purple-500/30">
-          <span className="text-[10px] font-bold text-purple-400 uppercase tracking-wider">Trip Savings vs Petrol</span>
-          <p className="text-2xl font-black text-purple-300 mt-1">₹{moneySaved}</p>
-          <p className="text-[10px] text-purple-400/90 font-semibold mt-0.5">
+        <div className="bg-[#FFF2DB] p-4 rounded-xl border border-[#FFE2A4]">
+          <span className="text-[10px] font-bold text-[#98651C] uppercase tracking-wider">Trip Savings vs Petrol</span>
+          <p className="text-2xl font-black text-[#98651C] mt-1">₹{moneySaved}</p>
+          <p className="text-[10px] text-[#98651C] font-semibold mt-0.5">
             Cost ₹{totalCngCost} vs ₹{equivalentPetrolCost} Petrol
           </p>
         </div>

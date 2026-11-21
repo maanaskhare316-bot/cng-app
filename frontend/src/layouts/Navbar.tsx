@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Menu, Bell, Key, Navigation, Zap } from 'lucide-react';
+import { Menu, Bell, Key, Navigation, Fuel } from 'lucide-react';
 import { ApiKeyModal } from '../components/ui/ApiKeyModal';
 import { SmartAlertDrawer } from '../components/stations/SmartAlertDrawer';
 import { getStoredGoogleApiKey } from '../services/googleMapsLoader';
@@ -9,9 +9,9 @@ import { useAppContext } from '../context/AppContext';
 const PAGE_TITLES: Record<string, string> = {
   '/': 'Dashboard',
   '/plan': 'Plan Journey',
-  '/results': 'Route Recommendations',
+  '/results': 'Route Results',
   '/stations': 'CNG Stations',
-  '/monitoring': 'Live Telemetry',
+  '/monitoring': 'Live Monitoring',
   '/compare': 'Compare Stations',
   '/settings': 'Settings',
 };
@@ -44,69 +44,76 @@ const Navbar: React.FC<NavbarProps> = ({ onMenuClick }) => {
 
   return (
     <>
-      <div className="h-[58px] flex items-center justify-between px-3 sm:px-6 gap-2 sm:gap-3 bg-[#0c1220]/90 backdrop-blur-md border-b border-slate-800 sticky top-0 z-40">
-        {/* Left: Mobile Menu + Title */}
+      <div className="h-[58px] flex items-center justify-between px-3 sm:px-6 gap-2 sm:gap-3 bg-white border-b border-[#E3EAF0] sticky top-0 z-40 shadow-sm">
+        {/* Left: Mobile Menu + Brand */}
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <button
             onClick={onMenuClick}
             aria-label="Toggle navigation menu"
-            className="lg:hidden p-2 rounded-xl text-slate-300 hover:bg-slate-800/80 hover:text-white transition-colors flex-shrink-0"
+            className="lg:hidden p-2 rounded-xl text-[#718096] hover:bg-[#F4F7FA] hover:text-[#14283F] transition-colors flex-shrink-0"
           >
             <Menu size={20} />
           </button>
-          <span className="text-sm sm:text-base font-extrabold text-white tracking-wide truncate">
-            {pageTitle}
-          </span>
-        </div>
 
-        {/* Center: Brand pill (Desktop only) */}
-        <div className="hidden md:flex items-center gap-2 bg-emerald-950/40 border border-emerald-500/30 px-3 py-1 rounded-full text-xs font-bold text-emerald-300">
-          <Zap size={13} className="text-emerald-400" />
-          <span>CNG Navigator • Google Maps Smart Finder</span>
+          {/* Brand logo */}
+          <div className="flex items-center gap-2">
+            <div className="w-7 h-7 rounded-lg bg-[#14283F] flex items-center justify-center flex-shrink-0">
+              <Fuel size={14} className="text-[#16B8C9]" />
+            </div>
+            <div className="hidden sm:block">
+              <span className="text-sm font-extrabold text-[#14283F] tracking-tight">CNG Navigator</span>
+            </div>
+          </div>
+
+          <div className="hidden md:block w-px h-5 bg-[#E3EAF0]" />
+          <span className="hidden md:block text-sm font-medium text-[#718096]">{pageTitle}</span>
         </div>
 
         {/* Right Actions */}
         <div className="flex items-center gap-1.5 sm:gap-2 flex-shrink-0">
-          {/* Smart Corridor Alerts Button */}
+          {/* Station count pill */}
+          <span className="hidden lg:inline-flex items-center gap-1.5 text-xs font-semibold text-[#14283F] bg-[#F4F7FA] border border-[#E3EAF0] px-3 py-1.5 rounded-xl">
+            ⛽ {stations.length} stations
+          </span>
+
+          {/* Alert Bell */}
           <button
             type="button"
             onClick={() => setIsAlertDrawerOpen(true)}
             aria-label="Smart Corridor Alerts"
-            className="relative p-2 rounded-xl bg-slate-800/80 hover:bg-slate-700/80 text-slate-300 hover:text-white border border-slate-700/60 transition"
+            className="relative p-2 rounded-xl bg-[#F4F7FA] hover:bg-[#E3EAF0] text-[#718096] hover:text-[#14283F] border border-[#E3EAF0] transition"
           >
             <Bell size={16} />
             {unreadAlertsCount > 0 && (
-              <span className="absolute -top-1 -right-1 px-1.5 py-0.2 bg-red-500 text-[10px] font-black text-white rounded-full ring-2 ring-[#0c1220] animate-pulse">
+              <span className="absolute -top-1 -right-1 px-1.5 bg-[#B54747] text-[10px] font-black text-white rounded-full ring-2 ring-white animate-pulse">
                 {unreadAlertsCount > 9 ? '9+' : unreadAlertsCount}
               </span>
             )}
           </button>
 
+          {/* Plan Trip CTA */}
           <button
             onClick={() => navigate('/plan')}
-            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-extrabold bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-1.5 rounded-xl shadow-md transition"
+            className="hidden sm:inline-flex items-center gap-1.5 text-xs font-bold bg-[#14283F] hover:bg-[#1D3854] text-white px-3.5 py-1.5 rounded-xl transition"
           >
             <Navigation size={13} />
             <span>Plan Trip</span>
           </button>
 
+          {/* API Key Button */}
           <button
             type="button"
             onClick={() => setIsKeyModalOpen(true)}
-            className={`inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-bold px-2.5 sm:px-3 py-1.5 rounded-xl border transition ${
+            className={`inline-flex items-center gap-1.5 text-[11px] sm:text-xs font-semibold px-2.5 sm:px-3 py-1.5 rounded-xl border transition ${
               hasGoogleKey
-                ? 'bg-emerald-950/50 text-emerald-300 border-emerald-500/40 hover:bg-emerald-900/40'
-                : 'bg-amber-950/40 text-amber-300 border-amber-500/40 hover:bg-amber-900/40'
+                ? 'bg-[#E3F4EC] text-[#26734D] border-[#26734D]/20 hover:bg-[#D0EDDF]'
+                : 'bg-[#FFF2DB] text-[#98651C] border-[#98651C]/20 hover:bg-[#FFE9C0]'
             }`}
           >
-            <Key size={13} className={hasGoogleKey ? 'text-emerald-400' : 'text-amber-400'} />
-            <span className="hidden sm:inline">{hasGoogleKey ? 'Google Maps Active' : 'API Key'}</span>
-            <span className="sm:hidden">{hasGoogleKey ? 'Active' : 'Key'}</span>
+            <Key size={13} />
+            <span className="hidden sm:inline">{hasGoogleKey ? 'Maps Active' : 'API Key'}</span>
+            <span className="sm:hidden">{hasGoogleKey ? '✓' : 'Key'}</span>
           </button>
-
-          <span className="hidden lg:inline-flex items-center gap-1 text-xs font-bold text-slate-300 bg-slate-800/60 px-2.5 py-1.5 rounded-xl border border-slate-700/60">
-            ⛽ {stations.length} Pumps
-          </span>
         </div>
       </div>
 

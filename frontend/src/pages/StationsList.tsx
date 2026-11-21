@@ -3,24 +3,16 @@ import { useNavigate, Link } from 'react-router-dom';
 import {
   Search,
   Navigation,
-  Star,
   Sparkles,
   AlertTriangle,
   Filter,
-  CheckCircle2,
-  Clock,
-  ShieldCheck,
-  Flame,
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { ReportStatusModal } from '../components/stations/ReportStatusModal';
 import { ReportIncorrectModal } from '../components/stations/ReportIncorrectModal';
 import { DataStatusBadge } from '../components/stations/DataStatusBadge';
-import { computeArrivalPrediction } from '../utils/predictionEngine';
 import type {
   StationSummaryDto,
-  CommunityReportPayload,
-  IncorrectInfoFlagPayload,
   DataVerificationStatus,
 } from '../types';
 
@@ -89,21 +81,21 @@ export default function StationsList() {
   }, [stations, search, verificationFilter, onlyAvailable, sort]);
 
   return (
-    <div className="max-w-7xl mx-auto space-y-5 sm:space-y-6 pb-16 px-1 sm:px-0 text-slate-100">
+    <div className="max-w-7xl mx-auto space-y-5 sm:space-y-6 pb-16 px-1 sm:px-0 text-[#243447]">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h1 className="text-xl sm:text-2xl font-black text-white leading-tight">
+          <h1 className="text-xl sm:text-2xl font-black text-[#14283F] leading-tight">
             Indian Highway CNG Stations Directory
           </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
+          <p className="text-xs text-[#718096] mt-0.5">
             Verified station telemetry, SCADA pressure, and live driver community updates
           </p>
         </div>
 
         <button
           onClick={() => navigate('/plan')}
-          className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition flex items-center gap-1.5"
+          className="px-4 py-2 sm:px-5 sm:py-2.5 rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white font-bold text-xs shadow-sm transition flex items-center gap-1.5"
         >
           <Navigation size={13} />
           <span>Plan Trip on Corridor</span>
@@ -111,16 +103,16 @@ export default function StationsList() {
       </div>
 
       {/* Search & Verification Status Filters Bar */}
-      <div className="bg-[#111827] rounded-2xl sm:rounded-3xl p-3.5 sm:p-4 shadow-xl border border-slate-800 space-y-3">
+      <div className="bg-white rounded-[14px] p-3.5 sm:p-4 shadow-sm border border-[#E3EAF0] space-y-3">
         <div className="flex flex-col sm:flex-row gap-2.5">
           <div className="relative flex-1">
-            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400" />
+            <Search size={16} className="absolute left-3.5 top-1/2 -translate-y-1/2 text-[#718096]" />
             <input
               type="text"
               value={search}
               onChange={(e) => setSearch(e.target.value)}
               placeholder="Search by station name, city, highway, or gas operator..."
-              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-[#162032] border border-slate-700/80 text-xs sm:text-sm text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+              className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-white border border-[#E3EAF0] text-xs sm:text-sm text-[#243447] placeholder-[#A0AEC0] focus:outline-none focus:ring-2 focus:ring-[#16B8C9]"
             />
           </div>
 
@@ -129,7 +121,7 @@ export default function StationsList() {
               value={sort}
               onChange={(e) => setSort(e.target.value as SortKey)}
               aria-label="Sort stations"
-              className="px-3 py-2.5 rounded-xl bg-[#162032] border border-slate-700/80 text-xs font-bold text-slate-200 focus:outline-none focus:ring-2 focus:ring-emerald-500 cursor-pointer"
+              className="px-3 py-2.5 rounded-xl bg-white border border-[#E3EAF0] text-xs font-bold text-[#14283F] focus:outline-none focus:ring-2 focus:ring-[#16B8C9] cursor-pointer"
             >
               <option value="recommendation">Sort: Best Recommended</option>
               <option value="reliability">Sort: Highest Reliability</option>
@@ -143,7 +135,7 @@ export default function StationsList() {
 
         {/* Verification Status Pill Filter Chips */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 text-xs">
-          <span className="text-[11px] font-bold text-slate-400 uppercase tracking-wider flex-shrink-0 flex items-center gap-1">
+          <span className="text-[11px] font-bold text-[#718096] uppercase tracking-wider flex-shrink-0 flex items-center gap-1">
             <Filter size={12} /> Status:
           </span>
 
@@ -161,20 +153,20 @@ export default function StationsList() {
               onClick={() => setVerificationFilter(chip.id as VerificationFilterKey)}
               className={`px-3 py-1.5 rounded-xl text-[11px] font-bold flex-shrink-0 transition border ${
                 verificationFilter === chip.id
-                  ? 'bg-emerald-600 text-white border-emerald-500 shadow-sm'
-                  : 'bg-[#162032] text-slate-400 border-slate-700/80 hover:text-white'
+                  ? 'bg-[#14283F] text-white border-[#14283F] shadow-xs'
+                  : 'bg-[#F4F7FA] text-[#718096] border-[#E3EAF0] hover:bg-[#E3EAF0]'
               }`}
             >
               {chip.label}
             </button>
           ))}
 
-          <label className="flex items-center gap-1.5 text-[11px] font-bold text-slate-300 ml-auto flex-shrink-0 cursor-pointer bg-[#162032] px-3 py-1.5 rounded-xl border border-slate-700">
+          <label className="flex items-center gap-1.5 text-[11px] font-bold text-[#14283F] ml-auto flex-shrink-0 cursor-pointer bg-[#F4F7FA] px-3 py-1.5 rounded-xl border border-[#E3EAF0]">
             <input
               type="checkbox"
               checked={onlyAvailable}
               onChange={(e) => setOnlyAvailable(e.target.checked)}
-              className="accent-emerald-500 rounded"
+              className="accent-[#16B8C9] rounded"
             />
             <span>Open &amp; In-Stock Only</span>
           </label>
@@ -192,10 +184,10 @@ export default function StationsList() {
           return (
             <div
               key={station.id}
-              className={`rounded-2xl sm:rounded-3xl p-5 border shadow-lg transition flex flex-col justify-between relative ${
+              className={`rounded-[14px] p-5 border shadow-sm transition flex flex-col justify-between relative bg-white ${
                 station.recommendationCategory === 'BEST_OVERALL'
-                  ? 'border-emerald-500/80 bg-gradient-to-br from-[#0c2225] to-[#0f172a]'
-                  : 'border-slate-800 bg-[#111827] hover:border-slate-700'
+                  ? 'border-[#14283F] border-l-4 border-l-[#16B8C9]'
+                  : 'border-[#E3EAF0] hover:border-[#C8D6E5]'
               }`}
             >
               <div>
@@ -213,10 +205,10 @@ export default function StationsList() {
                 {/* Station Name & City */}
                 <div className="flex items-start justify-between gap-2 mb-2">
                   <div>
-                    <h3 className="font-extrabold text-sm sm:text-base text-white leading-tight">
+                    <h3 className="font-extrabold text-sm sm:text-base text-[#14283F] leading-tight">
                       {station.name}
                     </h3>
-                    <p className="text-xs text-emerald-400 font-semibold mt-0.5">
+                    <p className="text-xs text-[#16B8C9] font-semibold mt-0.5">
                       {station.operator} • {station.city}
                     </p>
                   </div>
@@ -224,47 +216,47 @@ export default function StationsList() {
                   <span
                     className={`text-[10px] font-black px-2 py-0.5 rounded-md border flex-shrink-0 ${
                       isAvailable
-                        ? 'bg-emerald-950 text-emerald-400 border-emerald-500/30'
-                        : 'bg-red-950 text-red-400 border-red-500/30'
+                        ? 'bg-[#E3F4EC] text-[#26734D] border-[#C0E4D0]'
+                        : 'bg-[#FCEAEA] text-[#B54747] border-[#F4BBBB]'
                     }`}
                   >
                     {isAvailable ? 'OPEN' : 'CLOSED'}
                   </span>
                 </div>
 
-                <p className="text-[11px] text-slate-400 line-clamp-1 mb-3">
+                <p className="text-[11px] text-[#718096] line-clamp-1 mb-3">
                   📍 {station.address}
                 </p>
 
                 {/* Measured Telemetry: Pressure & Queue */}
-                <div className="grid grid-cols-2 gap-2 bg-[#0c1220] rounded-xl p-2.5 border border-slate-800 mb-3">
+                <div className="grid grid-cols-2 gap-2 bg-[#F4F7FA] rounded-xl p-2.5 border border-[#E3EAF0] mb-3">
                   <div>
-                    <span className="text-[9px] uppercase font-bold text-slate-400 block">
+                    <span className="text-[9px] uppercase font-bold text-[#718096] block">
                       Measured Pressure
                     </span>
                     <div className="flex items-baseline gap-1 mt-0.5">
                       <span
                         className={`text-sm font-black ${
-                          isHighPressure ? 'text-emerald-400' : 'text-amber-400'
+                          isHighPressure ? 'text-[#26734D]' : 'text-[#98651C]'
                         }`}
                       >
                         {pressure ? `${pressure} Bar` : 'N/A'}
                       </span>
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-[10px] text-[#718096]">
                         {isHighPressure ? '(Fast Fill)' : '(Standard)'}
                       </span>
                     </div>
                   </div>
 
                   <div>
-                    <span className="text-[9px] uppercase font-bold text-slate-400 block">
+                    <span className="text-[9px] uppercase font-bold text-[#718096] block">
                       Measured Queue
                     </span>
                     <div className="flex items-baseline gap-1 mt-0.5">
-                      <span className="text-sm font-black text-white">
+                      <span className="text-sm font-black text-[#14283F]">
                         {station.vehiclesWaiting ?? 0} Cars
                       </span>
-                      <span className="text-[10px] text-slate-400">
+                      <span className="text-[10px] text-[#718096]">
                         ~{station.estimatedWaitMinutes ?? 2}m wait
                       </span>
                     </div>
@@ -273,9 +265,9 @@ export default function StationsList() {
               </div>
 
               {/* Bottom Actions */}
-              <div className="pt-3 border-t border-slate-800 space-y-2.5">
+              <div className="pt-3 border-t border-[#E3EAF0] space-y-2.5">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-extrabold text-emerald-400">
+                  <span className="font-extrabold text-[#14283F]">
                     ₹{station.verifiedPricePerKg ?? 82.5}/kg
                   </span>
 
@@ -284,7 +276,7 @@ export default function StationsList() {
                     <button
                       type="button"
                       onClick={() => setFlagModalStation(station)}
-                      className="p-1.5 rounded-lg border border-slate-800 text-slate-400 hover:text-red-400 hover:bg-[#162032] transition"
+                      className="p-1.5 rounded-lg border border-[#E3EAF0] text-[#718096] hover:text-[#B54747] hover:bg-[#FCEAEA] transition"
                       title="Report incorrect info"
                     >
                       <AlertTriangle size={13} />
@@ -294,7 +286,7 @@ export default function StationsList() {
                     <button
                       type="button"
                       onClick={() => setReportModalStation(station)}
-                      className="py-1 px-2.5 rounded-lg bg-amber-500/20 text-amber-300 hover:bg-amber-500/30 border border-amber-500/30 text-[11px] font-bold transition flex items-center gap-1"
+                      className="py-1 px-2.5 rounded-lg bg-[#FFF2DB] text-[#98651C] hover:bg-[#FFE9C0] border border-[#FFE2A4] text-[11px] font-bold transition flex items-center gap-1"
                     >
                       <Sparkles size={12} />
                       <span>Report</span>
@@ -306,8 +298,8 @@ export default function StationsList() {
                       onClick={() => toggleStationSelection(Number(station.id))}
                       className={`py-1 px-2 rounded-lg text-[11px] font-bold border transition ${
                         isSelected
-                          ? 'bg-emerald-950 text-emerald-400 border-emerald-500'
-                          : 'bg-[#162032] text-slate-300 border-slate-700 hover:bg-[#1f2c44]'
+                          ? 'bg-[#14283F] text-white border-[#14283F]'
+                          : 'bg-[#F4F7FA] text-[#718096] border-[#E3EAF0] hover:bg-[#E3EAF0]'
                       }`}
                     >
                       {isSelected ? '✓ In Compare' : '+ Compare'}
@@ -318,7 +310,7 @@ export default function StationsList() {
                 <div className="grid grid-cols-2 gap-2">
                   <Link
                     to={`/stations/${station.id}`}
-                    className="py-2 text-center rounded-xl bg-[#162032] hover:bg-[#1f2c44] border border-slate-700 text-xs font-bold text-slate-200 transition"
+                    className="py-2 text-center rounded-xl bg-[#F4F7FA] hover:bg-[#E3EAF0] border border-[#E3EAF0] text-xs font-bold text-[#14283F] transition"
                   >
                     View Details
                   </Link>
@@ -327,7 +319,7 @@ export default function StationsList() {
                     href={`https://www.google.com/maps/dir/?api=1&destination=${station.latitude},${station.longitude}`}
                     target="_blank"
                     rel="noreferrer"
-                    className="py-2 text-center rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold transition flex items-center justify-center gap-1 shadow-sm"
+                    className="py-2 text-center rounded-xl bg-[#14283F] hover:bg-[#1D3854] text-white text-xs font-bold transition flex items-center justify-center gap-1 shadow-xs"
                   >
                     <span>Maps Nav</span>
                     <Navigation size={12} />

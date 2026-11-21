@@ -23,7 +23,7 @@ export const PressureGauge: React.FC<PressureGaugeProps> = ({
   const isHigh = v >= 195;
   const isMedium = v >= 175 && v < 195;
 
-  const color = isHigh ? '#10b981' : isMedium ? '#f59e0b' : v > 0 ? '#f43f5e' : '#64748b';
+  const color = isHigh ? '#26734D' : isMedium ? '#98651C' : v > 0 ? '#B54747' : '#718096';
   const psi = Math.round(v * 14.5038);
 
   const statusTitle = isHigh
@@ -61,16 +61,16 @@ export const PressureGauge: React.FC<PressureGaugeProps> = ({
     <div className="flex flex-col items-center">
       <div className="relative">
         <svg viewBox={`0 0 ${width} ${height}`} width={width} height={height} className="overflow-visible">
-          {/* Dark Track Arc */}
+          {/* Track Arc */}
           <path
             d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r} ${cy}`}
             fill="none"
-            stroke="#1e293b"
+            stroke="#E3EAF0"
             strokeWidth={stroke}
             strokeLinecap="round"
           />
 
-          {/* Value Arc with vibrant neon color */}
+          {/* Value Arc */}
           {v > 0 && (
             <path
               d={`M ${cx - r} ${cy} A ${r} ${r} 0 0 1 ${cx + r * Math.cos(needleAngle)} ${cy - r * Math.sin(needleAngle)}`}
@@ -88,19 +88,19 @@ export const PressureGauge: React.FC<PressureGaugeProps> = ({
               y1={cy}
               x2={needleX}
               y2={needleY}
-              stroke="#f8fafc"
+              stroke="#14283F"
               strokeWidth="2.5"
               strokeLinecap="round"
             />
           )}
-          <circle cx={cx} cy={cy} r="4.5" fill="#f8fafc" />
+          <circle cx={cx} cy={cy} r="4.5" fill="#14283F" />
         </svg>
 
         <div className="text-center -mt-3">
-          <span className="text-2xl font-black text-white leading-none block" style={{ color }}>
+          <span className="text-2xl font-black leading-none block" style={{ color }}>
             {v > 0 ? `${Math.round(v)} Bar` : '—'}
           </span>
-          <span className="text-[11px] font-semibold text-slate-400 mt-0.5 block">
+          <span className="text-[11px] font-semibold text-[#718096] mt-0.5 block">
             {v > 0 ? `${psi} PSI` : 'No reading'}
           </span>
         </div>
@@ -108,17 +108,17 @@ export const PressureGauge: React.FC<PressureGaugeProps> = ({
 
       {showDetails && (
         <div className="text-center mt-3">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#162032] border border-slate-800">
+          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-[#F4F7FA] border border-[#E3EAF0]">
             {isHigh ? (
-              <CheckCircle2 size={13} className="text-emerald-400" />
+              <CheckCircle2 size={13} className="text-[#26734D]" />
             ) : isMedium ? (
-              <Zap size={13} className="text-amber-400" />
+              <Zap size={13} className="text-[#98651C]" />
             ) : (
-              <AlertTriangle size={13} className="text-rose-400" />
+              <AlertTriangle size={13} className="text-[#B54747]" />
             )}
             <span style={{ color }}>{statusTitle}</span>
           </div>
-          <p className="text-[11px] text-slate-400 mt-1 max-w-[220px] leading-tight">{statusDesc}</p>
+          <p className="text-[11px] text-[#718096] mt-1 max-w-[220px] leading-tight">{statusDesc}</p>
         </div>
       )}
     </div>
